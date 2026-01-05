@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "@21st-dev/magic": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY=\"cf0071667bc38d8065363015e88e672d17095ddba0a4d6a61bfe42cbba72ec52\""
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "21st_magic_component_inspiration",
+        "21st_magic_component_builder"
+      ],
+      "disabledTools": []
+    },
+    "gsap-master": {
+      "command": "npx",
+      "args": [
+        "bruzethegreat-gsap-master-mcp-server@latest"
+      ],
+      "disabled": false
+    },
+    "better-auth": {
+       "url": "https://mcp.chonkie.ai/better-auth/better-auth-builder/mcp"
+   }
+  }
+}
