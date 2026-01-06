@@ -12,12 +12,15 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isDashboardPage = pathname.startsWith("/dashboard");
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
-      <main className={!isAuthPage ? "pt-16" : ""}>{children}</main>
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !isDashboardPage && <Navbar />}
+      <main className={!isAuthPage && !isDashboardPage ? "pt-16" : ""}>
+        {children}
+      </main>
+      {!isAuthPage && !isDashboardPage && <Footer />}
     </>
   );
 }

@@ -2,6 +2,7 @@ import GeneralSettings from "../models/GeneralSettings.js";
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
 import { getEmailConfig } from "../config/sendmail.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinary-helper.js";
 
 // Get all settings (General/Email only)
 export const getSettings = async (req, res) => {
@@ -74,6 +75,16 @@ export const updateGeneralSettings = async (req, res) => {
     const oldEmail = settings?.companyEmail || process.env.ADMIN_EMAIL;
     const emailChanged = oldEmail && oldEmail !== companyEmail;
 
+    // Handle Cloudinary upload if companyLogo is a base64 string
+    let uploadedLogoUrl = companyLogo;
+    if (companyLogo && companyLogo.startsWith("data:image")) {
+      // If there's an existing logo, try to delete it from Cloudinary
+      if (settings?.companyLogo) {
+        await deleteFromCloudinary(settings.companyLogo);
+      }
+      uploadedLogoUrl = await uploadToCloudinary(companyLogo, "company_assets");
+    }
+
     if (!settings) {
       settings = await GeneralSettings.create({
         settingsId: "global",
@@ -82,7 +93,7 @@ export const updateGeneralSettings = async (req, res) => {
         companyPhone,
         companyAddress,
         companyDescription,
-        companyLogo: companyLogo || null,
+        companyLogo: uploadedLogoUrl || null,
         lastUpdatedBy: req.user?.id || "init",
       });
     } else {
@@ -94,7 +105,7 @@ export const updateGeneralSettings = async (req, res) => {
       settings.companyAddress = companyAddress;
       settings.companyDescription = companyDescription;
       if (companyLogo !== undefined) {
-        settings.companyLogo = companyLogo;
+        settings.companyLogo = uploadedLogoUrl;
       }
       settings.lastUpdatedBy = req.user?.id;
       await settings.save();
