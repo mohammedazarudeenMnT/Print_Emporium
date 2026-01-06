@@ -15,7 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/lib/axios";
 
@@ -47,7 +53,15 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
     try {
       const response = await axiosInstance.get("/api/settings");
       if (response.data.success) {
-        setSettings(response.data.data);
+        const generalSettings = response.data.data;
+        setSettings({
+          companyName: generalSettings.companyName || "",
+          companyEmail: generalSettings.companyEmail || "",
+          companyPhone: generalSettings.companyPhone || "",
+          companyAddress: generalSettings.companyAddress || "",
+          companyDescription: generalSettings.companyDescription || "",
+          companyLogo: generalSettings.companyLogo || "",
+        });
       }
     } catch (error) {
       console.error("Failed to load general settings:", error);
@@ -60,30 +74,41 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
     loadSettings();
   }, [loadSettings]);
 
-  const handleSettingsChange = (field: keyof GeneralSettings, value: string) => {
-    setSettings(prev => ({ ...prev, [field]: value }));
+  const handleSettingsChange = (
+    field: keyof GeneralSettings,
+    value: string
+  ) => {
+    setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
   const saveSettings = async () => {
     setIsLoading(true);
-    
+
     try {
-      const response = await axiosInstance.put("/api/settings/general", settings);
+      const response = await axiosInstance.put(
+        "/api/settings/general",
+        settings
+      );
       if (response.data.success) {
         onMessage({ type: "success", text: response.data.message });
         await loadSettings(); // Reload to get updated data
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error && 
-        typeof error.response === 'object' && error.response !== null &&
-        'data' in error.response && typeof error.response.data === 'object' &&
-        error.response.data !== null && 'message' in error.response.data
-        ? String(error.response.data.message)
-        : "Failed to save general settings";
-      
-      onMessage({ 
-        type: "error", 
-        text: errorMessage
+      const errorMessage =
+        error instanceof Error &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "message" in error.response.data
+          ? String(error.response.data.message)
+          : "Failed to save general settings";
+
+      onMessage({
+        type: "error",
+        text: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -159,7 +184,9 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
             <Input
               id="companyName"
               value={settings.companyName}
-              onChange={(e) => handleSettingsChange("companyName", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("companyName", e.target.value)
+              }
               placeholder="Enter company name"
             />
           </div>
@@ -174,7 +201,9 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
               id="companyEmail"
               type="email"
               value={settings.companyEmail}
-              onChange={(e) => handleSettingsChange("companyEmail", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("companyEmail", e.target.value)
+              }
               placeholder="Enter company email"
             />
           </div>
@@ -188,7 +217,9 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
             <Input
               id="companyPhone"
               value={settings.companyPhone}
-              onChange={(e) => handleSettingsChange("companyPhone", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("companyPhone", e.target.value)
+              }
               placeholder="Enter company phone"
             />
           </div>
@@ -202,7 +233,9 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
             <Input
               id="companyAddress"
               value={settings.companyAddress}
-              onChange={(e) => handleSettingsChange("companyAddress", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("companyAddress", e.target.value)
+              }
               placeholder="Enter company address"
             />
           </div>
@@ -210,14 +243,19 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
 
         {/* Company Description */}
         <div className="space-y-2">
-          <Label htmlFor="companyDescription" className="flex items-center gap-2">
+          <Label
+            htmlFor="companyDescription"
+            className="flex items-center gap-2"
+          >
             <FileText className="h-4 w-4" />
             Company Description
           </Label>
           <Textarea
             id="companyDescription"
             value={settings.companyDescription}
-            onChange={(e) => handleSettingsChange("companyDescription", e.target.value)}
+            onChange={(e) =>
+              handleSettingsChange("companyDescription", e.target.value)
+            }
             placeholder="Enter company description"
             rows={4}
           />

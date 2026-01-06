@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  Mail,
-  Save,
-  Loader2,
-  TestTube,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Mail, Save, Loader2, TestTube, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/lib/axios";
 
@@ -43,9 +42,18 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
 
   const loadSettings = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/api/settings/email-configuration");
+      const response = await axiosInstance.get(
+        "/api/settings/email-configuration"
+      );
       if (response.data.success) {
-        setSettings(response.data.emailConfig);
+        const emailConfig = response.data.emailConfig;
+        setSettings({
+          smtpHost: emailConfig.smtpHost || "",
+          smtpPort: emailConfig.smtpPort || "",
+          smtpUsername: emailConfig.smtpUsername || "",
+          smtpPassword: emailConfig.smtpPassword || "",
+          senderEmail: emailConfig.senderEmail || "",
+        });
       }
     } catch (error) {
       console.error("Failed to load email settings:", error);
@@ -59,29 +67,40 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
   }, [loadSettings]);
 
   const handleSettingsChange = (field: keyof EmailSettings, value: string) => {
-    setSettings(prev => ({ ...prev, [field]: value }));
+    setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
   const saveSettings = async () => {
     setIsLoading(true);
-    
+
     try {
-      const response = await axiosInstance.put("/api/settings/email-configuration", settings);
+      const response = await axiosInstance.put(
+        "/api/settings/email-configuration",
+        settings
+      );
       if (response.data.success) {
-        onMessage({ type: "success", text: "Email settings saved successfully" });
+        onMessage({
+          type: "success",
+          text: "Email settings saved successfully",
+        });
         await loadSettings(); // Reload to get updated data
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error && 
-        typeof error.response === 'object' && error.response !== null &&
-        'data' in error.response && typeof error.response.data === 'object' &&
-        error.response.data !== null && 'message' in error.response.data
-        ? String(error.response.data.message)
-        : "Failed to save email settings";
-      
-      onMessage({ 
-        type: "error", 
-        text: errorMessage
+      const errorMessage =
+        error instanceof Error &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "message" in error.response.data
+          ? String(error.response.data.message)
+          : "Failed to save email settings";
+
+      onMessage({
+        type: "error",
+        text: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -95,27 +114,36 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
     }
 
     setIsTesting(true);
-    
+
     try {
-      const response = await axiosInstance.post("/api/settings/email-configuration/test", {
-        testEmail: email,
-        message: "This is a test email from PrintEmporium dashboard settings."
-      });
-      
+      const response = await axiosInstance.post(
+        "/api/settings/email-configuration/test",
+        {
+          testEmail: email,
+          message:
+            "This is a test email from PrintEmporium dashboard settings.",
+        }
+      );
+
       if (response.data.success) {
         onMessage({ type: "success", text: "Test email sent successfully!" });
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error && 
-        typeof error.response === 'object' && error.response !== null &&
-        'data' in error.response && typeof error.response.data === 'object' &&
-        error.response.data !== null && 'message' in error.response.data
-        ? String(error.response.data.message)
-        : "Failed to send test email";
-      
-      onMessage({ 
-        type: "error", 
-        text: errorMessage
+      const errorMessage =
+        error instanceof Error &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "message" in error.response.data
+          ? String(error.response.data.message)
+          : "Failed to send test email";
+
+      onMessage({
+        type: "error",
+        text: errorMessage,
       });
     } finally {
       setIsTesting(false);
@@ -163,7 +191,9 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
             <Input
               id="smtpUsername"
               value={settings.smtpUsername}
-              onChange={(e) => handleSettingsChange("smtpUsername", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("smtpUsername", e.target.value)
+              }
               placeholder="your-email@gmail.com"
             />
           </div>
@@ -176,7 +206,9 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
                 id="smtpPassword"
                 type={showPassword ? "text" : "password"}
                 value={settings.smtpPassword}
-                onChange={(e) => handleSettingsChange("smtpPassword", e.target.value)}
+                onChange={(e) =>
+                  handleSettingsChange("smtpPassword", e.target.value)
+                }
                 placeholder="Enter SMTP password"
               />
               <Button
@@ -202,7 +234,9 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
               id="senderEmail"
               type="email"
               value={settings.senderEmail}
-              onChange={(e) => handleSettingsChange("senderEmail", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("senderEmail", e.target.value)
+              }
               placeholder="noreply@yourcompany.com"
             />
           </div>
