@@ -21,17 +21,19 @@ export const initAuth = () => {
       },
     },
 
-    // Add cookie configuration for production
-    cookies: {
-      sessionToken: {
-        name: "better-auth.session-token",
+    // Advanced configuration for production cookie handling
+    // Using the recommended 'advanced' pattern from Better Auth docs
+    advanced: {
+      // Force secure cookies in production
+      useSecureCookies: process.env.NODE_ENV === "production",
+      // Default attributes for all cookies
+      defaultCookieAttributes: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
         path: "/",
-        domain: undefined,
-        partitioned: process.env.NODE_ENV === "production", // CHIPS support for cross-site cookies
+        // CHIPS (Cookies Having Independent Partitioned State) for cross-site
+        partitioned: process.env.NODE_ENV === "production",
       },
     },
 
@@ -550,7 +552,7 @@ export const initAuth = () => {
       "http://localhost:3000",
       "http://localhost:5173", // Common Vite dev port
       "https://print-emporium.vercel.app",
-    ],
+    ].filter(Boolean), // Filter out undefined/null values
 
     // Configure redirect URLs for password reset
     redirects: {
