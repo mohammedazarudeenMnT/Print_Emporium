@@ -20,6 +20,16 @@ export const requireAdminOrSignedRequest = async (req, res, next) => {
       headers: fromNodeHeaders(req.headers),
     });
 
+    // Debug logging for production troubleshooting
+    if (process.env.NODE_ENV === "production") {
+      console.log(`🔐 Auth check: ${req.method} ${req.path}`, {
+        hasSession: !!session,
+        userRole: session?.user?.role,
+        origin: req.headers.origin,
+        hasCookies: !!req.headers.cookie,
+      });
+    }
+
     if (session && session.user.role === "admin") {
       return next();
     }
@@ -30,11 +40,12 @@ export const requireAdminOrSignedRequest = async (req, res, next) => {
     const referer = req.headers.referer;
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
-    if (
-      req.method === "GET" &&
-      ((origin && frontendUrl.startsWith(origin)) || 
-       (referer && referer.startsWith(frontendUrl)))
-    ) {
+    // Check if origin/referer matches frontend URL (fixed comparison logic)
+    const isFromFrontend =
+      (origin && (origin === frontendUrl || origin.startsWith(frontendUrl.replace(/\/$/, '')))) ||
+      (referer && referer.startsWith(frontendUrl));
+
+    if (req.method === "GET" && isFromFrontend) {
       return next();
     }
 
@@ -44,6 +55,7 @@ export const requireAdminOrSignedRequest = async (req, res, next) => {
     const secret = process.env.API_SHARED_SECRET || "default_api_secret_change_me";
 
     if (!signature || !timestamp) {
+      console.log(`⚠️ Auth failed: No session or signature for ${req.method} ${req.path}`);
       return res.status(401).json({
         success: false,
         message: "Unauthorized: Protected API",
