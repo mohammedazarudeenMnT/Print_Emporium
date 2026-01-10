@@ -161,25 +161,36 @@ export const resetPassword = async (token: string, newPassword: string) => {
 // Google OAuth authentication - handles both login AND registration
 export const signInWithGoogle = async (callbackURL?: string): Promise<void> => {
   try {
-    console.log("🔄 Starting Google OAuth flow...");
-
-    // Create full frontend URL for callback
-    const frontendUrl = window.location.origin; // Gets http://localhost:3000
+    // IMPORTANT: Use absolute URLs to ensure redirect back to frontend after OAuth
+    // The frontend origin is where users should end up after Google auth completes
+    const frontendUrl = window.location.origin;
     const fullCallbackURL = callbackURL
       ? `${frontendUrl}${callbackURL}`
       : `${frontendUrl}/dashboard`;
+    const errorURL = `${frontendUrl}/login?error=oauth`;
+
+    console.log("🔄 Starting Google OAuth flow...", {
+      frontendUrl,
+      fullCallbackURL,
+      errorURL,
+      apiUrl: process.env.NEXT_PUBLIC_API_URL,
+    });
 
     // Use axios to make the request with proper JSON content type
     const response = await axiosInstance.post("/api/auth/sign-in/social", {
       provider: "google",
       callbackURL: fullCallbackURL,
+      errorURL: errorURL, // Where to redirect on OAuth error
     });
 
     console.log("✅ Google OAuth initiated:", response.data);
 
-    // If the response contains a URL, redirect to it
+    // If the response contains a URL, redirect to it (this is the Google consent page)
     if (response.data && response.data.url) {
+      console.log("🔀 Redirecting to Google consent:", response.data.url);
       window.location.href = response.data.url;
+    } else {
+      console.error("❌ No redirect URL in response:", response.data);
     }
   } catch (error: any) {
     console.error(
