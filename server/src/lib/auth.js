@@ -26,12 +26,12 @@ export const initAuth = () => {
       sessionToken: {
         name: "better-auth.session-token",
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Only secure in production
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site in production
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: "/",
-        // Don't set domain in production to allow same-origin cookies
         domain: undefined,
+        partitioned: process.env.NODE_ENV === "production", // CHIPS support for cross-site cookies
       },
     },
 
@@ -62,7 +62,7 @@ export const initAuth = () => {
       resetPasswordTokenExpiresIn: 3600, // 1 hour
       sendResetPassword: async ({ user, url, token }, request) => {
         console.log(`📧 Password reset requested for: ${user.email}`);
-        
+
         // Only allow password reset for admin users
         if (user.role !== "admin") {
           console.log(
@@ -75,7 +75,7 @@ export const initAuth = () => {
           // Create frontend reset URL instead of using the backend URL
           const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
           const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
-          
+
           const emailHtml = `
           <!DOCTYPE html>
           <html lang="en">
