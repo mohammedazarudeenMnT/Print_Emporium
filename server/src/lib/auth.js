@@ -24,16 +24,18 @@ export const initAuth = () => {
     // Advanced configuration for production cookie handling
     // Using the recommended 'advanced' pattern from Better Auth docs
     advanced: {
-      // Force secure cookies in production
-      useSecureCookies: process.env.NODE_ENV === "production",
+      // Force secure cookies in production OR Vercel environment
+      useSecureCookies: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
       // Default attributes for all cookies
       defaultCookieAttributes: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        // vital for Vercel/Render deployments behind load balancers
+        secure: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
+        // REQUIRED for cross-site auth (different subdomains on vercel.app)
+        sameSite: "none",
         path: "/",
         // CHIPS (Cookies Having Independent Partitioned State) for cross-site
-        partitioned: process.env.NODE_ENV === "production",
+        partitioned: true,
       },
     },
 
