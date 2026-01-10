@@ -1,4 +1,4 @@
-import express from "express";
+import express from "express"; // Force restart
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -7,7 +7,18 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { initAuth } from "./src/lib/auth.js";
 import { connectDB } from "./src/config/database.js";
 import authRoutes from "./src/routes/auth.routes.js";
-import settingsRoutes from "./src/routes/settings.routes.js";
+import settingsRoutes, {
+  publicRouter as paymentPublicRouter,
+  userRouter as paymentUserRouter,
+} from "./src/routes/settings.routes.js";
+import seoRoutes from "./src/routes/seo.routes.js";
+import serviceRoutes from "./src/routes/service.routes.js";
+import serviceOptionRoutes from "./src/routes/serviceOption.routes.js";
+import heroSlideRoutes from "./src/routes/hero-slide.routes.js";
+import fileConversionRoutes from "./src/routes/fileConversion.routes.js";
+import orderRoutes from "./src/routes/order.routes.js";
+import employeeRoutes from "./src/routes/employee.routes.js";
+import { requireAdminOrSignedRequest } from "./src/middleware/signature.middleware.js";
 import { seedAdmin } from "./src/utils/seedAdmin.js";
 
 dotenv.config();
@@ -47,6 +58,11 @@ app.get("/", (req, res) => {
   res.send("PrintEmporium Backend is running");
 });
 
+// Handle unexpected POST to root (likely from browser extensions or tools)
+app.post("/", (req, res) => {
+  res.status(200).json({ message: "PrintEmporium API - Use /api/* endpoints" });
+});
+
 // Start server
 const startServer = async () => {
   try {
@@ -64,11 +80,21 @@ const startServer = async () => {
     app.use("/api/auth", toNodeHandler(auth));
 
     // Mount express json middleware AFTER Better Auth handler
-    app.use(express.json());
+    app.use(express.json({ limit: "10mb" }));
+    app.use(express.urlencoded({ limit: "10mb", extended: true }));
     
     // Custom Routes
-    app.use("/api/auth", authRoutes); // Custom auth endpoints if any
-    app.use("/api/settings", settingsRoutes);
+    app.use("/api/auth", authRoutes); // Auth handled separately
+    app.use("/api/settings", requireAdminOrSignedRequest, settingsRoutes);
+    app.use("/api", paymentPublicRouter); // /webhook/razorpay
+    app.use("/api", paymentUserRouter); // /create-order-razorpay
+    app.use("/api/seo", requireAdminOrSignedRequest, seoRoutes);
+    app.use("/api/services", requireAdminOrSignedRequest, serviceRoutes);
+    app.use("/api/service-options", requireAdminOrSignedRequest, serviceOptionRoutes);
+    app.use("/api/hero-slides", requireAdminOrSignedRequest, heroSlideRoutes);
+    app.use("/api/file-conversion", fileConversionRoutes); // Public endpoint for file conversion
+    app.use("/api/orders", orderRoutes); // Order management routes
+    app.use("/api/employees", employeeRoutes); // Employee management routes
 
     // Example of getting session in a custom route
     app.get("/api/me", async (req, res) => {

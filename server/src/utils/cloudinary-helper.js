@@ -1,68 +1,171 @@
-import cloudinary from '../config/cloudinary.js';
+import cloudinary from "../config/cloudinary.js";
 
 /**
  * Extracts the public ID from a Cloudinary URL.
  * @param {string} url - The Cloudinary URL.
  * @returns {string|null} - The public ID or null.
  */
-const getPublicIdFromUrl = (url) => {
-  if (!url || !url.includes('res.cloudinary.com')) return null;
-  
-  // Example URL: https://res.cloudinary.com/cloud_name/image/upload/v123456789/folder/public_id.jpg
-  // We need everything after /upload/ (excluding the version part v123456789/)
+export const getPublicIdFromUrl = (url) => {
+  if (!url || !url.includes("res.cloudinary.com")) return null;
+
+  // Example URL: https://res.cloudinary.com/cloud_name/image/upload/v123456789/folder/public_id.jpg?query=params
+  // We need everything after /upload/ (excluding the version part v123456789/ and any query params)
   try {
-    const parts = url.split('/upload/');
+    // First, remove any query parameters
+    const urlWithoutQuery = url.split("?")[0];
+    
+    const parts = urlWithoutQuery.split("/upload/");
     if (parts.length < 2) return null;
-    
+
     const afterUpload = parts[1];
-    const pathParts = afterUpload.split('/');
-    
+    const pathParts = afterUpload.split("/");
+
     // If the first part starts with 'v' followed by digits, it's the version part
-    const startIndex = (pathParts[0].match(/^v\d+$/)) ? 1 : 0;
-    
-    const publicIdWithExt = pathParts.slice(startIndex).join('/');
-    const publicId = publicIdWithExt.split('.')[0]; // remove extension
-    
+    const startIndex = pathParts[0].match(/^v\d+$/) ? 1 : 0;
+
+    const publicIdWithExt = pathParts.slice(startIndex).join("/");
+    const publicId = publicIdWithExt.split(".")[0]; // remove extension
+
     return publicId;
   } catch (error) {
-    console.error('Error extracting public ID:', error);
+    console.error("Error extracting public ID:", error);
     return null;
   }
+};
+
+/**
+ * Generates a secure URL from a Cloudinary public ID.
+ * @param {string} publicId - The public ID.
+ * @returns {string|null} - The secure URL.
+ */
+export const getUrlFromPublicId = (publicId) => {
+  if (!publicId) return null;
+  // If it's already a URL, return it
+  if (publicId.startsWith("http")) return publicId;
+
+  const options = {
+    secure: true,
+  };
+
+  // If publicId ends with .pdf or contains _pdf, ensure it's served as a PDF
+  if (publicId.toLowerCase().includes('pdf')) {
+    options.format = 'pdf';
+    // For PDFs, usually image resource type works best for preview, 
+    // but if it was uploaded as raw, we need to specify that.
+    // However, getUrlFromPublicId is mostly used for previews which are images.
+  }
+
+  return cloudinary.url(publicId, options);
 };
 
 /**
  * Uploads a base64 image or a file path to Cloudinary.
  * @param {string} file - The file to upload (base64 string or path).
  * @param {string} folder - The folder to upload to.
- * @returns {Promise<string>} - The secure URL of the uploaded image.
+ * @param {string} publicId - Optional public ID (filename).
+ * @returns {Promise<Object>} - Object containing secure_url and public_id.
  */
-export const uploadToCloudinary = async (file, folder = 'print_emporium') => {
+export const uploadToCloudinary = async (
+  file,
+  folder = "print_emporium",
+  customPublicId = null
+) => {
   try {
-    const result = await cloudinary.uploader.upload(file, {
+    const options = {
       folder,
-      resource_type: 'auto',
-    });
-    return result.secure_url;
+      resource_type: "auto",
+    };
+
+    if (customPublicId) {
+      options.public_id = customPublicId;
+    }
+
+    const result = await cloudinary.uploader.upload(file, options);
+    
+    // Clean the public_id to ensure no query parameters
+    const cleanPublicId = result.public_id ? result.public_id.split("?")[0] : result.public_id;
+    
+    return {
+      secure_url: result.secure_url,
+      public_id: cleanPublicId,
+    };
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    throw new Error('Failed to upload image to Cloudinary');
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Failed to upload image to Cloudinary");
   }
 };
 
 /**
- * Deletes an asset from Cloudinary using its URL.
- * @param {string} url - The secure URL of the asset to delete.
+ * Uploads a file to Cloudinary as raw (preserves original format).
+ * @param {string} file - The file to upload (base64 string or path).
+ * @param {string} folder - The folder to upload to.
+ * @param {string} publicId - Optional public ID (filename).
+ * @returns {Promise<Object>} - Object containing secure_url and public_id.
  */
-export const deleteFromCloudinary = async (url) => {
+export const uploadRawToCloudinary = async (
+  file,
+  folder = "print_emporium",
+  customPublicId = null
+) => {
   try {
-    const publicId = getPublicIdFromUrl(url);
-    if (publicId) {
+    const options = {
+      folder,
+      resource_type: "raw", // Preserves original file format
+    };
+
+    if (customPublicId) {
+      options.public_id = customPublicId;
+    }
+
+    const result = await cloudinary.uploader.upload(file, options);
+    
+    // Clean the public_id to ensure no query parameters
+    const cleanPublicId = result.public_id ? result.public_id.split("?")[0] : result.public_id;
+    
+    return {
+      secure_url: result.secure_url,
+      public_id: cleanPublicId,
+    };
+  } catch (error) {
+    console.error("Cloudinary raw upload error:", error);
+    throw new Error("Failed to upload file to Cloudinary");
+  }
+};
+
+/**
+ * Generates a secure URL from a Cloudinary public ID for raw files.
+ * @param {string} publicId - The public ID.
+ * @param {string} resourceType - The resource type (image, raw, video).
+ * @returns {string|null} - The secure URL.
+ */
+export const getRawUrlFromPublicId = (publicId) => {
+  if (!publicId) return null;
+  // If it's already a URL, return it
+  if (publicId.startsWith("http")) return publicId;
+
+  return cloudinary.url(publicId, {
+    secure: true,
+    resource_type: "raw",
+  });
+};
+
+/**
+ * Deletes an asset from Cloudinary using its URL or public ID.
+ * @param {string} identifier - The secure URL or public ID of the asset to delete.
+ */
+export const deleteFromCloudinary = async (identifier) => {
+  try {
+    // If it's a full URL, extract the public ID. Otherwise, assume it's already a public ID.
+    const publicId = identifier.startsWith("http")
+      ? getPublicIdFromUrl(identifier)
+      : identifier;
+
+    if (publicId && !publicId.startsWith("/images/")) {
+      // Don't try to delete local fallback images
       await cloudinary.uploader.destroy(publicId);
       console.log(`Deleted from Cloudinary: ${publicId}`);
     }
   } catch (error) {
-    console.error('Cloudinary deletion error:', error);
-    // We don't necessarily want to throw here to prevent breaking the main flow
-    // but we log it.
+    console.error("Cloudinary deletion error:", error);
   }
 };
