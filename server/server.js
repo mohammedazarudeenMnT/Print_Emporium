@@ -27,12 +27,20 @@ const app = express();
 app.set("trust proxy", 1); // Enable trust proxy for secure cookies behind load balancers
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware - CORS must be configured before all routes
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://print-emporium.vercel.app",
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, "http://localhost:3000", "http://localhost:5173"],
+  origin: allowedOrigins,
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With", "x-signature", "x-timestamp"],
+  exposedHeaders: ["Set-Cookie"], // Important for cross-origin cookie handling
 }));
 
 // Request logging middleware
