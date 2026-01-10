@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import { login, signup } from "@/lib/auth-api";
+import { useAuth } from "@/components/providers/auth-provider";
 import { CompanyLogo } from "@/components/ui/company-logo";
 import { useCompanySettings } from "@/hooks/use-company-settings";
 import Link from "next/link";
@@ -21,6 +22,7 @@ interface AuthPageProps {
 
 export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const { settings, loading } = useCompanySettings();
+  const { login: authLogin } = useAuth();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -52,16 +54,25 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     try {
       if (mode === "login") {
-        await login(formData.email, formData.password);
+        const response = await login(formData.email, formData.password);
+        if (response.success && response.data?.user) {
+          // Update the auth context with the user data
+          authLogin(response.data.user);
+          // Redirect to dashboard
+          router.push("/dashboard");
+        }
       } else {
         if (!formData.name.trim()) {
           throw new Error("Name is required");
         }
-        await signup(formData.email, formData.password, formData.name);
+        const response = await signup(formData.email, formData.password, formData.name);
+        if (response.success && response.data?.user) {
+          // Update the auth context with the user data
+          authLogin(response.data.user);
+          // Redirect to dashboard
+          router.push("/dashboard");
+        }
       }
-
-      // Redirect to dashboard on success
-      router.push("/dashboard");
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Authentication failed"

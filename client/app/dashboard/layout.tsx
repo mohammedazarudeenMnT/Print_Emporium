@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Sidebar, SidebarLink, SidebarUser } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Settings, Users, Package, Briefcase } from "lucide-react";

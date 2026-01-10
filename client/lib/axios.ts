@@ -1,8 +1,20 @@
 import axios from "axios";
 import { getSignatureHeaders } from "./signature-utils";
 
+// Dynamic API URL based on environment
+const getApiUrl = () => {
+  // In production, use the same domain as the frontend
+  if (typeof window !== "undefined") {
+    // Client-side: use current domain
+    return process.env.NEXT_PUBLIC_API_URL || `${window.location.origin}/api`;
+  } else {
+    // Server-side: use environment variable or localhost for development
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  }
+};
+
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  baseURL: getApiUrl(),
   withCredentials: true, // Important for cookies
   headers: {
     "Content-Type": "application/json",
@@ -30,3 +42,18 @@ axiosInstance.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Add response interceptor to handle authentication errors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If we get a 401 and we're on the client side, redirect to login
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Only redirect if we're not already on the login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
