@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Mail,
   Phone,
@@ -7,31 +7,49 @@ import {
   Twitter,
   Linkedin,
   Instagram,
-  Printer,
-} from 'lucide-react';
+} from "lucide-react";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 
 export default function Footer() {
+  const { settings, loading } = useCompanySettings();
   const services = [
-    { name: 'Document Printing', href: '#document-printing' },
-    { name: 'Business Cards', href: '#business-cards' },
-    { name: 'Banners & Posters', href: '#banners' },
-    { name: 'Photo Printing', href: '#photo-printing' },
-    { name: 'Binding Services', href: '#binding' },
+    { name: "Document Printing", href: "#document-printing" },
+    { name: "Business Cards", href: "#business-cards" },
+    { name: "Banners & Posters", href: "#banners" },
+    { name: "Photo Printing", href: "#photo-printing" },
+    { name: "Binding Services", href: "#binding" },
   ];
 
   const quickLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'FAQ', href: '#faq' },
+    { name: "Home", href: "/" },
+    { name: "Services", href: "/services" },
+    { name: "About Us", href: "/about" },
+    { name: "Contact", href: "/contact" },
+    { name: "FAQ", href: "#faq" },
   ];
 
   const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: '#facebook' },
-    { name: 'Twitter', icon: Twitter, href: '#twitter' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#linkedin' },
-    { name: 'Instagram', icon: Instagram, href: '#instagram' },
+    {
+      name: "Facebook",
+      icon: Facebook,
+      href: settings?.socialMedia?.facebook || "#facebook",
+    },
+    {
+      name: "Twitter",
+      icon: Twitter,
+      href: settings?.socialMedia?.twitter || "#twitter",
+    },
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      href: settings?.socialMedia?.linkedin || "#linkedin",
+    },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      href: settings?.socialMedia?.instagram || "#instagram",
+    },
   ];
 
   return (
@@ -44,15 +62,23 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           <div className="group">
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-105 transition-transform duration-300">
-                <Printer className="h-6 w-6" />
-              </div>
+              <CompanyLogo
+                width={48}
+                height={48}
+                className="rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-300"
+                showFallback={true}
+              />
               <span className="ml-3 text-xl font-bold tracking-tight">
-                The Print Emporium
+                {loading
+                  ? "Loading..."
+                  : settings?.companyName || "The Print Emporium"}
               </span>
             </div>
             <p className="text-muted-foreground leading-relaxed mb-6 text-sm">
-              Your trusted partner for high-quality printing solutions in Chennai. From business cards to large format prints, we deliver excellence in every project.
+              {loading
+                ? "Loading..."
+                : settings?.companyDescription ||
+                  "Your trusted partner for high-quality printing solutions in Chennai. From business cards to large format prints, we deliver excellence in every project."}
             </p>
             <div className="flex space-x-3">
               {socialLinks.map((social) => {
@@ -116,24 +142,39 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="text-muted-foreground flex items-start text-sm">
                 <MapPin className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>123 Print Street, T. Nagar, Chennai, Tamil Nadu 600017</span>
+                <span>
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyAddress ||
+                      "123 Print Street, T. Nagar, Chennai, Tamil Nadu 600017"}
+                </span>
               </li>
               <li>
                 <a
-                  href="tel:+914412345678"
+                  href={`tel:${
+                    loading ? "" : settings?.companyPhone || "+914412345678"
+                  }`}
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center group text-sm"
                 >
                   <Phone className="w-5 h-5 mr-3 flex-shrink-0" />
-                  +91 44 1234 5678
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyPhone || "+91 44 1234 5678"}
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:info@printemporium.com"
+                  href={`mailto:${
+                    loading
+                      ? ""
+                      : settings?.companyEmail || "info@printemporium.com"
+                  }`}
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center group text-sm"
                 >
                   <Mail className="w-5 h-5 mr-3 flex-shrink-0" />
-                  info@printemporium.com
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyEmail || "info@printemporium.com"}
                 </a>
               </li>
             </ul>
@@ -143,7 +184,11 @@ export default function Footer() {
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-muted-foreground text-sm font-medium text-center md:text-left">
-              © {new Date().getFullYear()} The Print Emporium. All rights reserved.
+              © {new Date().getFullYear()}{" "}
+              {loading
+                ? "Loading..."
+                : settings?.companyName || "The Print Emporium"}
+              . All rights reserved.
             </p>
             <div className="flex gap-6 text-xs">
               <a

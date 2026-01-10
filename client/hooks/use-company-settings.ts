@@ -1,15 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getPublicSettings } from "@/lib/settings-api";
+import { getSettings } from "@/lib/settings-api";
 
 interface CompanySettings {
   companyName: string;
   companyEmail: string;
   companyPhone: string;
+  whatsappNumber?: string;
   companyAddress: string;
   companyDescription: string;
   companyLogo: string | null;
+  favicon?: string | null;
+  workingHours?: string;
+  latitude?: string;
+  longitude?: string;
+  googleMapEmbed?: string;
+  socialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+  };
+  gstNumber?: string;
+  termsAndConditions?: string;
+  footerNote?: string;
 }
 
 export function useCompanySettings() {
@@ -21,7 +36,7 @@ export function useCompanySettings() {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const response = await getPublicSettings();
+        const response = await getSettings();
         if (response.success) {
           setSettings(response.data);
         }

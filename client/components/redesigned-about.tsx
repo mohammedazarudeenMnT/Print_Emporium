@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import CTASection from "@/components/cta-section";
+import OurJourneySection from "@/components/our-journey-section";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 import {
   Target,
   Eye,
@@ -11,7 +13,7 @@ import {
   Zap,
   Users,
   Award,
-  Sparkles,
+  BookOpen,
   ArrowUpRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -36,10 +38,10 @@ const teamMembers = [
     bio: "Visionary leader with 15+ years transforming the print industry.",
   },
   {
-    name: "Sarah Johnson",
+    name: "Alice Johnson",
     role: "Creative Director",
     image:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=400&h=400&fit=crop&q=80",
     bio: "Award-winning designer passionate about color theory and typography.",
   },
   {
@@ -54,6 +56,7 @@ const teamMembers = [
 export default function RedesignedAboutPage({
   achievements = defaultAchievements,
 }: AboutPageProps) {
+  const { settings, loading } = useCompanySettings();
   return (
     <div className="flex flex-col min-h-screen bg-base-50 overflow-hidden">
       {/* Background Ambience */}
@@ -64,7 +67,7 @@ export default function RedesignedAboutPage({
       </div>
 
       {/* ---------------- HERO SECTION ---------------- */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
+      <section className="relative pt-20 pb-20 lg:pt-30 lg:pb-32 px-6">
         <div className="container mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div
@@ -74,7 +77,7 @@ export default function RedesignedAboutPage({
               className="space-y-8 relative z-10"
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-primary-200/50 backdrop-blur-sm shadow-sm">
-                <Sparkles className="w-4 h-4 text-primary-600 fill-current" />
+                <BookOpen className="w-4 h-4 text-primary-600" />
                 <span className="text-sm font-semibold text-primary-900 tracking-wide uppercase">
                   Our Story
                 </span>
@@ -88,9 +91,11 @@ export default function RedesignedAboutPage({
               </h1>
 
               <p className="text-xl text-base-600 leading-relaxed max-w-lg">
-                PrintEmporium combines artisanal craftsmanship with cutting-edge
-                technology to deliver printing solutions that define premium
-                quality.
+                {loading
+                  ? "Loading..."
+                  : settings?.companyName || "PrintEmporium"}{" "}
+                combines artisanal craftsmanship with cutting-edge technology to
+                deliver printing solutions that define premium quality.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -230,8 +235,11 @@ export default function RedesignedAboutPage({
         </div>
       </section>
 
-      {/* ---------------- TEAM SECTION ---------------- */}
-      <section className="py-24 relative overflow-hidden">
+      {/* ---------------- OUR JOURNEY SECTION ---------------- */}
+      <OurJourneySection />
+
+      {/* ---------------- TEAM SECTION (COMMENTED OUT) ---------------- */}
+      {/* <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary-950 skew-y-3 origin-top-left transform scale-110" />
 
         <div className="container mx-auto px-6 relative z-10">
@@ -246,7 +254,7 @@ export default function RedesignedAboutPage({
             </div>
             <Button
               variant="outline"
-              className="border-primary-700 text-primary-100 hover:bg-primary-800 hover:text-white h-12 rounded-xl"
+              className="border-primary-700 text-primary-700 hover:bg-primary-800 hover:text-white h-12 rounded-xl"
             >
               Join Our Team
             </Button>
@@ -287,7 +295,7 @@ export default function RedesignedAboutPage({
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ---------------- FEATURES GRID ---------------- */}
       <section className="py-24">

@@ -2,19 +2,17 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Command,
-  Mail,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Command, Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/lib/auth-api";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
+  const { settings, loading } = useCompanySettings();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,7 +27,9 @@ export default function ForgotPasswordPage() {
       await requestPasswordReset(email);
       setIsSuccess(true);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to send reset email");
+      setError(
+        error instanceof Error ? error.message : "Failed to send reset email"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -47,10 +47,16 @@ export default function ForgotPasswordPage() {
             {/* Logo */}
             <div className="text-center mb-6">
               <Link href="/" className="inline-flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20">
-                  <Command className="w-6 h-6" />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-foreground">PrintEmporium</span>
+                <CompanyLogo
+                  width={40}
+                  height={40}
+                  className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+                />
+                <span className="text-xl font-bold tracking-tight text-foreground">
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyName || "PrintEmporium"}
+                </span>
               </Link>
             </div>
 
@@ -59,18 +65,21 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
 
-              <h1 className="text-2xl font-semibold text-foreground mb-2">Check your email</h1>
+              <h1 className="text-2xl font-semibold text-foreground mb-2">
+                Check your email
+              </h1>
               <p className="text-muted-foreground text-sm mb-6">
-                We&apos;ve sent a password reset link to <strong className="text-foreground">{email}</strong>
+                We&apos;ve sent a password reset link to{" "}
+                <strong className="text-foreground">{email}</strong>
               </p>
 
               <Button asChild className="w-full mb-4">
                 <Link href="/login">Back to Login</Link>
               </Button>
-              
+
               <p className="text-sm text-muted-foreground">
                 Didn&apos;t receive the email? Check your spam folder or{" "}
-                <button 
+                <button
                   onClick={() => {
                     setIsSuccess(false);
                     setEmail("");
@@ -98,10 +107,16 @@ export default function ForgotPasswordPage() {
           {/* Logo */}
           <div className="text-center mb-6">
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20">
-                <Command className="w-6 h-6" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-foreground">PrintEmporium</span>
+              <CompanyLogo
+                width={40}
+                height={40}
+                className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+              />
+              <span className="text-xl font-bold tracking-tight text-foreground">
+                {loading
+                  ? "Loading..."
+                  : settings?.companyName || "PrintEmporium"}
+              </span>
             </Link>
           </div>
 
@@ -110,7 +125,8 @@ export default function ForgotPasswordPage() {
               Forgot your password?
             </h1>
             <p className="text-muted-foreground text-sm">
-              No worries! Enter your email address and we&apos;ll send you a reset link.
+              No worries! Enter your email address and we&apos;ll send you a
+              reset link.
             </p>
           </div>
 
@@ -145,11 +161,7 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />

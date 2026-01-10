@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { LogOut, User, Mail, Shield, Calendar } from "lucide-react";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 
 export default function Dashboard() {
   const { user, isLoading, isAuthenticated, signOut } = useAuth();
+  const { settings, loading } = useCompanySettings();
 
   if (isLoading) {
     return (
@@ -30,7 +32,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground mb-4">
               You need to be signed in to access this page.
             </p>
-            <Button onClick={() => window.location.href = "/login"}>
+            <Button onClick={() => (window.location.href = "/login")}>
               Go to Login
             </Button>
           </div>
@@ -49,14 +51,20 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 {user.image ? (
-                  <img src={user.image} alt={user.name} className="rounded-full" />
+                  <img
+                    src={user.image}
+                    alt={user.name}
+                    className="rounded-full"
+                  />
                 ) : (
                   <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full rounded-full">
                     {user.name?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                 )}
               </Avatar>
-              <span className="text-sm font-medium text-foreground">{user.name}</span>
+              <span className="text-sm font-medium text-foreground">
+                {user.name}
+              </span>
             </div>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -80,7 +88,10 @@ export default function Dashboard() {
                   Welcome back, {user.name}!
                 </h2>
                 <p className="text-muted-foreground">
-                  You have successfully signed in to PrintEmporium
+                  You have successfully signed in to{" "}
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyName || "PrintEmporium"}
                 </p>
               </div>
             </div>
@@ -99,22 +110,26 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Role</p>
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  user.role === 'admin' 
-                    ? 'bg-primary/10 text-primary' 
-                    : 'bg-secondary/10 text-secondary-foreground'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    user.role === "admin"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-secondary/10 text-secondary-foreground"
+                  }`}
+                >
                   {user.role}
                 </span>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email Verified</p>
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  user.emailVerified 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                  {user.emailVerified ? 'Verified' : 'Unverified'}
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    user.emailVerified
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                  }`}
+                >
+                  {user.emailVerified ? "Verified" : "Unverified"}
                 </span>
               </div>
             </div>
@@ -129,17 +144,21 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  user.banned 
-                    ? 'bg-destructive/10 text-destructive' 
-                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                }`}>
-                  {user.banned ? 'Banned' : 'Active'}
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    user.banned
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                  }`}
+                >
+                  {user.banned ? "Banned" : "Active"}
                 </span>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">User ID</p>
-                <p className="font-mono text-xs text-foreground break-all">{user.id}</p>
+                <p className="font-mono text-xs text-foreground break-all">
+                  {user.id}
+                </p>
               </div>
             </div>
           </Card>
@@ -169,7 +188,9 @@ export default function Dashboard() {
 
         {/* Authentication Method Info */}
         <Card className="p-6 mt-6">
-          <h3 className="font-semibold text-foreground mb-4">Authentication Method</h3>
+          <h3 className="font-semibold text-foreground mb-4">
+            Authentication Method
+          </h3>
           <div className="flex items-center gap-3">
             {user.image ? (
               <>
@@ -191,12 +212,16 @@ export default function Dashboard() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span className="text-sm text-foreground">Signed in with Google</span>
+                <span className="text-sm text-foreground">
+                  Signed in with Google
+                </span>
               </>
             ) : (
               <>
                 <Mail className="h-5 w-5" />
-                <span className="text-sm text-foreground">Signed in with Email & Password</span>
+                <span className="text-sm text-foreground">
+                  Signed in with Email & Password
+                </span>
               </>
             )}
           </div>

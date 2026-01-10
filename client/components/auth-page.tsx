@@ -2,18 +2,14 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Command,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  AlertCircle,
-} from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import { login, signup } from "@/lib/auth-api";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +20,7 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
+  const { settings, loading } = useCompanySettings();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +41,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError(null); // Clear error when user starts typing
   };
 
@@ -62,11 +59,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         }
         await signup(formData.email, formData.password, formData.name);
       }
-      
+
       // Redirect to dashboard on success
       router.push("/dashboard");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Authentication failed");
+      setError(
+        error instanceof Error ? error.message : "Authentication failed"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -74,17 +73,21 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
   return (
     <div className="min-h-screen bg-card text-foreground selection:bg-primary/20 selection:text-primary-foreground font-sans flex overflow-hidden">
-      
       {/* ---------------- LEFT PANEL (FORM) ---------------- */}
       <div className="w-full lg:w-[48%] relative flex flex-col justify-center items-center p-6 lg:p-24 bg-card z-20">
-        
         <div className="w-full max-w-sm">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12 group">
-             <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20">
-               <Command className="w-6 h-6" />
-             </div>
-             <span className="text-xl font-bold tracking-tight text-foreground">PrintEmporium</span>
+            <CompanyLogo
+              width={40}
+              height={40}
+              className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+            />
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              {loading
+                ? "Loading..."
+                : settings?.companyName || "PrintEmporium"}
+            </span>
           </Link>
 
           <AnimatePresence mode="wait">
@@ -100,9 +103,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 {mode === "login" ? "Welcome back" : "Create an account"}
               </h1>
               <p className="text-muted-foreground">
-                 {mode === "login" 
-                   ? "Please enter your details to sign in." 
-                   : "Enter your details to get started for free."}
+                {mode === "login"
+                  ? "Please enter your details to sign in."
+                  : "Enter your details to get started for free."}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -121,70 +124,85 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <AnimatePresence mode="popLayout">
-               {mode === "signup" && (
-                 <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden space-y-5"
-                 >
-                    <div className="space-y-1.5">
-                       <Label className="text-sm font-medium text-foreground ml-1">Full Name</Label>
-                       <Input 
-                         name="name"
-                         value={formData.name}
-                         onChange={handleInputChange}
-                         className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300"
-                         placeholder="e.g. John Doe"
-                         required
-                       />
-                    </div>
-                 </motion.div>
-               )}
+              {mode === "signup" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden space-y-5"
+                >
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-foreground ml-1">
+                      Full Name
+                    </Label>
+                    <Input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300"
+                      placeholder="e.g. John Doe"
+                      required
+                    />
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             <div className="space-y-1.5">
-               <Label className="text-sm font-medium text-foreground ml-1">Email</Label>
-               <Input 
-                 type="email"
-                 name="email"
-                 value={formData.email}
-                 onChange={handleInputChange}
-                 className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300"
-                 placeholder="name@company.com"
-                 required
-               />
+              <Label className="text-sm font-medium text-foreground ml-1">
+                Email
+              </Label>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300"
+                placeholder="name@company.com"
+                required
+              />
             </div>
 
             <div className="space-y-1.5">
-               <div className="flex justify-between items-center ml-1">
-                 <Label className="text-sm font-medium text-foreground">Password</Label>
-                 {mode === "login" && (
-                   <Link href="/forgot-password" className="text-xs text-primary hover:text-primary/80 font-medium transition-colors">Forgot password?</Link>
-                 )}
-               </div>
-               <div className="relative">
-                 <Input 
-                   type={showPassword ? "text" : "password"}
-                   name="password"
-                   value={formData.password}
-                   onChange={handleInputChange}
-                   className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 pr-10"
-                   placeholder="••••••••"
-                   required
-                   minLength={6}
-                 />
-                 <button
-                   type="button"
-                   onClick={() => setShowPassword(!showPassword)}
-                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                 >
-                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                 </button>
-               </div>
+              <div className="flex justify-between items-center ml-1">
+                <Label className="text-sm font-medium text-foreground">
+                  Password
+                </Label>
+                {mode === "login" && (
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="h-11 rounded-xl border-border bg-background focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 pr-10"
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <Button 
+            <Button
               type="submit"
               disabled={isLoading}
               className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -194,8 +212,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                   {mode === "login" ? "Signing In..." : "Creating Account..."}
                 </div>
+              ) : mode === "login" ? (
+                "Sign In"
               ) : (
-                mode === "login" ? "Sign In" : "Sign Up"
+                "Sign Up"
               )}
             </Button>
           </form>
@@ -205,19 +225,23 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-3 text-muted-foreground font-medium">Or continue with</span>
+              <span className="bg-card px-3 text-muted-foreground font-medium">
+                Or continue with
+              </span>
             </div>
           </div>
 
-          <GoogleSignInButton 
+          <GoogleSignInButton
             callbackURL="/dashboard"
             className="w-full h-11 rounded-xl"
             mode={mode}
           />
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button 
+            {mode === "login"
+              ? "Don't have an account?"
+              : "Already have an account?"}{" "}
+            <button
               onClick={toggleMode}
               className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
@@ -225,83 +249,93 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             </button>
           </p>
         </div>
-        
+
         <div className="mt-12 lg:hidden text-center text-xs text-muted-foreground">
-          © 2024 PrintEmporium. All rights reserved.
+          © 2024{" "}
+          {loading ? "Loading..." : settings?.companyName || "PrintEmporium"}.
+          All rights reserved.
         </div>
       </div>
 
       {/* ---------------- RIGHT PANEL (VISUAL) ---------------- */}
       <div className="hidden lg:block w-[52%] bg-primary relative overflow-hidden">
-         {/* Background Image */}
-         <div 
-           className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] hover:scale-105"
-           style={{ 
-             backgroundImage: "url('https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?q=80&w=2574&auto=format&fit=crop')",
-             animation: "kenburns 30s ease-out infinite alternate"
-           }}
-         />
-         
-         {/* Overlay Gradients */}
-         <div className="absolute inset-0 bg-linear-to-t from-primary/90 via-primary/40 to-primary/20" />
-         <div className="absolute inset-0 bg-primary/40 mix-blend-multiply" />
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] hover:scale-105"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?q=80&w=2574&auto=format&fit=crop')",
+            animation: "kenburns 30s ease-out infinite alternate",
+          }}
+        />
 
-         {/* Content Overlay */}
-         <div className="absolute inset-0 flex flex-col justify-between p-16 z-10">
-           <div className="flex justify-end">
-              <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-sm text-sm font-medium text-white">
-                Premium Printing Solutions
-              </div>
-           </div>
+        {/* Overlay Gradients */}
+        <div className="absolute inset-0 bg-linear-to-t from-primary/90 via-primary/40 to-primary/20" />
+        <div className="absolute inset-0 bg-primary/40 mix-blend-multiply" />
 
-           <div className="max-w-md">
-             <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.5 }}
-             >
-                
-                <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-                  Masterpieces in Every Print.
-                </h2>
-                <div className="space-y-4">
-                  {[
-                    "High-fidelity color reproduction",
-                    "Premium paper stocks & finishes",
-                    "Dedicated expert support team"
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-white/90">
-                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white">
-                        <CheckCircle2 className="w-4 h-4" />
-                      </div>
-                      <span className="font-medium text-sm">{item}</span>
+        {/* Content Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-between p-16 z-10">
+          <div className="flex justify-end">
+            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-sm text-sm font-medium text-white">
+              Premium Printing Solutions
+            </div>
+          </div>
+
+          <div className="max-w-md">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
+                Masterpieces in Every Print.
+              </h2>
+              <div className="space-y-4">
+                {[
+                  "High-fidelity color reproduction",
+                  "Premium paper stocks & finishes",
+                  "Dedicated expert support team",
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 text-white/90"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white">
+                      <CheckCircle2 className="w-4 h-4" />
                     </div>
-                  ))}
-                </div>
-             </motion.div>
-           </div>
-           
-           <div className="flex items-center gap-4">
-              <div className="flex -space-x-3">
-                 {[1,2,3,4].map((_, i) => (
-                   <div key={i} className={`w-10 h-10 rounded-full border-2 border-primary bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground overflow-hidden`}>
-                      <img src={`https://i.pravatar.cc/100?img=${i + 15}`} alt="User" />
-                   </div>
-                 ))}
-                 <div className="w-10 h-10 rounded-full border-2 border-primary bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-                   +2k
-                 </div>
+                    <span className="font-medium text-sm">{item}</span>
+                  </div>
+                ))}
               </div>
-              <div className="text-sm font-medium text-white/90">
-                Trusted by 2,000+ businesses
-              </div>
-           </div>
-         </div>
-         
-         {/* Noise Overlay */}
-         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
-      </div>
+            </motion.div>
+          </div>
 
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-10 h-10 rounded-full border-2 border-primary bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground overflow-hidden`}
+                >
+                  <img
+                    src={`https://i.pravatar.cc/100?img=${i + 15}`}
+                    alt="User"
+                  />
+                </div>
+              ))}
+              <div className="w-10 h-10 rounded-full border-2 border-primary bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+                +2k
+              </div>
+            </div>
+            <div className="text-sm font-medium text-white/90">
+              Trusted by 2,000+ businesses
+            </div>
+          </div>
+        </div>
+
+        {/* Noise Overlay */}
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+      </div>
     </div>
   );
 }

@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Mail, Building } from "lucide-react";
+import { Settings, Mail, Building, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/ui/page-header";
 import { MessageDisplay } from "@/components/ui/message-display";
 import { GeneralSettingsTab } from "@/components/settings/general-settings-tab";
 import { EmailSettingsTab } from "@/components/settings/email-settings-tab";
+import { SEOSettingsTab } from "@/components/settings/seo-settings-tab";
+import { HeroCarouselTab } from "@/components/settings/hero-carousel-tab";
+import { PaymentGatewayTab } from "@/components/settings/payment-gateway-tab";
+import { Layout, CreditCard } from "lucide-react";
 
 export default function DashboardSettings() {
   const [activeTab, setActiveTab] = useState("general");
@@ -39,14 +43,26 @@ export default function DashboardSettings() {
           transition={{ delay: 0.1 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:w-fit">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:w-fit">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 General Settings
               </TabsTrigger>
               <TabsTrigger value="email" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                Email Configuration
+                Email Config
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                SEO Settings
+              </TabsTrigger>
+              <TabsTrigger value="hero" className="flex items-center gap-2">
+                <Layout className="h-4 w-4" />
+                Hero Carousel
+              </TabsTrigger>
+              <TabsTrigger value="payment" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment Gateway
               </TabsTrigger>
             </TabsList>
 
@@ -58,6 +74,21 @@ export default function DashboardSettings() {
             {/* Email Configuration Tab */}
             <TabsContent value="email" className="space-y-6">
               <EmailSettingsTab onMessage={handleMessage} />
+            </TabsContent>
+
+            {/* SEO Settings Tab */}
+            <TabsContent value="seo" className="space-y-6">
+              <SEOSettingsTab onMessage={handleMessage} />
+            </TabsContent>
+
+            {/* Hero Carousel Tab */}
+            <TabsContent value="hero" className="space-y-6">
+              <HeroCarouselTab onMessage={handleMessage} />
+            </TabsContent>
+
+            {/* Payment Gateway Tab */}
+            <TabsContent value="payment" className="space-y-6">
+              <PaymentGatewayTab onMessage={handleMessage} />
             </TabsContent>
           </Tabs>
         </motion.div>

@@ -1,22 +1,26 @@
 "use client";
 
-import { useCompanySettings } from "@/hooks/use-company-settings";
+import { useCompanyLogo } from "@/hooks/use-company-logo";
+import { Printer } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface CompanyLogoProps {
   className?: string;
   width?: number;
   height?: number;
+  showFallback?: boolean;
 }
 
 export function CompanyLogo({ 
   className = "", 
   width = 120, 
   height = 40,
+  showFallback = true
 }: CompanyLogoProps) {
-  const { settings, loading } = useCompanySettings();
+  const { logo, isLoading } = useCompanyLogo();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div 
         className={cn("animate-pulse bg-muted rounded", className)}
@@ -25,17 +29,34 @@ export function CompanyLogo({
     );
   }
 
-  // Use the logo from settings, or fallback to default logo
-  // Assuming a default logo exists or using a placeholder
-  const logoSrc = settings?.companyLogo || '/favicon.ico'; // Fallback to favicon if no logo
+  if (logo) {
+    return (
+      <div 
+        className={cn("relative overflow-hidden", className)}
+        style={{ width, height }}
+      >
+        <Image
+          src={logo}
+          alt="Company Logo"
+          fill
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
+    );
+  }
 
-  return (
-    <img
-      src={logoSrc}
-      alt={settings?.companyName || "Company Logo"}
-      width={width}
-      height={height}
-      className={cn("object-contain", className)}
-    />
-  );
+  // Fallback to icon if no logo and showFallback is true
+  if (showFallback) {
+    return (
+      <div 
+        className={cn("flex items-center justify-center bg-primary text-primary-foreground rounded", className)}
+        style={{ width, height }}
+      >
+        <Printer size={Math.min(width, height) * 0.6} strokeWidth={2} />
+      </div>
+    );
+  }
+
+  return null;
 }

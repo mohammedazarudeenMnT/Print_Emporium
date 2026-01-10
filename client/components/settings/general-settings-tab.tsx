@@ -7,9 +7,17 @@ import {
   Phone,
   MapPin,
   FileText,
-  Upload,
   Save,
   Loader2,
+  Clock,
+  Globe,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  FileCheck,
+  MessageSquare,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,15 +31,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { axiosInstance } from "@/lib/axios";
 
 interface GeneralSettings {
   companyName: string;
   companyEmail: string;
   companyPhone: string;
+  whatsappNumber: string;
   companyAddress: string;
   companyDescription: string;
-  companyLogo: string;
+  companyLogo: string | { data: string; name: string };
+  favicon: string | { data: string; name: string };
+  workingHours: string;
+  latitude: string;
+  longitude: string;
+  googleMapEmbed: string;
+  socialMedia: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+    linkedin: string;
+  };
+  gstNumber: string;
+  termsAndConditions: string;
+  footerNote: string;
 }
 
 interface GeneralSettingsTabProps {
@@ -43,11 +67,45 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
     companyName: "",
     companyEmail: "",
     companyPhone: "",
+    whatsappNumber: "",
     companyAddress: "",
     companyDescription: "",
     companyLogo: "",
+    favicon: "",
+    workingHours: "",
+    latitude: "",
+    longitude: "",
+    googleMapEmbed: "",
+    socialMedia: {
+      facebook: "",
+      instagram: "",
+      twitter: "",
+      linkedin: "",
+    },
+    gstNumber: "",
+    termsAndConditions: "",
+    footerNote: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const generateMapEmbedUrl = useCallback((lat: string, lng: string) => {
+    // Create a basic Google Maps embed URL from coordinates
+    // This creates a simple map centered on the coordinates with a zoom level
+    const zoom = 15; // Default zoom level
+    return `https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d${
+      zoom * 1000
+    }!2d${lng}!3d${lat}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${lat}%2C${lng}!5e0!3m2!1sen!2s!4v${Date.now()}!5m2!1sen!2s`;
+  }, []);
+
+  const handleGenerateEmbed = useCallback(() => {
+    if (settings.latitude && settings.longitude) {
+      const embedUrl = generateMapEmbedUrl(
+        settings.latitude,
+        settings.longitude
+      );
+      handleSettingsChange("googleMapEmbed", embedUrl);
+    }
+  }, [settings.latitude, settings.longitude, generateMapEmbedUrl]);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -58,9 +116,24 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
           companyName: generalSettings.companyName || "",
           companyEmail: generalSettings.companyEmail || "",
           companyPhone: generalSettings.companyPhone || "",
+          whatsappNumber: generalSettings.whatsappNumber || "",
           companyAddress: generalSettings.companyAddress || "",
           companyDescription: generalSettings.companyDescription || "",
           companyLogo: generalSettings.companyLogo || "",
+          favicon: generalSettings.favicon || "",
+          workingHours: generalSettings.workingHours || "",
+          latitude: generalSettings.latitude || "",
+          longitude: generalSettings.longitude || "",
+          googleMapEmbed: generalSettings.googleMapEmbed || "",
+          socialMedia: {
+            facebook: generalSettings.socialMedia?.facebook || "",
+            instagram: generalSettings.socialMedia?.instagram || "",
+            twitter: generalSettings.socialMedia?.twitter || "",
+            linkedin: generalSettings.socialMedia?.linkedin || "",
+          },
+          gstNumber: generalSettings.gstNumber || "",
+          termsAndConditions: generalSettings.termsAndConditions || "",
+          footerNote: generalSettings.footerNote || "",
         });
       }
     } catch (error) {
@@ -76,9 +149,22 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
 
   const handleSettingsChange = (
     field: keyof GeneralSettings,
-    value: string
+    value: string | object | null
   ) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSocialMediaChange = (
+    platform: keyof GeneralSettings["socialMedia"],
+    value: string
+  ) => {
+    setSettings((prev) => ({
+      ...prev,
+      socialMedia: {
+        ...prev.socialMedia,
+        [platform]: value,
+      },
+    }));
   };
 
   const saveSettings = async () => {
@@ -114,17 +200,6 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
       setIsLoading(false);
     }
   };
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        handleSettingsChange("companyLogo", result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   return (
     <Card>
@@ -138,127 +213,430 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Company Logo */}
-        <div className="space-y-2">
-          <Label htmlFor="logo">Company Logo</Label>
-          <div className="flex items-center gap-4">
-            {settings.companyLogo && (
-              <div className="w-16 h-16 rounded-lg border-2 border-border overflow-hidden">
-                <img
-                  src={settings.companyLogo}
-                  alt="Company Logo"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <div>
-              <input
-                type="file"
-                id="logo"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                onClick={() => document.getElementById("logo")?.click()}
-                className="flex items-center gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Logo
-              </Button>
-              <p className="text-xs text-muted-foreground mt-1">
-                Recommended: 200x200px, PNG or JPG
-              </p>
-            </div>
-          </div>
+        {/* Company Logo & Favicon */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ImageUpload
+            value={settings.companyLogo}
+            onChange={(value) => handleSettingsChange("companyLogo", value)}
+            label="Company Logo"
+            aspectRatio="square"
+          />
+          <ImageUpload
+            value={settings.favicon}
+            onChange={(value) => handleSettingsChange("favicon", value)}
+            label="Favicon"
+            aspectRatio="square"
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Company Name */}
-          <div className="space-y-2">
-            <Label htmlFor="companyName" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Company Name
-            </Label>
-            <Input
-              id="companyName"
-              value={settings.companyName}
-              onChange={(e) =>
-                handleSettingsChange("companyName", e.target.value)
-              }
-              placeholder="Enter company name"
-            />
-          </div>
+        <Separator />
 
-          {/* Company Email */}
-          <div className="space-y-2">
-            <Label htmlFor="companyEmail" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Company Email
-            </Label>
-            <Input
-              id="companyEmail"
-              type="email"
-              value={settings.companyEmail}
-              onChange={(e) =>
-                handleSettingsChange("companyEmail", e.target.value)
-              }
-              placeholder="Enter company email"
-            />
-          </div>
+        {/* Basic Company Information */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Basic Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Company Name */}
+            <div className="space-y-2">
+              <Label htmlFor="companyName" className="flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Company Name
+              </Label>
+              <Input
+                id="companyName"
+                value={settings.companyName}
+                onChange={(e) =>
+                  handleSettingsChange("companyName", e.target.value)
+                }
+                placeholder="Enter company name"
+              />
+            </div>
 
-          {/* Company Phone */}
-          <div className="space-y-2">
-            <Label htmlFor="companyPhone" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Company Phone
-            </Label>
-            <Input
-              id="companyPhone"
-              value={settings.companyPhone}
-              onChange={(e) =>
-                handleSettingsChange("companyPhone", e.target.value)
-              }
-              placeholder="Enter company phone"
-            />
+            {/* Company Email */}
+            <div className="space-y-2">
+              <Label htmlFor="companyEmail" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Company Email
+              </Label>
+              <Input
+                id="companyEmail"
+                type="email"
+                value={settings.companyEmail}
+                onChange={(e) =>
+                  handleSettingsChange("companyEmail", e.target.value)
+                }
+                placeholder="Enter company email"
+              />
+            </div>
+
+            {/* Company Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="companyPhone" className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Company Phone
+              </Label>
+              <Input
+                id="companyPhone"
+                value={settings.companyPhone}
+                onChange={(e) =>
+                  handleSettingsChange("companyPhone", e.target.value)
+                }
+                placeholder="Enter company phone"
+              />
+            </div>
+
+            {/* WhatsApp Number */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="whatsappNumber"
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                WhatsApp Number
+              </Label>
+              <Input
+                id="whatsappNumber"
+                value={settings.whatsappNumber}
+                onChange={(e) =>
+                  handleSettingsChange("whatsappNumber", e.target.value)
+                }
+                placeholder="Enter WhatsApp number"
+              />
+            </div>
           </div>
 
           {/* Company Address */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-6">
             <Label htmlFor="companyAddress" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               Company Address
             </Label>
-            <Input
+            <Textarea
               id="companyAddress"
               value={settings.companyAddress}
               onChange={(e) =>
                 handleSettingsChange("companyAddress", e.target.value)
               }
               placeholder="Enter company address"
+              rows={3}
+            />
+          </div>
+
+          {/* Company Description */}
+          <div className="space-y-2 mt-6">
+            <Label
+              htmlFor="companyDescription"
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Company Description
+            </Label>
+            <Textarea
+              id="companyDescription"
+              value={settings.companyDescription}
+              onChange={(e) =>
+                handleSettingsChange("companyDescription", e.target.value)
+              }
+              placeholder="Enter company description"
+              rows={4}
             />
           </div>
         </div>
 
-        {/* Company Description */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="companyDescription"
-            className="flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Company Description
-          </Label>
-          <Textarea
-            id="companyDescription"
-            value={settings.companyDescription}
-            onChange={(e) =>
-              handleSettingsChange("companyDescription", e.target.value)
-            }
-            placeholder="Enter company description"
-            rows={4}
-          />
+        <Separator />
+
+        {/* Working Hours */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Working Hours
+          </h3>
+          <div className="space-y-2">
+            <Label htmlFor="workingHours" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Working Hours
+            </Label>
+            <Textarea
+              id="workingHours"
+              value={settings.workingHours}
+              onChange={(e) =>
+                handleSettingsChange("workingHours", e.target.value)
+              }
+              placeholder="Enter working hours"
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Location Settings */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Location Settings
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Latitude */}
+            <div className="space-y-2">
+              <Label htmlFor="latitude" className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Latitude
+              </Label>
+              <Input
+                id="latitude"
+                value={settings.latitude}
+                onChange={(e) =>
+                  handleSettingsChange("latitude", e.target.value)
+                }
+                placeholder="e.g., 13.0827"
+              />
+            </div>
+
+            {/* Longitude */}
+            <div className="space-y-2">
+              <Label htmlFor="longitude" className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Longitude
+              </Label>
+              <Input
+                id="longitude"
+                value={settings.longitude}
+                onChange={(e) =>
+                  handleSettingsChange("longitude", e.target.value)
+                }
+                placeholder="e.g., 80.2707"
+              />
+            </div>
+          </div>
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              <strong>How to get coordinates:</strong> Right-click on Google
+              Maps at your location → Click the coordinates that appear at the
+              top → Copy latitude,longitude values
+            </p>
+          </div>
+
+          {/* Google Map Embed */}
+          <div className="space-y-2 mt-6">
+            <Label htmlFor="googleMapEmbed" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Google Map Embed Link
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="googleMapEmbed"
+                value={settings.googleMapEmbed}
+                onChange={(e) =>
+                  handleSettingsChange("googleMapEmbed", e.target.value)
+                }
+                placeholder="https://www.google.com/maps/embed?pb=..."
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateEmbed}
+                disabled={!settings.latitude || !settings.longitude}
+                className="shrink-0"
+              >
+                Generate from Coordinates
+              </Button>
+            </div>
+            <div className="mt-3 p-4 bg-muted/50 rounded-lg border border-border">
+              <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                How to get Google Maps Embed URL:
+              </h4>
+              <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+                <li>
+                  Go to{" "}
+                  <a
+                    href="https://maps.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Google Maps
+                  </a>{" "}
+                  in your browser
+                </li>
+                <li>Search for your business location</li>
+                <li>
+                  Click the Share button (or right-click and select Share)
+                </li>
+                <li>Click on the Embed a map tab</li>
+                <li>
+                  Copy the URL from the iframe src attribute (the part inside
+                  the quotes after src=)
+                </li>
+                <li>Paste it in the field above</li>
+              </ol>
+              <div className="mt-3 pt-2 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  <strong>Alternative:</strong> Enter latitude and longitude
+                  coordinates above, then click Generate from Coordinates to
+                  create a basic embed URL.
+                </p>
+              </div>
+            </div>
+            {settings.googleMapEmbed && (
+              <div className="mt-4">
+                <Label className="text-sm text-muted-foreground mb-2 block">
+                  Map Preview
+                </Label>
+                <div className="rounded-lg overflow-hidden border border-border shadow-sm">
+                  <iframe
+                    src={settings.googleMapEmbed}
+                    className="w-full h-64"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Location Preview"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Social Media Links */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Social Media Links</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Facebook */}
+            <div className="space-y-2">
+              <Label htmlFor="facebook" className="flex items-center gap-2">
+                <Facebook className="h-4 w-4" />
+                Facebook
+              </Label>
+              <Input
+                id="facebook"
+                value={settings.socialMedia.facebook}
+                onChange={(e) =>
+                  handleSocialMediaChange("facebook", e.target.value)
+                }
+                placeholder="Enter Facebook URL"
+              />
+            </div>
+
+            {/* Instagram */}
+            <div className="space-y-2">
+              <Label htmlFor="instagram" className="flex items-center gap-2">
+                <Instagram className="h-4 w-4" />
+                Instagram
+              </Label>
+              <Input
+                id="instagram"
+                value={settings.socialMedia.instagram}
+                onChange={(e) =>
+                  handleSocialMediaChange("instagram", e.target.value)
+                }
+                placeholder="Enter Instagram URL"
+              />
+            </div>
+
+            {/* Twitter */}
+            <div className="space-y-2">
+              <Label htmlFor="twitter" className="flex items-center gap-2">
+                <Twitter className="h-4 w-4" />
+                Twitter
+              </Label>
+              <Input
+                id="twitter"
+                value={settings.socialMedia.twitter}
+                onChange={(e) =>
+                  handleSocialMediaChange("twitter", e.target.value)
+                }
+                placeholder="Enter Twitter URL"
+              />
+            </div>
+
+            {/* LinkedIn */}
+            <div className="space-y-2">
+              <Label htmlFor="linkedin" className="flex items-center gap-2">
+                <Linkedin className="h-4 w-4" />
+                LinkedIn
+              </Label>
+              <Input
+                id="linkedin"
+                value={settings.socialMedia.linkedin}
+                onChange={(e) =>
+                  handleSocialMediaChange("linkedin", e.target.value)
+                }
+                placeholder="Enter LinkedIn URL"
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Business Details */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileCheck className="h-5 w-5" />
+            Business Details
+          </h3>
+
+          {/* GST Number */}
+          <div className="space-y-2 mb-6">
+            <Label htmlFor="gstNumber" className="flex items-center gap-2">
+              <FileCheck className="h-4 w-4" />
+              GST Number
+            </Label>
+            <Input
+              id="gstNumber"
+              value={settings.gstNumber}
+              onChange={(e) =>
+                handleSettingsChange("gstNumber", e.target.value)
+              }
+              placeholder="Enter GST number"
+            />
+          </div>
+
+          {/* Terms & Conditions */}
+          <div className="space-y-2 mb-6">
+            <Label
+              htmlFor="termsAndConditions"
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Terms & Conditions
+            </Label>
+            <Textarea
+              id="termsAndConditions"
+              value={settings.termsAndConditions}
+              onChange={(e) =>
+                handleSettingsChange("termsAndConditions", e.target.value)
+              }
+              placeholder="Enter terms and conditions"
+              rows={4}
+            />
+          </div>
+
+          {/* Footer Note */}
+          <div className="space-y-2">
+            <Label htmlFor="footerNote" className="flex items-center gap-2">
+              <StickyNote className="h-4 w-4" />
+              Footer Note
+            </Label>
+            <Textarea
+              id="footerNote"
+              value={settings.footerNote}
+              onChange={(e) =>
+                handleSettingsChange("footerNote", e.target.value)
+              }
+              placeholder="Enter footer note"
+              rows={3}
+            />
+          </div>
         </div>
 
         <Separator />

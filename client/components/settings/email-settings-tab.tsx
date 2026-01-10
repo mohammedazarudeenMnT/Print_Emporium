@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { axiosInstance } from "@/lib/axios";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 
 interface EmailSettings {
   smtpHost: string;
@@ -28,6 +29,8 @@ interface EmailSettingsTabProps {
 }
 
 export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
+  const { settings: companySettings, loading: companyLoading } =
+    useCompanySettings();
   const [settings, setSettings] = useState<EmailSettings>({
     smtpHost: "",
     smtpPort: "",
@@ -120,8 +123,11 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
         "/api/settings/email-configuration/test",
         {
           testEmail: email,
-          message:
-            "This is a test email from PrintEmporium dashboard settings.",
+          message: `This is a test email from ${
+            companyLoading
+              ? "Loading..."
+              : companySettings?.companyName || "PrintEmporium"
+          } dashboard settings.`,
         }
       );
 

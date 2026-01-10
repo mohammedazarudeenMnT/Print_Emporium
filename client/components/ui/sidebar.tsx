@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronLeft, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { CompanyLogo } from "@/components/ui/company-logo";
 
 export interface SidebarLink {
   label: string;
@@ -36,7 +37,10 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false); // Default to false for SSR
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(["Profile", "My Team"]); // Track which menus are expanded
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([
+    "Profile",
+    "My Team",
+  ]); // Track which menus are expanded
 
   // Check if we're on mobile
   useEffect(() => {
@@ -103,7 +107,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
       <motion.aside
         initial={false}
         animate={{
-          width: isMobile ? (isMobileOpen ? 280 : 0) : (isExpanded ? 280 : 80),
+          width: isMobile ? (isMobileOpen ? 280 : 0) : isExpanded ? 280 : 80,
           x: isMobile && !isMobileOpen ? -280 : 0,
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -117,19 +121,19 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
         {/* Header / Logo */}
         <div className="h-20 flex items-center px-6 border-b border-border relative">
           <AnimatePresence mode="wait">
-            {(isExpanded || (isMobile && isMobileOpen)) ? (
+            {isExpanded || (isMobile && isMobileOpen) ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
-                  <span className="text-white font-bold text-xl">V</span>
-                </div>
-                <span className="text-xl font-bold text-foreground tracking-tight">
-                  VSV <span className="text-primary-600">Unite</span>
-                </span>
+                <CompanyLogo
+                  width={90}
+                  height={90}
+                  className="rounded-lg"
+                  showFallback={true}
+                />
               </motion.div>
             ) : (
               <motion.div
@@ -138,9 +142,12 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 exit={{ opacity: 0 }}
                 className="w-full flex justify-center"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
-                  <span className="text-white font-bold text-xl">V</span>
-                </div>
+                <CompanyLogo
+                  width={40}
+                  height={40}
+                  className="rounded-lg"
+                  showFallback={true}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -181,14 +188,14 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
             const toggleMenu = (e: React.MouseEvent) => {
               if (link.hasDropdown) {
                 e.stopPropagation();
-                setExpandedMenus(prev => 
-                  prev.includes(link.label) 
-                    ? prev.filter(item => item !== link.label)
+                setExpandedMenus((prev) =>
+                  prev.includes(link.label)
+                    ? prev.filter((item) => item !== link.label)
                     : [...prev, link.label]
                 );
               }
             };
-            
+
             return (
               <div key={link.href}>
                 <motion.button
@@ -204,7 +211,9 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                   }}
                   className={cn(
                     "group relative w-full flex items-center gap-3 rounded-lg transition-all duration-200",
-                    isCollapsed ? "justify-center p-3" : "justify-start px-4 py-3",
+                    isCollapsed
+                      ? "justify-center p-3"
+                      : "justify-start px-4 py-3",
                     link.isActive && !link.hasDropdown
                       ? isCollapsed
                         ? "bg-primary-50 text-primary-600 shadow-sm"
@@ -216,7 +225,9 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                   <span
                     className={cn(
                       "flex-shrink-0 w-5 h-5 transition-transform group-hover:scale-110",
-                      link.isActive ? "text-primary-600" : "text-muted-foreground group-hover:text-foreground"
+                      link.isActive
+                        ? "text-primary-600"
+                        : "text-muted-foreground group-hover:text-foreground"
                     )}
                   >
                     {link.icon}
@@ -292,18 +303,26 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
 
         {/* User Profile Footer */}
         <div className="p-4 border-t border-border bg-muted/30">
-          <div className={cn(
-            "flex items-center gap-3",
-            (!isExpanded && !isMobile && !isPinned) ? "justify-center" : ""
-          )}>
+          <div
+            className={cn(
+              "flex items-center gap-3",
+              !isExpanded && !isMobile && !isPinned ? "justify-center" : ""
+            )}
+          >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold shadow-md">
               {user?.avatar ? (
-                <Image src={user.avatar} alt={user.name} width={40} height={40} className="rounded-full" />
+                <Image
+                  src={user.avatar}
+                  alt={user.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}
             </div>
-            
+
             <AnimatePresence>
               {(isExpanded || (isMobile && isMobileOpen)) && (
                 <motion.div
@@ -312,8 +331,12 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                   exit={{ opacity: 0, width: 0 }}
                   className="flex-1 overflow-hidden"
                 >
-                  <p className="text-sm font-semibold text-foreground truncate">{user?.name || "User"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user?.email || "user@example.com"}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {user?.name || "User"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user?.email || "user@example.com"}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>

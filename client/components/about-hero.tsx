@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import Image from "next/image";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 
 const transitionVariants = {
   item: {
@@ -27,6 +28,7 @@ const transitionVariants = {
 };
 
 export function AboutHero() {
+  const { settings, loading } = useCompanySettings();
   const containerRef = React.useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -43,8 +45,8 @@ export function AboutHero() {
           className="absolute inset-0 -z-20 w-full h-full opacity-20"
           style={{
             backgroundImage: `url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop&crop=entropy&auto=format&q=80)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             y,
           }}
         />
@@ -58,7 +60,10 @@ export function AboutHero() {
           <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
             <AnimatedGroup variants={transitionVariants}>
               <Badge variant="secondary" className="mb-4">
-                About PrintEmporium
+                About{" "}
+                {loading
+                  ? "Loading..."
+                  : settings?.companyName || "PrintEmporium"}
               </Badge>
 
               <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-bold bg-linear-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">

@@ -4,22 +4,32 @@ export interface GeneralSettings {
   companyName: string;
   companyEmail: string;
   companyPhone: string;
+  whatsappNumber?: string;
   companyAddress: string;
   companyDescription: string;
   companyLogo?: string | null;
+  favicon?: string | null;
+  workingHours?: string;
+  latitude?: string;
+  longitude?: string;
+  googleMapEmbed?: string;
+  socialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+  };
+  gstNumber?: string;
+  termsAndConditions?: string;
+  footerNote?: string;
 }
 
 // Get all settings (Admin)
 export const getSettings = async () => {
-    const response = await axiosInstance.get("/api/settings");
-    return response.data;
+  const response = await axiosInstance.get("/api/settings");
+  return response.data;
 };
 
-// Get public settings
-export const getPublicSettings = async () => {
-    const response = await axiosInstance.get("/api/settings/public");
-    return response.data;
-};
 
 // Update general settings
 export const updateGeneralSettings = async (data: GeneralSettings) => {

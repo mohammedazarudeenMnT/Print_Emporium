@@ -2,22 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Command,
-  Eye,
-  EyeOff,
-  CheckCircle2,
-  AlertCircle,
-  Lock,
-} from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resetPassword } from "@/lib/auth-api";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ResetPasswordPage() {
+  const { settings, loading } = useCompanySettings();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +27,7 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams.get("token");
     if (tokenParam) {
       setToken(tokenParam);
     } else {
@@ -41,7 +37,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!token) {
       setError("Invalid reset token");
       return;
@@ -63,13 +59,15 @@ export default function ResetPasswordPage() {
     try {
       await resetPassword(token, password);
       setIsSuccess(true);
-      
+
       // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push("/login");
       }, 3000);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to reset password");
+      setError(
+        error instanceof Error ? error.message : "Failed to reset password"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -87,10 +85,16 @@ export default function ResetPasswordPage() {
             {/* Logo */}
             <div className="text-center mb-6">
               <Link href="/" className="inline-flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20">
-                  <Command className="w-6 h-6" />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-foreground">PrintEmporium</span>
+                <CompanyLogo
+                  width={40}
+                  height={40}
+                  className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+                />
+                <span className="text-xl font-bold tracking-tight text-foreground">
+                  {loading
+                    ? "Loading..."
+                    : settings?.companyName || "PrintEmporium"}
+                </span>
               </Link>
             </div>
 
@@ -99,9 +103,12 @@ export default function ResetPasswordPage() {
                 <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
 
-              <h1 className="text-2xl font-semibold text-foreground mb-2">Password Reset Successful</h1>
+              <h1 className="text-2xl font-semibold text-foreground mb-2">
+                Password Reset Successful
+              </h1>
               <p className="text-muted-foreground text-sm mb-6">
-                Your password has been successfully reset. You will be redirected to the login page shortly.
+                Your password has been successfully reset. You will be
+                redirected to the login page shortly.
               </p>
 
               <Button asChild className="w-full">
@@ -125,10 +132,16 @@ export default function ResetPasswordPage() {
           {/* Logo */}
           <div className="text-center mb-6">
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20">
-                <Command className="w-6 h-6" />
-              </div>
-              <span className="text-xl font-bold tracking-tight text-foreground">PrintEmporium</span>
+              <CompanyLogo
+                width={40}
+                height={40}
+                className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+              />
+              <span className="text-xl font-bold tracking-tight text-foreground">
+                {loading
+                  ? "Loading..."
+                  : settings?.companyName || "PrintEmporium"}
+              </span>
             </Link>
           </div>
 
@@ -175,7 +188,11 @@ export default function ResetPasswordPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -201,7 +218,11 @@ export default function ResetPasswordPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>

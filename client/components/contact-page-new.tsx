@@ -1,24 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
+import ContactHero from "@/components/contact-hero";
 import {
   MapPin,
   Phone,
   Mail,
   Clock,
   Send,
-  MessageSquare,
   HelpCircle,
   CheckCircle,
   ChevronDown,
   ArrowRight,
-  Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import CTASection from "@/components/cta-section";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCompanySettings } from "@/hooks/use-company-settings";
 
 interface ContactInfo {
   icon: React.ReactNode;
@@ -78,6 +79,7 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
 }
 
 export default function RedesignedContactPage() {
+  const { settings, loading } = useCompanySettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -92,28 +94,53 @@ export default function RedesignedContactPage() {
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Visit Our Studio",
-      details: ["Anna Nagar, Chennai", "Tamil Nadu, India, 600040"],
+      details: loading
+        ? ["Loading..."]
+        : [
+            settings?.companyAddress ||
+              "Anna Nagar, Chennai, Tamil Nadu, India, 600040",
+          ],
       link: "#map",
       action: "Get Directions",
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Talk to Expert",
-      details: ["+91 98765 43210", "+91 87654 32109"],
-      link: "tel:+919876543210",
+      details: loading
+        ? ["Loading..."]
+        : [settings?.companyPhone || "+91 98765 43210"],
+      link: `tel:${settings?.companyPhone || "+919876543210"}`,
       action: "Call Now",
     },
+    ...(settings?.whatsappNumber
+      ? [
+          {
+            icon: <MessageCircle className="w-6 h-6" />,
+            title: "WhatsApp Chat",
+            details: loading ? ["Loading..."] : [settings.whatsappNumber],
+            link: `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`,
+            action: "Chat Now",
+          },
+        ]
+      : []),
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email Support",
-      details: ["hello@printemporium.com", "support@printemporium.com"],
-      link: "mailto:hello@printemporium.com",
+      details: loading
+        ? ["Loading..."]
+        : [settings?.companyEmail || "hello@printemporium.com"],
+      link: `mailto:${settings?.companyEmail || "hello@printemporium.com"}`,
       action: "Write Email",
     },
     {
       icon: <Clock className="w-6 h-6" />,
       title: "Working Hours",
-      details: ["Mon - Sat: 9:00 AM - 8:00 PM", "Sunday: Closed"],
+      details: loading
+        ? ["Loading..."]
+        : [
+            settings?.workingHours ||
+              "Mon - Sat: 9:00 AM - 8:00 PM\nSunday: Closed",
+          ],
       action: "View Calendar",
     },
   ];
@@ -168,42 +195,7 @@ export default function RedesignedContactPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 z-10">
-        <div className="container mx-auto max-w-5xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-primary-200/50 backdrop-blur-sm shadow-sm mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-primary-600 fill-current" />
-            <span className="text-sm font-semibold text-primary-900 tracking-wide uppercase">
-              Here to help
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold text-primary-950 mb-8 leading-[1.1]"
-          >
-            Let&apos;s Start a <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600">
-              Conversation
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-base-600 max-w-2xl mx-auto leading-relaxed"
-          >
-            Have a project in mind? We&apos;d love to hear about it. Send us a
-            message and let&apos;s create something extraordinary together.
-          </motion.p>
-        </div>
-      </section>
+      <ContactHero />
 
       {/* Contact Info Cards */}
       <section className="container mx-auto px-6 py-12 relative z-10">
@@ -263,7 +255,7 @@ export default function RedesignedContactPage() {
           >
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary-900/5 border border-base-200 p-8 md:p-12 overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
-              
+
               <div className="relative z-10">
                 <div className="mb-10">
                   <h2 className="text-3xl font-bold text-primary-950 mb-4">
@@ -287,7 +279,8 @@ export default function RedesignedContactPage() {
                       Message Sent Successfully!
                     </h3>
                     <p className="text-base-500 max-w-sm">
-                      Thank you for reaching out. A member of our team will be in touch shortly.
+                      Thank you for reaching out. A member of our team will be
+                      in touch shortly.
                     </p>
                   </motion.div>
                 ) : (
@@ -386,15 +379,22 @@ export default function RedesignedContactPage() {
           >
             <div className="flex-1 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary-900/5 border border-white/50 relative group">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"
+                src={
+                  settings?.googleMapEmbed ||
+                  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"
+                }
                 className="w-full h-full min-h-[400px] bg-base-200 grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="PrintEmporium Location"
+                title={`${
+                  loading
+                    ? "Loading..."
+                    : settings?.companyName || "PrintEmporium"
+                } Location`}
               />
-              
+
               {/* Overlay Card */}
               <div className="absolute bottom-6 left-6 right-6 p-5 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/50">
                 <div className="flex items-center gap-4">
@@ -402,7 +402,12 @@ export default function RedesignedContactPage() {
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-primary-900">PrintEmporium HQ</h4>
+                    <h4 className="font-bold text-primary-900">
+                      {loading
+                        ? "Loading..."
+                        : settings?.companyName || "PrintEmporium"}{" "}
+                      HQ
+                    </h4>
                     <p className="text-sm text-base-500">Chennai, Tamil Nadu</p>
                   </div>
                 </div>
@@ -411,16 +416,22 @@ export default function RedesignedContactPage() {
 
             {/* Quick Contact Box */}
             <div className="p-8 rounded-[2rem] bg-gradient-to-br from-primary-900 to-primary-800 text-white relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-               <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -ml-10 -mb-10" />
-               
-               <div className="relative z-10">
-                 <h3 className="text-xl font-bold mb-2">Need Immediate Help?</h3>
-                 <p className="text-primary-100 mb-6 text-sm">Our support team is available 24/7 to assist with urgent queries.</p>
-                 <Button variant="outline" className="w-full bg-white/10 border-white/20 text-white hover:bg-white hover:text-primary-900 border-none">
-                    <Phone className="w-4 h-4 mr-2" /> Call Support
-                 </Button>
-               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -ml-10 -mb-10" />
+
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-2">Need Immediate Help?</h3>
+                <p className="text-primary-100 mb-6 text-sm">
+                  Our support team is available 24/7 to assist with urgent
+                  queries.
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full bg-white/10 border-white/20 text-white hover:bg-white hover:text-primary-900 border-none"
+                >
+                  <Phone className="w-4 h-4 mr-2" /> Call Support
+                </Button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -441,7 +452,8 @@ export default function RedesignedContactPage() {
             Frequently Asked Questions
           </h2>
           <p className="text-base-600 max-w-2xl mx-auto">
-            Find answers to the most common questions about our services and process.
+            Find answers to the most common questions about our services and
+            process.
           </p>
         </div>
 
@@ -454,7 +466,9 @@ export default function RedesignedContactPage() {
 
       <CTASection
         title="Ready to Transform Your Ideas?"
-        description="Join hundreds of satisfied businesses who trust PrintEmporium for their premium printing needs."
+        description={`Join hundreds of satisfied businesses who trust ${
+          loading ? "Loading..." : settings?.companyName || "PrintEmporium"
+        } for their premium printing needs.`}
         primaryButtonText="Get a Custom Quote"
         secondaryButtonText="Schedule Consultation"
       />

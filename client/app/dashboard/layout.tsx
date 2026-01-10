@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Sidebar, SidebarLink, SidebarUser } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Settings, User, Users } from "lucide-react";
+import { Home, Settings, Users, Package, Briefcase } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -30,7 +30,8 @@ export default function DashboardLayout({
     return null;
   }
 
-  const sidebarLinks: SidebarLink[] = [
+  // Base links available to all authenticated users
+  const baseSidebarLinks: SidebarLink[] = [
     {
       label: "Dashboard",
       href: "/dashboard",
@@ -38,24 +39,39 @@ export default function DashboardLayout({
       isActive: pathname === "/dashboard",
     },
     {
+      label: "Orders",
+      href: "/dashboard/orders",
+      icon: <Package className="w-5 h-5" />,
+      isActive: pathname === "/dashboard/orders",
+    },
+  ];
+
+  // Admin-only links
+  const adminLinks: SidebarLink[] = [
+    {
+      label: "Services",
+      href: "/dashboard/services",
+      icon: <Briefcase className="w-5 h-5" />,
+      isActive: pathname === "/dashboard/services",
+    },
+    {
+      label: "Employees",
+      href: "/dashboard/employees",
+      icon: <Users className="w-5 h-5" />,
+      isActive: pathname === "/dashboard/employees",
+    },
+    {
       label: "Settings",
       href: "/dashboard/settings",
       icon: <Settings className="w-5 h-5" />,
       isActive: pathname === "/dashboard/settings",
     },
-    {
-      label: "Profile",
-      href: "/dashboard/profile",
-      icon: <User className="w-5 h-5" />,
-      isActive: pathname === "/dashboard/profile",
-    },
-    {
-      label: "My Team",
-      href: "/dashboard/team",
-      icon: <Users className="w-5 h-5" />,
-      isActive: pathname === "/dashboard/team",
-    },
   ];
+
+  // Combine links based on user role
+  const sidebarLinks = user.role === "admin" 
+    ? [...baseSidebarLinks, ...adminLinks]
+    : baseSidebarLinks;
 
   const sidebarUser: SidebarUser = {
     name: user.name || "User",
