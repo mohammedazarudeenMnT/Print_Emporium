@@ -21,6 +21,20 @@ export const initAuth = () => {
       },
     },
 
+    // Add cookie configuration for production
+    cookies: {
+      sessionToken: {
+        name: "better-auth.session-token",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // Only secure in production
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Allow cross-site in production
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: "/",
+        // Don't set domain in production to allow same-origin cookies
+        domain: undefined,
+      },
+    },
+
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
@@ -535,6 +549,7 @@ export const initAuth = () => {
       process.env.FRONTEND_URL,
       "http://localhost:3000",
       "http://localhost:5173", // Common Vite dev port
+      "https://print-emporium.vercel.app",
     ],
 
     // Configure redirect URLs for password reset
