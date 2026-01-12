@@ -3,14 +3,23 @@ import { getSignatureHeaders } from "./signature-utils";
 
 // Dynamic API URL based on environment
 const getApiUrl = () => {
-  // In production, use the same domain as the frontend
-  if (typeof window !== "undefined") {
-    // Client-side: use current domain
-    return process.env.NEXT_PUBLIC_API_URL || `${window.location.origin}/api`;
-  } else {
-    // Server-side: use environment variable or localhost for development
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  // Use environment variable if defined
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
   }
+  
+  // Browser fallback
+  if (typeof window !== "undefined") {
+    // If we're on localhost:3000, assume backend is on localhost:5000
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:5000";
+    }
+    // Fallback to same domain /api
+    return `${window.location.origin}/api`;
+  }
+  
+  // Server-side fallback (SSR)
+  return process.env.NEXT_PUBLIC_API_URL;
 };
 
 export const axiosInstance = axios.create({

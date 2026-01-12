@@ -72,3 +72,10 @@ build/
 # Temporary files
 *.tmp
 *.temp
+.docs/employee-order-module-complete.md
+.docs/employee-order-module-implementation.md
+.docs/file-upload-and-pdf-conversion.md
+.docs/implementation-complete.md
+.docs/postman-testing-guide.md
+.docs/seo-protection-best-practices.md
+.kiro/settings/mcp.json
