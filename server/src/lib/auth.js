@@ -32,10 +32,11 @@ export const initAuth = () => {
         // vital for Vercel/Render deployments behind load balancers
         secure: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
         // REQUIRED for cross-site auth (different subdomains on vercel.app)
-        sameSite: "none",
+        // sameSite: "none" and partitioned: true REQUIRE secure: true
+        sameSite: process.env.NODE_ENV === "production" || process.env.VERCEL === "1" ? "none" : "lax",
         path: "/",
         // CHIPS (Cookies Having Independent Partitioned State) for cross-site
-        partitioned: true,
+        partitioned: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
       },
     },
 
@@ -43,24 +44,14 @@ export const initAuth = () => {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        // IMPORTANT: This must match the redirect URI configured in Google Cloud Console
-        // The backend handles the OAuth callback and then redirects to the frontend's callbackURL
-        redirectURI: process.env.BETTER_AUTH_URL
-          ? `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`
-          : undefined, // Let Better Auth determine it automatically in dev
+        // Better Auth handles the redirect URI automatically based on baseURL.
+        // It will be: ${baseURL}/callback/google
+        // Based on your Google Console, this should resolve to:
+        // http://localhost:5000/api/auth/callback/google
+        
         // Optional: Always ask user to select account
         prompt: "select_account",
-        // Optional: Get refresh token for offline access
         accessType: "offline",
-        // Optional: Map Google profile to your user fields
-        mapProfileToUser: (profile) => {
-          return {
-            name: profile.name,
-            email: profile.email,
-            image: profile.picture,
-            emailVerified: profile.email_verified,
-          };
-        },
       },
     },
 
@@ -557,9 +548,10 @@ export const initAuth = () => {
     trustedOrigins: [
       process.env.FRONTEND_URL,
       "http://localhost:3000",
-      "http://localhost:5173", // Common Vite dev port
-      "https://print-emporium-g6zs.vercel.app", // Production frontend
-    ].filter(Boolean), // Filter out undefined/null values
+      "http://localhost:5173",
+      "http://localhost:5000",
+      "https://print-emporium-g6zs.vercel.app",
+    ].filter(Boolean),
 
     // Configure redirect URLs for password reset
     redirects: {
