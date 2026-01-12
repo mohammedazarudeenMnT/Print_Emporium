@@ -31,12 +31,10 @@ export const initAuth = () => {
         httpOnly: true,
         // vital for Vercel/Render deployments behind load balancers
         secure: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
-        // REQUIRED for cross-site auth (different subdomains on vercel.app)
-        // sameSite: "none" and partitioned: true REQUIRE secure: true
+        // For cross-domain (frontend on domain A, backend on domain B), 
+        // sameSite MUST be "none" in production with secure: true
         sameSite: process.env.NODE_ENV === "production" || process.env.VERCEL === "1" ? "none" : "lax",
         path: "/",
-        // CHIPS (Cookies Having Independent Partitioned State) for cross-site
-        partitioned: process.env.NODE_ENV === "production" || process.env.VERCEL === "1",
       },
     },
 
@@ -543,7 +541,9 @@ export const initAuth = () => {
     },
 
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
+    baseURL: process.env.BETTER_AUTH_URL?.endsWith("/api/auth") 
+      ? process.env.BETTER_AUTH_URL 
+      : `${process.env.BETTER_AUTH_URL}/api/auth`,
 
     trustedOrigins: [
       process.env.FRONTEND_URL,
