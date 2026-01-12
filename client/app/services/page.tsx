@@ -16,6 +16,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = 'force-dynamic';
+
+
 export async function generateMetadata() {
   return await constructMetadata("services");
 }

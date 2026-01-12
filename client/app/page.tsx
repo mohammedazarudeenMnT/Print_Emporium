@@ -8,6 +8,10 @@ import CTASection from '@/components/cta-section';
 import { constructMetadata } from '@/lib/metadata-utils';
 import { getAllServices } from '@/lib/service-api';
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = 'force-dynamic';
+
+
 export async function generateMetadata() {
   return await constructMetadata('home');
 }

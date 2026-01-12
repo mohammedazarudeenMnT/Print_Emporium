@@ -109,6 +109,13 @@ const seedDefaultServices = async () => {
 // Get all services
 export const getAllServices = async (req, res) => {
   try {
+    // Set cache control headers to prevent caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     // Seed default services if database is empty
     await seedDefaultServices();
 
@@ -144,6 +151,13 @@ export const getAllServices = async (req, res) => {
 // Get a single service by ID
 export const getServiceById = async (req, res) => {
   try {
+    // Set cache control headers to prevent caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     const { id } = req.params;
     const service = await Service.findById(id);
 
