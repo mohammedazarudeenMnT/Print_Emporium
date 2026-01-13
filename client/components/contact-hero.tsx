@@ -65,7 +65,7 @@ export default function ContactHero() {
       icon: <MapPin className="w-6 h-6" />,
       title: "Design Studio",
       description: "Visit us for physical consultations",
-      value: loading ? "Loading..." : settings?.city || "Chennai, India",
+      value: loading ? "Loading..." : settings?.companyAddress || "Chennai, India",
       link: "#map-section",
       color: "from-fuchsia-500/20 to-rose-500/20",
       iconColor: "text-rose-400",
