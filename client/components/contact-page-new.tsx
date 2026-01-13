@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import ContactHero from "@/components/contact-hero";
 import {
   MapPin,
   Phone,
@@ -13,21 +12,24 @@ import {
   ChevronDown,
   ArrowRight,
   MessageCircle,
+  ShieldCheck,
+  Zap,
+  Globe,
+  Loader2,
+  Headphones,
+  Settings,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import CTASection from "@/components/cta-section";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCompanySettings } from "@/hooks/use-company-settings";
-
-interface ContactInfo {
-  icon: React.ReactNode;
-  title: string;
-  details: string[];
-  link?: string;
-  action?: string;
-}
+import { createLead } from "@/lib/lead-api";
+import { toast } from "sonner";
+import ContactHero from "@/components/contact-hero";
+import CTASection from "@/components/cta-section";
 
 interface FAQ {
   question: string;
@@ -41,42 +43,52 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      className="border border-base-200 rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm"
+      className="group relative"
     >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left p-6 hover:bg-white transition-colors flex items-center justify-between group"
-      >
-        <span className="font-semibold text-primary-900 text-lg group-hover:text-primary-700 transition-colors">
-          {faq.question}
-        </span>
-        <div
-          className={`w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center transition-all duration-300 ${
-            isOpen ? "bg-primary-900 text-white rotate-180" : "text-primary-900"
-          }`}
+      <div className={cn(
+        "absolute inset-0 bg-primary/10 blur-2xl rounded-3xl transition-opacity duration-500",
+        isOpen ? "opacity-100" : "opacity-0"
+      )} />
+      
+      <div className="relative border border-white/10 rounded-3xl overflow-hidden bg-slate-900/40 backdrop-blur-3xl hover:bg-slate-900/60 transition-all duration-500 shadow-2xl">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full text-left p-8 flex items-center justify-between group"
         >
-          <ChevronDown className="w-4 h-4" />
-        </div>
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden"
+          <span className="font-bold text-slate-100 text-xl group-hover:text-primary transition-colors">
+            {faq.question}
+          </span>
+          <div
+            className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500 ${
+              isOpen ? "bg-primary text-white rotate-180 scale-110 shadow-lg shadow-primary/40" : "text-primary group-hover:bg-primary/10"
+            }`}
           >
-            <div className="px-6 pb-6 text-base-600 leading-relaxed">
-              {faq.answer}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <ChevronDown className="w-5 h-5" />
+          </div>
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="px-8 pb-8 text-slate-400 text-lg leading-relaxed border-t border-white/5 pt-6">
+                {faq.answer}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
+
+const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export default function RedesignedContactPage() {
   const { settings, loading } = useCompanySettings();
@@ -89,347 +101,230 @@ export default function RedesignedContactPage() {
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const contactInfo: ContactInfo[] = [
-    {
-      icon: <MapPin className="w-6 h-6" />,
-      title: "Visit Our Studio",
-      details: loading
-        ? ["Loading..."]
-        : [
-            settings?.companyAddress ||
-              "Anna Nagar, Chennai, Tamil Nadu, India, 600040",
-          ],
-      link: "#map",
-      action: "Get Directions",
-    },
-    {
-      icon: <Phone className="w-6 h-6" />,
-      title: "Talk to Expert",
-      details: loading
-        ? ["Loading..."]
-        : [settings?.companyPhone || "+91 98765 43210"],
-      link: `tel:${settings?.companyPhone || "+919876543210"}`,
-      action: "Call Now",
-    },
-    ...(settings?.whatsappNumber
-      ? [
-          {
-            icon: <MessageCircle className="w-6 h-6" />,
-            title: "WhatsApp Chat",
-            details: loading ? ["Loading..."] : [settings.whatsappNumber],
-            link: `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`,
-            action: "Chat Now",
-          },
-        ]
-      : []),
-    {
-      icon: <Mail className="w-6 h-6" />,
-      title: "Email Support",
-      details: loading
-        ? ["Loading..."]
-        : [settings?.companyEmail || "hello@printemporium.com"],
-      link: `mailto:${settings?.companyEmail || "hello@printemporium.com"}`,
-      action: "Write Email",
-    },
-    {
-      icon: <Clock className="w-6 h-6" />,
-      title: "Working Hours",
-      details: loading
-        ? ["Loading..."]
-        : [
-            settings?.workingHours ||
-              "Mon - Sat: 9:00 AM - 8:00 PM\nSunday: Closed",
-          ],
-      action: "View Calendar",
-    },
-  ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const faqs: FAQ[] = [
     {
-      question: "What printing services do you offer?",
-      answer:
-        "We offer a comprehensive range of printing services including business cards, brochures, banners, posters, custom packaging, large format printing, and more. Our state-of-the-art equipment ensures high-quality results for all your printing needs.",
+      question: "What is your typical turnaround for bulk orders?",
+      answer: "Bulk orders are our specialty. Typically, orders of 500+ units take 5-7 business days, though we offer 'Flash Service' for 48-hour delivery on select materials.",
     },
     {
-      question: "What is your typical turnaround time?",
-      answer:
-        "Standard orders typically take 3-5 business days. We also offer rush services for urgent projects, with options for 24-hour and 48-hour turnaround times at an additional cost. Contact us for specific timeline requirements.",
+      question: "Can I request a physical sample before printing?",
+      answer: "Absolutely! We recommend physical proofs for large-scale projects. Sample kits are available starting at ₹499, which is fully refundable upon order confirmation.",
     },
     {
-      question: "Do you offer design services?",
-      answer:
-        "Yes! Our experienced design team can help bring your vision to life. We offer full design services, design consultations, and file preparation to ensure your prints look perfect. Design fees vary based on project complexity.",
+      question: "Do you provide design assistance for blueprints?",
+      answer: "Yes, we have specialized CAD-prep experts who ensure your blueprints and technical drawings are perfectly scaled and legible before they ever touch the printer.",
     },
     {
-      question: "What file formats do you accept?",
-      answer:
-        "We accept PDF, AI, EPS, PSD, and high-resolution JPG/PNG files. For best results, we recommend PDF files with embedded fonts and images at 300 DPI or higher. Our team can assist with file preparation if needed.",
+      question: "What sustainable printing options do you have?",
+      answer: "We offer 100% recycled paper stocks, soy-based inks, and plastic-free packaging options for brands committed to carbon neutrality.",
     },
   ];
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => {
+         const newErrors = { ...prev };
+         delete newErrors[name];
+         return newErrors;
+      });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
-    }, 3000);
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+    if (!formData.subject.trim()) newErrors.subject = "Subject is required";
+    if (!formData.message.trim()) newErrors.message = "Message is required";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Validation failed. Check your inputs.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await createLead(formData);
+      if (response.success) {
+        setIsSubmitted(true);
+        toast.success("Lead captured successfully!");
+        setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+      } else {
+        toast.error(response.message || "Failed to submit lead.");
+      }
+    } catch (error: any) {
+      console.error("Lead submission error:", error);
+      toast.error(error.response?.data?.message || "Internal server error.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const BentoCard = ({ icon, title, desc, className }: { icon: any, title: string, desc: string, className?: string }) => (
+    <motion.div 
+      whileHover={{ y: -5 }}
+      className={cn("p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-slate-200 shadow-2xl group transition-all duration-500 hover:bg-white hover:border-primary/30", className || "")}
+    >
+      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+        {icon}
+      </div>
+      <h4 className="text-xl font-bold text-slate-900 mb-2">{title}</h4>
+      <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
+    </motion.div>
+  );
 
   return (
-    <div className="min-h-screen bg-base-50 overflow-hidden relative selection:bg-primary-100 selection:text-primary-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50 overflow-hidden selection:bg-primary/20 selection:text-primary">
       {/* Background Ambience */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-primary-100/40 rounded-full blur-[120px] mix-blend-multiply animate-blob" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-violet-100/40 rounded-full blur-[120px] mix-blend-multiply animate-blob [animation-delay:2s]" />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03]" />
+        <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-primary/8 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-indigo-500/6 rounded-full blur-[150px] animate-pulse [animation-delay:2s]" />
       </div>
 
-      {/* Hero Section */}
       <ContactHero />
 
-      {/* Contact Info Cards */}
-      <section className="container mx-auto px-6 py-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {contactInfo.map((info, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="group p-6 rounded-3xl bg-white/60 backdrop-blur-md border border-white/50 shadow-xl shadow-base-200/50 hover:shadow-2xl hover:shadow-primary-900/5 transition-all duration-300"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-primary-100 flex items-center justify-center text-primary-600 mb-6 group-hover:scale-110 group-hover:bg-primary-600 group-hover:text-white transition-all duration-300">
-                {info.icon}
-              </div>
-              <h3 className="font-bold text-lg text-primary-900 mb-2">
-                {info.title}
-              </h3>
-              <div className="mb-4">
-                {info.details.map((detail, idx) => (
-                  <p key={idx} className="text-base-600 text-sm leading-6">
-                    {detail}
-                  </p>
-                ))}
-              </div>
-              {info.link ? (
-                <a
-                  href={info.link}
-                  className="text-primary-700 font-semibold text-sm inline-flex items-center gap-2 group-hover:translate-x-1 transition-transform"
-                >
-                  {info.action} <ArrowRight className="w-4 h-4" />
-                </a>
-              ) : (
-                <span className="text-base-400 font-semibold text-sm cursor-default">
-                  {info.action}
-                </span>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contact Form & Map Split Section */}
-      <section
-        className="container mx-auto px-6 py-12 md:py-24 relative z-10"
-        id="map-section"
-      >
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+      {/* Main Split Content */}
+      <section className="container mx-auto px-6 py-32 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-20 items-stretch">
+          
           {/* Form Side */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="lg:col-span-7"
+            transition={{ duration: 1 }}
+            className="flex flex-col"
           >
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary-900/5 border border-base-200 p-8 md:p-12 overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+            <div className="mb-12">
+              <Badge variant="outline" className="mb-4 border-primary/30 text-primary-700 font-bold tracking-widest bg-primary/10 px-4 py-1.5 uppercase text-[10px] shadow-sm">
+                Initiate Project
+              </Badge>
+              <h2 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">
+                Bring Your <br />
+                <span className="text-primary italic">Ambition</span> to Life.
+              </h2>
+              <p className="text-xl text-slate-600 max-w-lg leading-relaxed">
+                Fill out the secure form below. Our high-priority lead capture system ensures an expert reviews your inquiry within 120 minutes.
+              </p>
+            </div>
 
-              <div className="relative z-10">
-                <div className="mb-10">
-                  <h2 className="text-3xl font-bold text-primary-950 mb-4">
-                    Send Us a Message
-                  </h2>
-                  <p className="text-base-500">
-                    We usually respond within 24 hours.
+            <div className="flex-1 bg-white/90 backdrop-blur-3xl border border-slate-200 rounded-[3rem] p-10 md:p-14 shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
+               
+               {isSubmitted ? (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center py-20 text-center fill-mode-forwards">
+                  <div className="w-32 h-32 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-10 relative">
+                    <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="absolute inset-0 bg-primary/30 rounded-full" />
+                    <CheckCircle className="w-16 h-16 text-primary relative z-10" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-slate-900 mb-6">Submission Sent!</h3>
+                  <p className="text-slate-600 text-xl max-w-sm mb-12">
+                    Our lead management system has assigned your inquiry. We'll reach out to <span className="text-primary font-bold">{formData.email}</span> shortly.
                   </p>
-                </div>
-
-                {isSubmitted ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center justify-center py-12 text-center"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                      <CheckCircle className="w-10 h-10 text-green-600" />
+                  <Button variant="outline" className="px-10 h-14 rounded-2xl border-slate-300 text-slate-900 hover:bg-slate-900 hover:text-white transition-all" onClick={() => setIsSubmitted(false)}>
+                    New Inquiry
+                  </Button>
+                </motion.div>
+               ) : (
+                <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+                  <div className="grid md:grid-cols-2 gap-10">
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">Full Name</label>
+                      <Input name="name" value={formData.name} onChange={handleInputChange} className={cn("h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all", errors.name ? "border-red-500/50 bg-red-50" : "")} placeholder="Alexander Knight" />
+                      {errors.name && <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">{errors.name}</p>}
                     </div>
-                    <h3 className="text-2xl font-bold text-primary-900 mb-2">
-                      Message Sent Successfully!
-                    </h3>
-                    <p className="text-base-500 max-w-sm">
-                      Thank you for reaching out. A member of our team will be
-                      in touch shortly.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-primary-900 ml-1">
-                          Your Name
-                        </label>
-                        <Input
-                          name="name"
-                          placeholder="John Doe"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className="h-12 rounded-xl bg-base-50 border-transparent focus:bg-white transition-all duration-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-primary-900 ml-1">
-                          Email Address
-                        </label>
-                        <Input
-                          name="email"
-                          type="email"
-                          placeholder="john@example.com"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          className="h-12 rounded-xl bg-base-50 border-transparent focus:bg-white transition-all duration-300"
-                        />
-                      </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">Email Address</label>
+                      <Input name="email" value={formData.email} onChange={handleInputChange} className={cn("h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all", errors.email ? "border-red-500/50 bg-red-50" : "")} placeholder="alex@industry.com" />
+                      {errors.email && <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">{errors.email}</p>}
                     </div>
+                  </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-primary-900 ml-1">
-                          Phone (Optional)
-                        </label>
-                        <Input
-                          name="phone"
-                          placeholder="+1 (555) 000-0000"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          className="h-12 rounded-xl bg-base-50 border-transparent focus:bg-white transition-all duration-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-primary-900 ml-1">
-                          Subject
-                        </label>
-                        <Input
-                          name="subject"
-                          placeholder="Project Inquiry"
-                          value={formData.subject}
-                          onChange={handleInputChange}
-                          required
-                          className="h-12 rounded-xl bg-base-50 border-transparent focus:bg-white transition-all duration-300"
-                        />
-                      </div>
+                  <div className="grid md:grid-cols-2 gap-10">
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">Project Subject</label>
+                      <Input name="subject" value={formData.subject} onChange={handleInputChange} className={cn("h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all", errors.subject ? "border-red-500/50 bg-red-50" : "")} placeholder="Large Format Campaign" />
+                      {errors.subject && <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">{errors.subject}</p>}
                     </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-primary-900 ml-1">
-                        Message
-                      </label>
-                      <Textarea
-                        name="message"
-                        placeholder="Tell us about your project details, timeline, and requirements..."
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        required
-                        className="min-h-[150px] resize-none rounded-xl bg-base-50 border-transparent focus:bg-white transition-all duration-300"
-                      />
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">Phone (Express Line)</label>
+                      <Input name="phone" value={formData.phone} onChange={handleInputChange} className="h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all" placeholder="+91 0000 000 000" />
                     </div>
+                  </div>
 
-                    <Button
-                      type="submit"
-                      className="w-full h-14 rounded-xl text-lg font-medium bg-primary-900 hover:bg-primary-800 text-white shadow-xl shadow-primary-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Message
-                    </Button>
-                  </form>
-                )}
-              </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">Detailed Requirements</label>
+                    <Textarea name="message" value={formData.message} onChange={handleInputChange} className={cn("min-h-[200px] rounded-3xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all resize-none p-6", errors.message ? "border-red-500/50 bg-red-50" : "")} placeholder="Tell us about dimensions, material preferences, and delivery timeline..." />
+                    {errors.message && <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">{errors.message}</p>}
+                  </div>
+
+                  <Button disabled={isSubmitting} className="w-full h-20 rounded-3xl bg-primary hover:bg-primary/90 text-white text-2xl font-black tracking-tighter shadow-2xl shadow-primary/20 group transition-all hover:scale-[1.01] active:scale-[0.98]">
+                    <div className="flex items-center gap-4">
+                      {isSubmitting ? (
+                        <Loader2 className="w-10 h-10 animate-spin" />
+                      ) : (
+                        <>
+                          <span>Deploy Submission</span>
+                          <Send className="w-8 h-8 group-hover:rotate-12 group-hover:translate-x-2 transition-transform" />
+                        </>
+                      )}
+                    </div>
+                  </Button>
+                  <p className="text-center text-slate-500 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3">
+                    <ShieldCheck className="w-4 h-4 text-primary" /> Encrypted & Secure Lead Processing
+                  </p>
+                </form>
+               )}
             </div>
           </motion.div>
 
-          {/* Map Side */}
+          {/* Info Side - Bento Style */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="lg:col-span-5 flex flex-col h-full gap-8"
+            transition={{ duration: 1 }}
+            className="flex flex-col gap-8 justify-center"
           >
-            <div className="flex-1 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary-900/5 border border-white/50 relative group">
-              <iframe
-                src={
-                  settings?.googleMapEmbed ||
-                  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"
-                }
-                className="w-full h-full min-h-[400px] bg-base-200 grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={`${
-                  loading
-                    ? "Loading..."
-                    : settings?.companyName || "PrintEmporium"
-                } Location`}
-              />
-
-              {/* Overlay Card */}
-              <div className="absolute bottom-6 left-6 right-6 p-5 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/50">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-primary-900">
-                      {loading
-                        ? "Loading..."
-                        : settings?.companyName || "PrintEmporium"}{" "}
-                      HQ
-                    </h4>
-                    <p className="text-sm text-base-500">Chennai, Tamil Nadu</p>
-                  </div>
-                </div>
-              </div>
+            <div className="grid sm:grid-cols-2 gap-8">
+              <BentoCard icon={<Zap className="w-6 h-6"/>} title="Flash Turnaround" desc="Need it yesterday? Our rapid-response unit handles extreme deadlines with Zero-Error precision." />
+              <BentoCard icon={<Globe className="w-6 h-6"/>} title="Pan-India Logistics" desc="Advanced tracking and secure handling for all high-value print assets nationwide." />
+              <BentoCard icon={<ShieldCheck className="w-6 h-6"/>} title="Enterprise SLA" desc="Guaranteed up-times and quality audits for corporate partners and bulk contracts." />
+              <BentoCard icon={<Headphones className="w-6 h-6"/>} title="Design War-Room" desc="Collaborate directly with our master printers via visual consultation sessions." />
             </div>
 
-            {/* Quick Contact Box */}
-            <div className="p-8 rounded-[2rem] bg-gradient-to-br from-primary-900 to-primary-800 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -ml-10 -mb-10" />
-
-              <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-2">Need Immediate Help?</h3>
-                <p className="text-primary-100 mb-6 text-sm">
-                  Our support team is available 24/7 to assist with urgent
-                  queries.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full bg-white/10 border-white/20 text-white hover:bg-white hover:text-primary-900 border-none"
-                >
-                  <Phone className="w-4 h-4 mr-2" /> Call Support
+            <div className="flex-1 rounded-[3rem] overflow-hidden border border-white/10 group relative h-[400px]">
+               <iframe
+                src={settings?.googleMapEmbed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"}
+                className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-1000 border-none"
+                allowFullScreen
+                loading="lazy"
+                title="Office Location"
+              />
+              <div className="absolute bottom-6 left-6 right-6 p-6 rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200 flex items-center justify-between shadow-xl">
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-1">HQ Distribution Center</h4>
+                  <p className="text-slate-600 text-xs">{settings?.city || "Chennai, India"}</p>
+                </div>
+                <Button size="icon" className="rounded-full w-12 h-12 bg-primary hover:bg-primary/90" asChild>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings?.companyAddress || "")}`} target="_blank">
+                    <ArrowRight className="w-6 h-6" />
+                  </a>
                 </Button>
               </div>
             </div>
@@ -437,27 +332,14 @@ export default function RedesignedContactPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="container mx-auto px-6 py-12 md:py-24 max-w-4xl relative z-10">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-primary-700 text-sm font-semibold mb-6"
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span>Common Questions</span>
-          </motion.div>
-          <h2 className="text-3xl md:text-5xl font-bold text-primary-950 mb-6">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-base-600 max-w-2xl mx-auto">
-            Find answers to the most common questions about our services and
-            process.
-          </p>
+      {/* FAQ Grid */}
+      <section className="container mx-auto px-6 py-32 relative z-10 border-t border-slate-200">
+        <div className="max-w-4xl mx-auto text-center mb-20">
+          <Badge className="bg-primary/10 text-primary-700 border-primary/20 mb-6 uppercase tracking-widest text-[10px] shadow-sm">Information Hub</Badge>
+          <h2 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Frequently Asked <span className="text-primary">Questions</span></h2>
+          <p className="text-xl text-slate-600">Everything you need to know about our high-performance printing cycle.</p>
         </div>
-
-        <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {faqs.map((faq, index) => (
             <FAQItem key={index} faq={faq} index={index} />
           ))}
@@ -465,12 +347,10 @@ export default function RedesignedContactPage() {
       </section>
 
       <CTASection
-        title="Ready to Transform Your Ideas?"
-        description={`Join hundreds of satisfied businesses who trust ${
-          loading ? "Loading..." : settings?.companyName || "PrintEmporium"
-        } for their premium printing needs.`}
-        primaryButtonText="Get a Custom Quote"
-        secondaryButtonText="Schedule Consultation"
+        title="Ready to Elevate Your Global Brand Presence?"
+        description={`Join our ecosystem of 2,800+ businesses who leverage ${settings?.companyName || "PrintEmporium"} for high-authority physical collateral.`}
+        primaryButtonText="Trigger Project Quote"
+        secondaryButtonText="Explore Dynamic Services"
       />
     </div>
   );

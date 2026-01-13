@@ -525,42 +525,274 @@ export const updateOrderStatus = async (req, res) => {
  */
 export const getOrderStats = async (req, res) => {
   try {
+    const { startDate, endDate, period = 'month' } = req.query;
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const thisWeek = new Date(today);
+    thisWeek.setDate(today.getDate() - today.getDay());
+    const thisYear = new Date(today.getFullYear(), 0, 1);
+    
+    // Date filter based on period or custom range
+    let dateFilter = {};
+    let comparisonDateFilter = {};
+    
+    if (startDate && endDate) {
+      // Custom date range
+      dateFilter = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      };
+    } else {
+      // Period-based filtering
+      switch (period) {
+        case 'today':
+          dateFilter = { createdAt: { $gte: today } };
+          comparisonDateFilter = { 
+            createdAt: { 
+              $gte: new Date(today.getTime() - 24 * 60 * 60 * 1000),
+              $lt: today
+            } 
+          };
+          break;
+        case 'week':
+          dateFilter = { createdAt: { $gte: thisWeek } };
+          comparisonDateFilter = { 
+            createdAt: { 
+              $gte: new Date(thisWeek.getTime() - 7 * 24 * 60 * 60 * 1000),
+              $lt: thisWeek
+            } 
+          };
+          break;
+        case 'year':
+          dateFilter = { createdAt: { $gte: thisYear } };
+          comparisonDateFilter = { 
+            createdAt: { 
+              $gte: new Date(thisYear.getFullYear() - 1, 0, 1),
+              $lt: thisYear
+            } 
+          };
+          break;
+        case 'month':
+        default:
+          dateFilter = { createdAt: { $gte: thisMonth } };
+          comparisonDateFilter = { 
+            createdAt: { 
+              $gte: lastMonth,
+              $lt: thisMonth
+            } 
+          };
+          break;
+      }
+    }
     
     const [
       totalOrders,
       todayOrders,
+      weekOrders,
       monthOrders,
+      comparisonOrders,
       pendingOrders,
+      confirmedOrders,
       processingOrders,
-      completedOrders,
-      revenueStats
+      printingOrders,
+      shippedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      paidOrders,
+      unpaidOrders,
+      revenueStats,
+      comparisonRevenue,
+      todayRevenue,
+      weekRevenue,
+      monthlyRevenueChart,
+      dailyOrdersChart,
+      ordersByService,
+      ordersByPaymentMethod,
+      topCustomers,
+      recentOrders
     ] = await Promise.all([
-      Order.countDocuments(),
+      // Order counts with period filter
+      Order.countDocuments(dateFilter),
       Order.countDocuments({ createdAt: { $gte: today } }),
+      Order.countDocuments({ createdAt: { $gte: thisWeek } }),
       Order.countDocuments({ createdAt: { $gte: thisMonth } }),
-      Order.countDocuments({ status: 'pending' }),
-      Order.countDocuments({ status: { $in: ['confirmed', 'processing', 'printing'] } }),
-      Order.countDocuments({ status: 'delivered' }),
+      Order.countDocuments(comparisonDateFilter),
+      
+      // Status counts with period filter
+      Order.countDocuments({ status: 'pending', ...dateFilter }),
+      Order.countDocuments({ status: 'confirmed', ...dateFilter }),
+      Order.countDocuments({ status: 'processing', ...dateFilter }),
+      Order.countDocuments({ status: 'printing', ...dateFilter }),
+      Order.countDocuments({ status: 'shipped', ...dateFilter }),
+      Order.countDocuments({ status: 'delivered', ...dateFilter }),
+      Order.countDocuments({ status: 'cancelled', ...dateFilter }),
+      
+      // Payment status counts with period filter
+      Order.countDocuments({ paymentStatus: 'paid', ...dateFilter }),
+      Order.countDocuments({ paymentStatus: 'pending', ...dateFilter }),
+      
+      // Revenue stats with period filter
       Order.aggregate([
-        { $match: { paymentStatus: 'paid' } },
+        { $match: { paymentStatus: 'paid', ...dateFilter } },
+        { $group: { _id: null, total: { $sum: '$pricing.total' }, count: { $sum: 1 } } }
+      ]),
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', ...comparisonDateFilter } },
         { $group: { _id: null, total: { $sum: '$pricing.total' } } }
-      ])
+      ]),
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', createdAt: { $gte: today } } },
+        { $group: { _id: null, total: { $sum: '$pricing.total' } } }
+      ]),
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', createdAt: { $gte: thisWeek } } },
+        { $group: { _id: null, total: { $sum: '$pricing.total' } } }
+      ]),
+      
+      // Monthly revenue chart (last 12 months)
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', createdAt: { $gte: new Date(today.getFullYear() - 1, today.getMonth(), 1) } } },
+        {
+          $group: {
+            _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+            revenue: { $sum: '$pricing.total' },
+            orders: { $sum: 1 }
+          }
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+      ]),
+      
+      // Daily orders chart (filtered by period)
+      Order.aggregate([
+        { $match: dateFilter },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            orders: { $sum: 1 },
+            revenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, '$pricing.total', 0] } }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]),
+      
+      // Orders by service (filtered by period)
+      Order.aggregate([
+        { $match: dateFilter },
+        { $unwind: '$items' },
+        { $group: { _id: '$items.serviceName', count: { $sum: 1 }, revenue: { $sum: '$items.pricing.subtotal' } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]),
+      
+      // Orders by payment method (filtered by period)
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', ...dateFilter } },
+        { $group: { _id: '$paymentMethod', count: { $sum: 1 }, revenue: { $sum: '$pricing.total' } } },
+        { $sort: { count: -1 } }
+      ]),
+      
+      // Top customers (filtered by period)
+      Order.aggregate([
+        { $match: { paymentStatus: 'paid', ...dateFilter } },
+        {
+          $group: {
+            _id: '$userId',
+            totalOrders: { $sum: 1 },
+            totalSpent: { $sum: '$pricing.total' },
+            customerName: { $first: '$deliveryInfo.fullName' },
+            customerEmail: { $first: '$deliveryInfo.email' }
+          }
+        },
+        { $sort: { totalSpent: -1 } },
+        { $limit: 5 }
+      ]),
+      
+      // Recent orders (filtered by period)
+      Order.find(dateFilter)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('orderNumber status paymentStatus pricing.total createdAt deliveryInfo.fullName')
+        .lean()
     ]);
+
+    // Calculate growth percentages
+    const currentRevenue = revenueStats[0]?.total || 0;
+    const prevRevenue = comparisonRevenue[0]?.total || 0;
+    const revenueGrowth = prevRevenue > 0 
+      ? ((currentRevenue - prevRevenue) / prevRevenue * 100).toFixed(1)
+      : 0;
+    
+    const orderGrowth = comparisonOrders > 0
+      ? ((totalOrders - comparisonOrders) / comparisonOrders * 100).toFixed(1)
+      : 0;
 
     res.json({
       success: true,
       stats: {
+        // Summary cards (filtered by period)
         totalOrders,
         todayOrders,
+        weekOrders,
         monthOrders,
-        pendingOrders,
-        processingOrders,
-        completedOrders,
-        totalRevenue: revenueStats[0]?.total || 0
+        totalRevenue: currentRevenue,
+        todayRevenue: todayRevenue[0]?.total || 0,
+        weekRevenue: weekRevenue[0]?.total || 0,
+        averageOrderValue: paidOrders > 0 ? (currentRevenue / paidOrders).toFixed(2) : 0,
+        
+        // Growth metrics
+        revenueGrowth: parseFloat(revenueGrowth),
+        orderGrowth: parseFloat(orderGrowth),
+        
+        // Status breakdown
+        statusBreakdown: {
+          pending: pendingOrders,
+          confirmed: confirmedOrders,
+          processing: processingOrders,
+          printing: printingOrders,
+          shipped: shippedOrders,
+          delivered: deliveredOrders,
+          cancelled: cancelledOrders
+        },
+        
+        // Payment status
+        paymentBreakdown: {
+          paid: paidOrders,
+          pending: unpaidOrders
+        },
+        
+        // Charts data
+        charts: {
+          monthlyRevenue: monthlyRevenueChart.map(item => ({
+            month: `${item._id.year}-${String(item._id.month).padStart(2, '0')}`,
+            revenue: item.revenue,
+            orders: item.orders
+          })),
+          dailyOrders: dailyOrdersChart.map(item => ({
+            date: item._id,
+            orders: item.orders,
+            revenue: item.revenue
+          })),
+          ordersByService: ordersByService.map(item => ({
+            service: item._id,
+            count: item.count,
+            revenue: item.revenue
+          })),
+          ordersByPaymentMethod: ordersByPaymentMethod.map(item => ({
+            method: item._id || 'Unknown',
+            count: item.count,
+            revenue: item.revenue
+          }))
+        },
+        
+        // Top data
+        topCustomers,
+        recentOrders
       }
     });
 

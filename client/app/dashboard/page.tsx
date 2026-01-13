@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { ProfileTab } from "@/components/dashboard/profile-tab";
+import { AdminAnalytics } from "@/components/dashboard/admin-analytics";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -15,6 +16,16 @@ export default function DashboardPage() {
     );
   }
 
+  // Show admin analytics dashboard for admin users
+  if (user.role === "admin") {
+    return (
+      <div className="p-6">
+        <AdminAnalytics />
+      </div>
+    );
+  }
+
+  // Show profile tab for regular users
   return (
     <div className="p-6">
       <ProfileTab user={user} />
