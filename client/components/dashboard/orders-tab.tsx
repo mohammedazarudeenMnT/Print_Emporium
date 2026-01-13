@@ -26,9 +26,11 @@ import {
   ChevronRight,
   Download,
   FileText,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
+import { toast } from "sonner";
 
 interface OrdersTabProps {
   user: any;
@@ -101,6 +103,38 @@ export function OrdersTab({ user }: OrdersTabProps) {
     } catch (err: any) {
       console.error("Failed to update order status:", err);
       alert(err.response?.data?.message || "Failed to update order status");
+    }
+  };
+
+  const handleDownloadInvoice = async (order: any) => {
+    if (order.paymentStatus !== "paid") {
+      toast.error("Invoice can only be generated for paid orders");
+      return;
+    }
+
+    try {
+      toast.info("Generating invoice...");
+      
+      // Download invoice from backend
+      const response = await axiosInstance.get(`/api/orders/${order._id}/invoice`, {
+        responseType: 'blob',
+      });
+      
+      // Create blob and download
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${order.orderNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Invoice downloaded successfully");
+    } catch (err: any) {
+      console.error("Failed to download invoice:", err);
+      toast.error(err.response?.data?.error || "Failed to download invoice");
     }
   };
 
@@ -194,16 +228,27 @@ export function OrdersTab({ user }: OrdersTabProps) {
             };
             const StatusIcon = statusInfo.icon;
 
+            const isScheduled = order.deliveryInfo?.scheduleDelivery && order.estimatedDelivery;
+
             return (
-              <Card key={order._id} className="p-6 hover:shadow-md transition-shadow">
+              <Card key={order._id} className={cn(
+                "p-6 hover:shadow-md transition-shadow",
+                isScheduled && "border-2 border-primary/30 bg-primary/5"
+              )}>
                 <div className="space-y-4">
                   {/* Header Row */}
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h3 className="font-bold text-foreground text-lg">
                           #{order.orderNumber}
                         </h3>
+                        {isScheduled && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-primary text-primary-foreground">
+                            <Calendar className="h-3 w-3" />
+                            Scheduled: {new Date(order.estimatedDelivery).toLocaleDateString()}
+                          </span>
+                        )}
                         <span className={cn("inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium", statusInfo.color)}>
                           <StatusIcon className="h-3 w-3" />
                           {statusInfo.label}
@@ -369,14 +414,35 @@ export function OrdersTab({ user }: OrdersTabProps) {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
                 <div>
-                  <h2 className="text-2xl font-bold">Order #{selectedOrder.orderNumber}</h2>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-2xl font-bold">Order #{selectedOrder.orderNumber}</h2>
+                    {selectedOrder.deliveryInfo?.scheduleDelivery && selectedOrder.estimatedDelivery && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold bg-primary text-primary-foreground">
+                        <Calendar className="h-4 w-4" />
+                        Scheduled Delivery
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     Placed on {new Date(selectedOrder.createdAt).toLocaleString()}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
-                  <XCircle className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {selectedOrder.paymentStatus === "paid" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadInvoice(selectedOrder)}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Invoice
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
+                    <XCircle className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -413,9 +479,24 @@ export function OrdersTab({ user }: OrdersTabProps) {
                         </div>
                       )}
                       {selectedOrder.estimatedDelivery && (
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm">Est. Delivery</span>
-                          <span className="text-xs">{new Date(selectedOrder.estimatedDelivery).toLocaleDateString()}</span>
+                        <div className={cn(
+                          "flex items-center justify-between p-3 rounded-lg",
+                          selectedOrder.deliveryInfo?.scheduleDelivery 
+                            ? "bg-primary/10 border-2 border-primary/30" 
+                            : "bg-muted"
+                        )}>
+                          <span className="text-sm font-medium flex items-center gap-2">
+                            {selectedOrder.deliveryInfo?.scheduleDelivery && (
+                              <Calendar className="h-4 w-4 text-primary" />
+                            )}
+                            {selectedOrder.deliveryInfo?.scheduleDelivery ? "Scheduled Delivery" : "Est. Delivery"}
+                          </span>
+                          <span className={cn(
+                            "text-xs font-bold",
+                            selectedOrder.deliveryInfo?.scheduleDelivery && "text-primary"
+                          )}>
+                            {new Date(selectedOrder.estimatedDelivery).toLocaleDateString()}
+                          </span>
                         </div>
                       )}
                     </div>

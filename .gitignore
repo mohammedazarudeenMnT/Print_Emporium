@@ -79,3 +79,5 @@ build/
 .docs/postman-testing-guide.md
 .docs/seo-protection-best-practices.md
 .kiro/settings/mcp.json
+.kiro/settings/mcp.json
+client/package-lock.json

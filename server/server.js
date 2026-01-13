@@ -18,6 +18,7 @@ import heroSlideRoutes from "./src/routes/hero-slide.routes.js";
 import fileConversionRoutes from "./src/routes/fileConversion.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
 import employeeRoutes from "./src/routes/employee.routes.js";
+import customerRoutes from "./src/routes/customer.routes.js";
 import { requireAdminOrSignedRequest } from "./src/middleware/signature.middleware.js";
 import { seedAdmin } from "./src/utils/seedAdmin.js";
 
@@ -114,6 +115,7 @@ const startServer = async () => {
     app.use("/api/file-conversion", fileConversionRoutes); // Public endpoint for file conversion
     app.use("/api/orders", orderRoutes); // Order management routes
     app.use("/api/employees", employeeRoutes); // Employee management routes
+    app.use("/api/customers", requireAdminOrSignedRequest, customerRoutes); // Customer management routes
 
     // Example of getting session in a custom route
     app.get("/api/me", async (req, res) => {

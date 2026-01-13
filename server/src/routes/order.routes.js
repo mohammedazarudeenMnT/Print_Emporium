@@ -3,12 +3,12 @@ import {
   createOrder,
   getUserOrders,
   getOrderById,
-  updatePaymentStatus,
   cancelOrder,
   getAllOrders,
   updateOrderStatus,
   getOrderStats,
-  uploadOrderFile
+  uploadOrderFile,
+  downloadInvoice
 } from '../controllers/order.controller.js';
 import { requireAuth, requireAdmin, requireAdminOrEmployee } from '../middleware/auth.middleware.js';
 
@@ -21,10 +21,8 @@ router.post('/upload-file', requireAuth, uploadOrderFile);
 router.post('/', requireAuth, createOrder);
 router.get('/my-orders', requireAuth, getUserOrders);
 router.get('/:id', requireAuth, getOrderById);
+router.get('/:id/invoice', requireAuth, downloadInvoice);
 router.post('/:id/cancel', requireAuth, cancelOrder);
-
-// Payment callback route (public - called by payment gateway)
-router.post('/:id/payment', updatePaymentStatus);
 
 // Admin and Employee routes (can view and manage all orders)
 router.get('/admin/all', requireAdminOrEmployee, getAllOrders);

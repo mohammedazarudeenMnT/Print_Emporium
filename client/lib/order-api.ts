@@ -51,7 +51,7 @@ export interface OrderResponse {
   status: string;
   paymentStatus: string;
   total: number;
-  estimatedDelivery: string;
+  estimatedDelivery: string | null;
   createdAt: string;
 }
 

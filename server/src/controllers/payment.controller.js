@@ -3,6 +3,9 @@ import Order from "../models/order.model.js";
 import { encryptPassword, decryptPassword } from "../utils/encryption.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { generateInvoiceHTML } from '../services/invoice.service.js';
+import { generatePDFFromHTML } from '../utils/pdf-generator.js';
+import { sendOrderConfirmationEmail } from '../services/email.service.js';
 
 // Get payment settings
 export const getPaymentSettings = async (req, res) => {
@@ -212,9 +215,40 @@ export const verifyPayment = async (req, res) => {
         order.paymentStatus = "paid";
         order.status = "confirmed";
         order.paymentId = razorpay_payment_id;
-        order.paymentMethod = "razorpay"; // Or fetch details if needed
+        order.paymentMethod = "razorpay";
         
         await order.save();
+        
+        // Check if webhook is configured
+        const hasWebhook = paymentConfig.webhookSecret && paymentConfig.webhookSecret.trim() !== '';
+        
+        if (hasWebhook) {
+          console.log(`✅ Payment verified for order ${order.orderNumber}. Webhook will handle invoice email.`);
+        } else {
+          // No webhook configured - send email immediately (development/testing mode)
+          console.log(`⚠️ No webhook configured. Sending invoice email immediately for order ${order.orderNumber}...`);
+          
+          if (!order.invoiceEmailSent) {
+            try {
+              console.log(`📧 Generating invoice and sending confirmation email for order ${order.orderNumber}...`);
+              
+              const invoiceHTML = await generateInvoiceHTML(order);
+              const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+              await sendOrderConfirmationEmail(order, invoicePDF);
+              
+              // Mark email as sent
+              order.invoiceEmailSent = true;
+              order.invoiceEmailSentAt = new Date();
+              await order.save();
+              
+              console.log(`✅ Invoice generated and email sent for order ${order.orderNumber}`);
+            } catch (emailError) {
+              console.error('❌ Failed to send order confirmation email:', emailError);
+            }
+          } else {
+            console.log(`ℹ️ Invoice email already sent for order ${order.orderNumber}, skipping.`);
+          }
+        }
         
         return res.json({ success: true, message: "Payment verified successfully" });
     } else {
@@ -286,6 +320,41 @@ export const handlePaymentWebhook = async (req, res) => {
                     
                     await order.save();
                     console.log(`Order ${order.orderNumber} payment captured via webhook. Payment ID: ${paymentEntity.id}`);
+                    
+                    // Try to atomically claim the email sending task
+                    const claimedOrder = await Order.findOneAndUpdate(
+                      { 
+                        _id: internalOrderId, 
+                        invoiceEmailSent: false  // Only update if not already sent
+                      },
+                      { 
+                        invoiceEmailSent: true,
+                        invoiceEmailSentAt: new Date()
+                      },
+                      { new: false } // Return the document BEFORE update
+                    );
+                    
+                    // If claimedOrder is not null, we successfully claimed it (it was false before)
+                    if (claimedOrder && !claimedOrder.invoiceEmailSent) {
+                      try {
+                        console.log(`📧 [Webhook] Generating invoice and sending confirmation email for order ${order.orderNumber}...`);
+                        
+                        const invoiceHTML = await generateInvoiceHTML(order);
+                        const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+                        await sendOrderConfirmationEmail(order, invoicePDF);
+                        
+                        console.log(`✅ [Webhook] Invoice generated and email sent for order ${order.orderNumber}`);
+                      } catch (emailError) {
+                        console.error('❌ [Webhook] Failed to send order confirmation email:', emailError);
+                        // Rollback the flag if email failed
+                        await Order.findByIdAndUpdate(internalOrderId, {
+                          invoiceEmailSent: false,
+                          invoiceEmailSentAt: null
+                        });
+                      }
+                    } else {
+                      console.log(`ℹ️ [Webhook] Invoice email already sent for order ${order.orderNumber}, skipping.`);
+                    }
                 }
             }
         }
@@ -307,7 +376,7 @@ export const handlePaymentWebhook = async (req, res) => {
                      }
                      
                      await order.save();
-                     console.log(`Order ${order.orderNumber} confirmed via webhook.`);
+                     console.log(`Order ${order.orderNumber} confirmed via webhook (order.paid event).`);
                  }
              }
         }

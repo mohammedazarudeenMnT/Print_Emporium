@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/use-auth"
-import { CompanyLogo } from "@/components/ui/company-logo"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { CompanyLogo } from "@/components/ui/company-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,13 +15,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user, signOut, isLoading } = useAuth()
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut, isLoading } = useAuth();
+  const pathname = usePathname();
 
   const navItems = [
     { label: "Home", href: "/" },
@@ -28,32 +30,39 @@ export default function Navbar() {
 
     { label: "Services", href: "/services" },
     { label: "Contact", href: "/contact" },
-  ]
+  ];
+
+  const isActiveLink = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset"
+      document.body.style.overflow = "unset";
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
     try {
-      await signOut()
-      setIsMobileMenuOpen(false)
+      await signOut();
+      setIsMobileMenuOpen(false);
     } catch (error) {
-      console.error("Logout failed:", error)
+      console.error("Logout failed:", error);
     }
-  }
+  };
 
   const getUserInitials = (name: string) => {
     return name
@@ -61,15 +70,17 @@ export default function Navbar() {
       .map((word) => word.charAt(0))
       .join("")
       .toUpperCase()
-      .slice(0, 2)
-  }
+      .slice(0, 2);
+  };
 
   return (
     <>
       <nav
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          isScrolled ? "bg-background/95 backdrop-blur-md shadow-md border-b border-border" : "bg-background",
+          isScrolled
+            ? "bg-background/95 backdrop-blur-md shadow-md border-b border-border"
+            : "bg-background"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,9 +96,17 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                  className={cn(
+                    "text-sm font-medium transition-colors relative",
+                    isActiveLink(item.href)
+                      ? "text-foreground font-semibold"
+                      : "text-foreground/80 hover:text-foreground"
+                  )}
                 >
                   {item.label}
+                  {isActiveLink(item.href) && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                  )}
                 </Link>
               ))}
             </div>
@@ -100,7 +119,10 @@ export default function Navbar() {
                 // Authenticated User Menu
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 h-10 px-3">
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-2 h-10 px-3"
+                    >
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.image} alt={user.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm">
@@ -115,24 +137,35 @@ export default function Navbar() {
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="flex items-center gap-2">
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-2"
+                      >
                         <User className="h-4 w-4" />
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/settings" className="flex items-center gap-2">
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex items-center gap-2"
+                      >
                         <Settings className="h-4 w-4" />
                         Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 text-destructive"
+                    >
                       <LogOut className="h-4 w-4" />
                       Sign Out
                     </DropdownMenuItem>
@@ -171,14 +204,16 @@ export default function Navbar() {
       <div
         className={cn(
           "fixed inset-0 z-40 md:hidden transition-all duration-300",
-          isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+          isMobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         )}
       >
         {/* Backdrop */}
         <div
           className={cn(
             "absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
-            isMobileMenuOpen ? "opacity-100" : "opacity-0",
+            isMobileMenuOpen ? "opacity-100" : "opacity-0"
           )}
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -187,7 +222,7 @@ export default function Navbar() {
         <div
           className={cn(
             "absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg transition-transform duration-300",
-            isMobileMenuOpen ? "translate-y-0" : "-translate-y-full",
+            isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
           )}
         >
           <div className="px-4 py-6 space-y-4">
@@ -196,7 +231,12 @@ export default function Navbar() {
                 key={item.label}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-colors"
+                className={cn(
+                  "block px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                  isActiveLink(item.href)
+                    ? "bg-primary text-primary-foreground font-semibold"
+                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
+                )}
               >
                 {item.label}
               </Link>
@@ -220,7 +260,9 @@ export default function Navbar() {
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -278,5 +320,5 @@ export default function Navbar() {
         </div>
       </div>
     </>
-  )
+  );
 }

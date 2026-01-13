@@ -59,6 +59,8 @@ export interface DeliveryInfo {
   state: string;
   pincode: string;
   deliveryNotes?: string;
+  scheduleDelivery?: boolean;
+  scheduledDate?: string;
 }
 
 export interface OrderSummary {
@@ -91,4 +93,6 @@ export const DEFAULT_DELIVERY_INFO: DeliveryInfo = {
   state: '',
   pincode: '',
   deliveryNotes: '',
+  scheduleDelivery: false,
+  scheduledDate: '',
 };

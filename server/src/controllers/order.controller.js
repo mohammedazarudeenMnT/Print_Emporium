@@ -1,6 +1,8 @@
 import Order from '../models/order.model.js';
 import { uploadToCloudinary, uploadRawToCloudinary, getUrlFromPublicId, getRawUrlFromPublicId } from '../utils/cloudinary-helper.js';
 import { convertFileToPdf } from './fileConversion.controller.js';
+import { generateInvoiceHTML } from '../services/invoice.service.js';
+import { generatePDFFromHTML } from '../utils/pdf-generator.js';
 
 /**
  * Upload order file to Cloudinary and convert to PDF
@@ -151,11 +153,18 @@ export const createOrder = async (req, res) => {
         configuration: item.configuration,
         pricing: item.pricing
       })),
-      deliveryInfo,
+      deliveryInfo: {
+        ...deliveryInfo,
+        scheduledDate: deliveryInfo.scheduleDelivery && deliveryInfo.scheduledDate 
+          ? new Date(deliveryInfo.scheduledDate) 
+          : null
+      },
       pricing,
       status: 'pending',
       paymentStatus: 'pending',
-      estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days from now
+      estimatedDelivery: deliveryInfo.scheduleDelivery && deliveryInfo.scheduledDate
+        ? new Date(deliveryInfo.scheduledDate)
+        : null
     });
 
     await order.save();
@@ -275,52 +284,6 @@ export const getOrderById = async (req, res) => {
     console.error('Get order error:', error);
     res.status(500).json({ 
       error: 'Failed to fetch order',
-      details: error.message 
-    });
-  }
-};
-
-/**
- * Update order payment status (for payment gateway callback)
- */
-export const updatePaymentStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { paymentStatus, paymentId, paymentMethod } = req.body;
-
-    const order = await Order.findById(id);
-
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    order.paymentStatus = paymentStatus;
-    if (paymentId) order.paymentId = paymentId;
-    if (paymentMethod) order.paymentMethod = paymentMethod;
-
-    // Update order status based on payment
-    if (paymentStatus === 'paid') {
-      order.status = 'confirmed';
-    } else if (paymentStatus === 'failed') {
-      order.status = 'cancelled';
-    }
-
-    await order.save();
-
-    res.json({
-      success: true,
-      order: {
-        id: order._id,
-        orderNumber: order.orderNumber,
-        status: order.status,
-        paymentStatus: order.paymentStatus
-      }
-    });
-
-  } catch (error) {
-    console.error('Update payment status error:', error);
-    res.status(500).json({ 
-      error: 'Failed to update payment status',
       details: error.message 
     });
   }
@@ -520,6 +483,58 @@ export const getOrderStats = async (req, res) => {
     console.error('Get order stats error:', error);
     res.status(500).json({ 
       error: 'Failed to fetch order statistics',
+      details: error.message 
+    });
+  }
+};
+
+/**
+ * Generate and download invoice PDF for a paid order
+ */
+export const downloadInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const isAdminOrEmployee = req.user?.role === 'admin' || req.user?.role === 'employee';
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Find order - admin/employee can access any order, users only their own
+    const query = isAdminOrEmployee ? { _id: id } : { _id: id, userId };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Only generate invoice for paid orders
+    if (order.paymentStatus !== 'paid') {
+      return res.status(400).json({ 
+        error: 'Invoice can only be generated for paid orders',
+        paymentStatus: order.paymentStatus 
+      });
+    }
+
+    // Generate invoice HTML
+    const invoiceHTML = await generateInvoiceHTML(order);
+    
+    // Convert HTML to PDF
+    const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Invoice-${order.orderNumber}.pdf"`);
+    res.setHeader('Content-Length', invoicePDF.length);
+
+    // Send PDF buffer
+    res.send(invoicePDF);
+
+  } catch (error) {
+    console.error('Download invoice error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate invoice',
       details: error.message 
     });
   }

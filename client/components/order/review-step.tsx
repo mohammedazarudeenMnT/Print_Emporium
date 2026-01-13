@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useReactToPrint } from "react-to-print";
 import { OrderItem, DeliveryInfo } from "@/lib/order-types";
 import { formatPrice } from "@/lib/pricing-utils";
 import { formatFileSize } from "@/lib/file-utils";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
   FileText,
@@ -22,12 +22,16 @@ import {
   Loader2,
   ShieldCheck,
   Truck,
-  Printer,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { loadRazorpayScript, createPaymentOrder as createRazorpayOrder, verifyPayment } from "@/lib/payment-api";
+import {
+  loadRazorpayScript,
+  createPaymentOrder as createRazorpayOrder,
+  verifyPayment,
+} from "@/lib/payment-api";
 
 // Component for printing (hidden from screen)
 interface PrintableOrderSummaryProps {
@@ -37,17 +41,22 @@ interface PrintableOrderSummaryProps {
   innerRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const PrintableOrderSummary = ({ 
-  orderItems, 
-  deliveryInfo, 
+const PrintableOrderSummary = ({
+  orderItems,
+  deliveryInfo,
   total,
-  innerRef
+  innerRef,
 }: PrintableOrderSummaryProps) => (
-  <div className="p-8 bg-white text-black font-sans hidden print:block" ref={innerRef}>
+  <div
+    className="p-8 bg-white text-black font-sans hidden print:block"
+    ref={innerRef}
+  >
     <div className="border-b-2 border-black pb-4 mb-6 flex justify-between items-center">
       <div>
         <h1 className="text-2xl font-bold uppercase">Order Summary</h1>
-        <p className="text-sm">Print Emporium - Professional Printing Services</p>
+        <p className="text-sm">
+          Print Emporium - Professional Printing Services
+        </p>
       </div>
       <div className="text-right">
         <p className="text-sm">{new Date().toLocaleDateString()}</p>
@@ -55,15 +64,28 @@ const PrintableOrderSummary = ({
     </div>
 
     <div className="mb-8">
-      <h2 className="text-lg font-bold mb-3 border-b border-gray-300">Delivery Details</h2>
-      <p><strong>Name:</strong> {deliveryInfo.fullName}</p>
-      <p><strong>Phone:</strong> {deliveryInfo.phone}</p>
-      <p><strong>Email:</strong> {deliveryInfo.email}</p>
-      <p><strong>Address:</strong> {deliveryInfo.address}, {deliveryInfo.city}, {deliveryInfo.state} - {deliveryInfo.pincode}</p>
+      <h2 className="text-lg font-bold mb-3 border-b border-gray-300">
+        Delivery Details
+      </h2>
+      <p>
+        <strong>Name:</strong> {deliveryInfo.fullName}
+      </p>
+      <p>
+        <strong>Phone:</strong> {deliveryInfo.phone}
+      </p>
+      <p>
+        <strong>Email:</strong> {deliveryInfo.email}
+      </p>
+      <p>
+        <strong>Address:</strong> {deliveryInfo.address}, {deliveryInfo.city},{" "}
+        {deliveryInfo.state} - {deliveryInfo.pincode}
+      </p>
     </div>
 
     <div className="mb-8">
-      <h2 className="text-lg font-bold mb-3 border-b border-gray-300">Order Items</h2>
+      <h2 className="text-lg font-bold mb-3 border-b border-gray-300">
+        Order Items
+      </h2>
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-gray-100">
@@ -78,10 +100,13 @@ const PrintableOrderSummary = ({
             <tr key={idx}>
               <td className="p-2 border border-gray-300">
                 <div className="font-bold">{item.serviceName}</div>
-                <div className="text-xs">{item.file.name} ({item.file.pageCount} pgs)</div>
+                <div className="text-xs">
+                  {item.file.name} ({item.file.pageCount} pgs)
+                </div>
               </td>
               <td className="p-2 border border-gray-300 text-xs">
-                {item.configuration.printType}, {item.configuration.paperSize}, {item.configuration.gsm}GSM
+                {item.configuration.printType}, {item.configuration.paperSize},{" "}
+                {item.configuration.gsm}GSM
               </td>
               <td className="p-2 border border-gray-300 text-right">
                 {item.configuration.copies}
@@ -129,11 +154,8 @@ export function ReviewStep({
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewFile, setPreviewFile] = useState<OrderItem | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const componentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    contentRef: componentRef,
-  });
 
   const updateDeliveryInfo = (key: keyof DeliveryInfo, value: string) => {
     onDeliveryInfoChange({ ...deliveryInfo, [key]: value });
@@ -172,6 +194,19 @@ export function ReviewStep({
       newErrors.pincode = "Pincode is required";
     } else if (!/^\d{6}$/.test(deliveryInfo.pincode.trim())) {
       newErrors.pincode = "Enter a valid 6-digit pincode";
+    }
+
+    // Validate scheduled delivery date if enabled
+    if (deliveryInfo.scheduleDelivery && !deliveryInfo.scheduledDate) {
+      newErrors.scheduledDate = "Please select a delivery date";
+    } else if (deliveryInfo.scheduleDelivery && deliveryInfo.scheduledDate) {
+      const selectedDate = new Date(deliveryInfo.scheduledDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        newErrors.scheduledDate = "Delivery date cannot be in the past";
+      }
     }
 
     setErrors(newErrors);
@@ -214,16 +249,19 @@ export function ReviewStep({
             }
 
             // Upload via backend API
-            const uploadResponse = await axiosInstance.post('/api/orders/upload-file', {
-              fileData,
-              pdfData,
-              fileName: item.file.name,
-            });
-            
+            const uploadResponse = await axiosInstance.post(
+              "/api/orders/upload-file",
+              {
+                fileData,
+                pdfData,
+                fileName: item.file.name,
+              }
+            );
+
             if (!uploadResponse.data.success) {
-              throw new Error('File upload failed');
+              throw new Error("File upload failed");
             }
-            
+
             return {
               serviceId: item.serviceId,
               serviceName: item.serviceName,
@@ -232,13 +270,13 @@ export function ReviewStep({
                 size: item.file.size,
                 pageCount: item.file.pageCount,
                 filePublicId: uploadResponse.data.filePublicId, // Original file public_id
-                pdfPublicId: uploadResponse.data.pdfPublicId,   // PDF file public_id
+                pdfPublicId: uploadResponse.data.pdfPublicId, // PDF file public_id
               },
               configuration: item.configuration,
               pricing: item.pricing,
             };
           } catch (error) {
-            console.error('File upload error:', error);
+            console.error("File upload error:", error);
             throw new Error(`Failed to upload ${item.file.name}`);
           }
         })
@@ -253,21 +291,23 @@ export function ReviewStep({
           subtotal: total,
           deliveryCharge: 0,
           tax: 0,
-          total
-        }
+          total,
+        },
       };
 
       const orderResponse = await createOrder(orderPayload);
       if (!orderResponse.success) {
         throw new Error("Failed to create order");
       }
-      
+
       const order = orderResponse.order;
 
       // 3. Load Razorpay SDK
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
-        toast.error("Failed to load payment gateway. Please check your internet connection.");
+        toast.error(
+          "Failed to load payment gateway. Please check your internet connection."
+        );
         setIsProcessing(false);
         return;
       }
@@ -310,33 +350,38 @@ export function ReviewStep({
               toast.success("Payment successful! Order confirmed.");
               router.push(`/dashboard?tab=orders&order=${order.id}`);
             } else {
-              toast.error("Payment verification failed. Please contact support.");
+              toast.error(
+                "Payment verification failed. Please contact support."
+              );
             }
           } catch (error) {
-             console.error("Verification error", error);
-             toast.error("Payment verification failed. Please contact support.");
+            console.error("Verification error", error);
+            toast.error("Payment verification failed. Please contact support.");
           }
         },
         modal: {
-            ondismiss: function() {
-                setIsProcessing(false);
-                toast("Payment cancelled", {
-                    description: "You can retry payment from the dashboard order history."
-                });
-                // Redirecting to order details even if unpaid/cancelled so they can retry?
-                // Or stay here?
-                // Usually better to redirect to dashboard where they see "Pending Payment" status.
-                router.push(`/dashboard?tab=orders&order=${order.id}`);
-            }
-        }
+          ondismiss: function () {
+            setIsProcessing(false);
+            toast("Payment cancelled", {
+              description:
+                "You can retry payment from the dashboard order history.",
+            });
+            // Redirecting to order details even if unpaid/cancelled so they can retry?
+            // Or stay here?
+            // Usually better to redirect to dashboard where they see "Pending Payment" status.
+            router.push(`/dashboard?tab=orders&order=${order.id}`);
+          },
+        },
       };
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
-
     } catch (error: unknown) {
       console.error("Order process failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to place order. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to place order. Please try again.";
       toast.error(errorMessage);
       setIsProcessing(false);
     }
@@ -345,7 +390,9 @@ export function ReviewStep({
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Review & Pay</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">
+          Review & Pay
+        </h2>
         <p className="text-muted-foreground">
           Review your order details and complete the payment to confirm.
         </p>
@@ -383,7 +430,8 @@ export function ReviewStep({
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {formatFileSize(item.file.size)} • {item.file.pageCount} pages
+                          {formatFileSize(item.file.size)} •{" "}
+                          {item.file.pageCount} pages
                         </p>
                       </div>
                       <Button
@@ -414,13 +462,15 @@ export function ReviewStep({
                         {item.configuration.printSide.replace("-", " ")}
                       </span>
                       <span className="px-2 py-1 rounded bg-background border border-border">
-                        {item.configuration.copies} {item.configuration.copies > 1 ? "copies" : "copy"}
+                        {item.configuration.copies}{" "}
+                        {item.configuration.copies > 1 ? "copies" : "copy"}
                       </span>
                     </div>
 
                     <div className="mt-3 flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">
-                        {item.pricing.totalPages} pages × {item.pricing.copies} copies × ₹{item.pricing.pricePerPage}/page
+                        {item.pricing.totalPages} pages × {item.pricing.copies}{" "}
+                        copies × ₹{item.pricing.pricePerPage}/page
                       </span>
                       <span className="font-semibold text-foreground">
                         {formatPrice(item.pricing.subtotal)}
@@ -445,7 +495,9 @@ export function ReviewStep({
                 <Input
                   id="fullName"
                   value={deliveryInfo.fullName}
-                  onChange={(e) => updateDeliveryInfo("fullName", e.target.value)}
+                  onChange={(e) =>
+                    updateDeliveryInfo("fullName", e.target.value)
+                  }
                   placeholder="Enter your full name"
                   className={cn(errors.fullName && "border-destructive")}
                 />
@@ -488,7 +540,9 @@ export function ReviewStep({
                 <Textarea
                   id="address"
                   value={deliveryInfo.address}
-                  onChange={(e) => updateDeliveryInfo("address", e.target.value)}
+                  onChange={(e) =>
+                    updateDeliveryInfo("address", e.target.value)
+                  }
                   placeholder="House/Flat No., Street, Landmark"
                   rows={2}
                   className={cn(errors.address && "border-destructive")}
@@ -531,7 +585,9 @@ export function ReviewStep({
                 <Input
                   id="pincode"
                   value={deliveryInfo.pincode}
-                  onChange={(e) => updateDeliveryInfo("pincode", e.target.value)}
+                  onChange={(e) =>
+                    updateDeliveryInfo("pincode", e.target.value)
+                  }
                   placeholder="6-digit pincode"
                   className={cn(errors.pincode && "border-destructive")}
                 />
@@ -545,10 +601,66 @@ export function ReviewStep({
                 <Input
                   id="deliveryNotes"
                   value={deliveryInfo.deliveryNotes}
-                  onChange={(e) => updateDeliveryInfo("deliveryNotes", e.target.value)}
+                  onChange={(e) =>
+                    updateDeliveryInfo("deliveryNotes", e.target.value)
+                  }
                   placeholder="Any special instructions"
                 />
               </div>
+            </div>
+
+            {/* Schedule Delivery Section */}
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <Label
+                      htmlFor="scheduleDelivery"
+                      className="text-base font-semibold cursor-pointer"
+                    >
+                      Schedule Delivery
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Choose a specific date for delivery
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="scheduleDelivery"
+                  checked={deliveryInfo.scheduleDelivery || false}
+                  onCheckedChange={(checked) => {
+                    updateDeliveryInfo("scheduleDelivery", checked as any);
+                    if (!checked) {
+                      updateDeliveryInfo("scheduledDate", "");
+                    }
+                  }}
+                />
+              </div>
+
+              {deliveryInfo.scheduleDelivery && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                  <Label htmlFor="scheduledDate">Delivery Date *</Label>
+                  <Input
+                    id="scheduledDate"
+                    type="date"
+                    value={deliveryInfo.scheduledDate || ""}
+                    onChange={(e) =>
+                      updateDeliveryInfo("scheduledDate", e.target.value)
+                    }
+                    min={new Date().toISOString().split("T")[0]}
+                    className={cn(errors.scheduledDate && "border-destructive")}
+                  />
+                  {errors.scheduledDate && (
+                    <p className="text-xs text-destructive">
+                      {errors.scheduledDate}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Your order will be delivered on the selected date
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -559,15 +671,17 @@ export function ReviewStep({
             {/* Final Summary Card */}
             <div className="bg-card rounded-2xl border-2 border-primary/20 p-6 shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
-              
+
               <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
                 Order Summary
               </h3>
-              
+
               <div className="space-y-4 mb-8 relative z-10">
                 <div className="pt-4 border-t border-border flex justify-between items-center">
-                  <span className="text-lg font-bold text-foreground">Total Amount</span>
+                  <span className="text-lg font-bold text-foreground">
+                    Total Amount
+                  </span>
                   <span className="text-2xl font-black text-primary">
                     {formatPrice(total)}
                   </span>
@@ -589,42 +703,42 @@ export function ReviewStep({
                     `Pay ${formatPrice(total)}`
                   )}
                 </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full h-12 rounded-xl font-semibold gap-2 border-primary/20 hover:bg-primary/5 hover:text-primary transition-all"
-                  onClick={() => handlePrint()}
-                >
-                  <Printer className="h-4 w-4" />
-                  Print Details
-                </Button>
               </div>
 
               {/* Trust Badges */}
               <div className="mt-8 grid grid-cols-3 gap-2">
                 <div className="flex flex-col items-center text-center p-2 rounded-lg bg-muted/30">
                   <ShieldCheck className="h-4 w-4 text-green-500 mb-1" />
-                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">Secure Payment</span>
+                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">
+                    Secure Payment
+                  </span>
                 </div>
                 <div className="flex flex-col items-center text-center p-2 rounded-lg bg-muted/30">
                   <CheckCircle2 className="h-4 w-4 text-primary mb-1" />
-                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">Quality Guarantee</span>
+                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">
+                    Quality Guarantee
+                  </span>
                 </div>
                 <div className="flex flex-col items-center text-center p-2 rounded-lg bg-muted/30">
                   <Truck className="h-4 w-4 text-blue-500 mb-1" />
-                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">Fast Delivery</span>
+                  <span className="text-[10px] font-medium text-muted-foreground leading-tight">
+                    Fast Delivery
+                  </span>
                 </div>
               </div>
             </div>
-            
+
             <p className="text-[10px] text-center text-muted-foreground mt-4 px-4">
-              By placing this order, you agree to our <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
+              By placing this order, you agree to our{" "}
+              <span className="underline cursor-pointer">Terms of Service</span>{" "}
+              and{" "}
+              <span className="underline cursor-pointer">Privacy Policy</span>.
             </p>
           </div>
         </div>
       </div>
 
-      <PrintableOrderSummary 
+      <PrintableOrderSummary
         innerRef={componentRef}
         orderItems={orderItems}
         deliveryInfo={deliveryInfo}
@@ -668,16 +782,18 @@ export function ReviewStep({
                 <div>
                   <p className="font-medium">{previewFile.file.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatFileSize(previewFile.file.size)} • {previewFile.file.pageCount} pages
+                    {formatFileSize(previewFile.file.size)} •{" "}
+                    {previewFile.file.pageCount} pages
                   </p>
                 </div>
               </div>
 
-              {(previewFile.file.type.startsWith("image/") || 
-                previewFile.file.type === "application/pdf" || 
-                previewFile.file.name.toLowerCase().endsWith(".pdf")) ? (
+              {previewFile.file.type.startsWith("image/") ||
+              previewFile.file.type === "application/pdf" ||
+              previewFile.file.name.toLowerCase().endsWith(".pdf") ? (
                 <div className="border border-border rounded-xl overflow-hidden bg-muted/20 shadow-inner relative group">
-                  {previewFile.file.type.startsWith("image/") && !previewFile.file.name.toLowerCase().endsWith(".pdf") ? (
+                  {previewFile.file.type.startsWith("image/") &&
+                  !previewFile.file.name.toLowerCase().endsWith(".pdf") ? (
                     <img
                       src={previewFile.file.previewUrl}
                       alt={previewFile.file.name}
@@ -703,7 +819,8 @@ export function ReviewStep({
                     Preview Generates on Printing
                   </p>
                   <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-                    A full preview of {previewFile.file.name} will be available in the final print set.
+                    A full preview of {previewFile.file.name} will be available
+                    in the final print set.
                   </p>
                 </div>
               )}
@@ -713,15 +830,21 @@ export function ReviewStep({
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Print Type:</span>
-                    <span className="capitalize">{previewFile.configuration.printType.replace("-", " ")}</span>
+                    <span className="capitalize">
+                      {previewFile.configuration.printType.replace("-", " ")}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Paper Size:</span>
-                    <span className="uppercase">{previewFile.configuration.paperSize}</span>
+                    <span className="uppercase">
+                      {previewFile.configuration.paperSize}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Paper Type:</span>
-                    <span className="capitalize">{previewFile.configuration.paperType.replace("-", " ")}</span>
+                    <span className="capitalize">
+                      {previewFile.configuration.paperType.replace("-", " ")}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">GSM:</span>
@@ -729,7 +852,9 @@ export function ReviewStep({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Print Side:</span>
-                    <span className="capitalize">{previewFile.configuration.printSide.replace("-", " ")}</span>
+                    <span className="capitalize">
+                      {previewFile.configuration.printSide.replace("-", " ")}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Copies:</span>

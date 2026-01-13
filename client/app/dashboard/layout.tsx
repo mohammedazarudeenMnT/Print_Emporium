@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { Sidebar, SidebarLink, SidebarUser } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Settings, Users, Package, Briefcase } from "lucide-react";
+import { Home, Settings, Users, Package, Briefcase, UserRound } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -55,9 +55,15 @@ export default function DashboardLayout({
       isActive: pathname === "/dashboard/services",
     },
     {
+      label: "Customers",
+      href: "/dashboard/customers",
+      icon: <Users className="w-5 h-5" />,
+      isActive: pathname === "/dashboard/customers",
+    },
+    {
       label: "Employees",
       href: "/dashboard/employees",
-      icon: <Users className="w-5 h-5" />,
+      icon: <UserRound className="w-5 h-5" />,
       isActive: pathname === "/dashboard/employees",
     },
     {
