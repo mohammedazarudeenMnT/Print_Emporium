@@ -36,23 +36,24 @@ export const getPublicIdFromUrl = (url) => {
 /**
  * Generates a secure URL from a Cloudinary public ID.
  * @param {string} publicId - The public ID.
+ * @param {Object} customOptions - Optional transformation options.
  * @returns {string|null} - The secure URL.
  */
-export const getUrlFromPublicId = (publicId) => {
+export const getUrlFromPublicId = (publicId, customOptions = {}) => {
   if (!publicId) return null;
   // If it's already a URL, return it
   if (publicId.startsWith("http")) return publicId;
 
   const options = {
     secure: true,
+    quality: "auto",
+    fetch_format: "auto",
+    ...customOptions,
   };
 
   // If publicId ends with .pdf or contains _pdf, ensure it's served as a PDF
-  if (publicId.toLowerCase().includes('pdf')) {
-    options.format = 'pdf';
-    // For PDFs, usually image resource type works best for preview, 
-    // but if it was uploaded as raw, we need to specify that.
-    // However, getUrlFromPublicId is mostly used for previews which are images.
+  if (publicId.toLowerCase().includes("pdf")) {
+    options.format = "pdf";
   }
 
   return cloudinary.url(publicId, options);

@@ -606,7 +606,9 @@ export const generateInvoiceHTML = async (order) => {
             }
             <div class="footer-section">
               <h4>Need Help?</h4>
-              <p>Contact us at ${settings.companyPhone} or email ${settings.companyEmail} for any queries or issues.</p>
+              <p>Contact us at ${settings.companyPhone} or email ${
+    settings.companyEmail
+  } for any queries or issues.</p>
             </div>
           </div>
           <div class="footer-note">
