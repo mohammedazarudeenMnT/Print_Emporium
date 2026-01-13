@@ -8,7 +8,8 @@ import {
   Trash2,
   Image as ImageIcon,
   IndianRupee,
-  Layers
+  Layers,
+  MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -233,38 +234,52 @@ export function ServicesListTab() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-y-3 mb-6 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
-                    <span className="truncate">
-                      <b>Print Types:</b> {service.printTypes?.map(p => {
-                        const isPerCopy = (p.pricePerCopy || 0) > 0 && (p.pricePerPage || 0) === 0;
-                        const price = isPerCopy ? p.pricePerCopy : p.pricePerPage;
-                        return `${p.value} (₹${price}/${isPerCopy ? 'copy' : 'page'})`;
-                      }).join(", ") || "None"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
-                    <span className="truncate">
-                      <b>Paper Sizes:</b> {service.paperSizes?.map(p => {
-                        const isPerCopy = (p.pricePerCopy || 0) > 0 && (p.pricePerPage || 0) === 0;
-                        const price = isPerCopy ? p.pricePerCopy : p.pricePerPage;
-                        return price > 0 ? `${p.value} (+₹${price}/${isPerCopy ? 'copy' : 'page'})` : p.value;
-                      }).join(", ") || "None"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
-                    <span className="truncate">
-                      <b>Paper Types:</b> {service.paperTypes?.length || 0} options • <b>GSM:</b> {service.gsmOptions?.length || 0} options
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 font-semibold text-primary bg-primary/5 p-3 rounded-xl border border-primary/10">
-                    <IndianRupee className="h-4 w-4" />
-                    <span className="text-sm">
-                      Base Price: ₹{service.basePricePerPage}/page
-                    </span>
-                  </div>
+                  {service.customQuotation ? (
+                    <div className="flex flex-col gap-3 py-2">
+                       <Badge variant="secondary" className="w-fit gap-1.5 px-3 py-1">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Custom Quotation Service
+                       </Badge>
+                       <p className="text-muted-foreground text-xs italic">
+                         This service collects leads instead of direct orders.
+                       </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
+                        <span className="truncate">
+                          <b>Print Types:</b> {service.printTypes?.map(p => {
+                            const isPerCopy = (p.pricePerCopy || 0) > 0 && (p.pricePerPage || 0) === 0;
+                            const price = isPerCopy ? p.pricePerCopy : p.pricePerPage;
+                            return `${p.value} (₹${price}/${isPerCopy ? 'copy' : 'page'})`;
+                          }).join(", ") || "None"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
+                        <span className="truncate">
+                          <b>Paper Sizes:</b> {service.paperSizes?.map(p => {
+                            const isPerCopy = (p.pricePerCopy || 0) > 0 && (p.pricePerPage || 0) === 0;
+                            const price = isPerCopy ? p.pricePerCopy : p.pricePerPage;
+                            return price > 0 ? `${p.value} (+₹${price}/${isPerCopy ? 'copy' : 'page'})` : p.value;
+                          }).join(", ") || "None"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-primary/30 shrink-0" />
+                        <span className="truncate">
+                          <b>Paper Types:</b> {service.paperTypes?.length || 0} options • <b>GSM:</b> {service.gsmOptions?.length || 0} options
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 font-semibold text-primary bg-primary/5 p-3 rounded-xl border border-primary/10">
+                        <IndianRupee className="h-4 w-4" />
+                        <span className="text-sm">
+                          Base Price: ₹{service.basePricePerPage}/page
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-4 border-t border-border/50">

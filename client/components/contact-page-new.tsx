@@ -30,6 +30,7 @@ import { createLead } from "@/lib/lead-api";
 import { toast } from "sonner";
 import ContactHero from "@/components/contact-hero";
 import CTASection from "@/components/cta-section";
+import { useSearchParams } from "next/navigation";
 
 interface FAQ {
   question: string;
@@ -96,13 +97,22 @@ const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export default function RedesignedContactPage() {
   const { settings, loading } = useCompanySettings();
+  const searchParams = useSearchParams();
+  const subjectParam = searchParams.get("subject");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    subject: "",
+    subject: subjectParam || "",
     message: "",
   });
+
+  React.useEffect(() => {
+    if (subjectParam) {
+      setFormData((prev) => ({ ...prev, subject: subjectParam }));
+    }
+  }, [subjectParam]);
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

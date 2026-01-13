@@ -46,6 +46,7 @@ export interface Service {
   image?: string | { data: string; name: string } | null;
   basePrice?: number; // Alias for basePricePerPage for display purposes
   basePricePerPage: number;
+  customQuotation?: boolean;
   printTypes: OptionPricing[];
   paperSizes: OptionPricing[];
   paperTypes: OptionPricing[];

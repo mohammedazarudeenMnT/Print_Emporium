@@ -193,6 +193,7 @@ export const upsertService = async (req, res) => {
       name,
       image,
       basePricePerPage,
+      customQuotation,
       printTypes,
       paperSizes,
       paperTypes,
@@ -273,6 +274,7 @@ export const upsertService = async (req, res) => {
     const serviceData = {
       name,
       basePricePerPage,
+      customQuotation,
       printTypes,
       paperSizes,
       paperTypes,

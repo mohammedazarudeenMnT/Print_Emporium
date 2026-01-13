@@ -5,6 +5,8 @@ import { X, Save, IndianRupee, Settings } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   getAllServiceOptions,
@@ -31,6 +33,7 @@ export function ServiceFormModal({ service, onClose, onSuccess }: ServiceFormMod
       name: "",
       image: null,
       basePricePerPage: 0,
+      customQuotation: false,
       printTypes: [],
       paperSizes: [],
       paperTypes: [],
@@ -318,6 +321,18 @@ export function ServiceFormModal({ service, onClose, onSuccess }: ServiceFormMod
             {errors.basePricePerPage && <p className="text-xs text-red-500">{errors.basePricePerPage}</p>}
           </div>
 
+          <div className="flex items-center space-x-2 border border-border/50 p-4 rounded-lg bg-muted/20">
+            <Switch
+              id="customQuotation"
+              checked={formData.customQuotation || false}
+              onCheckedChange={(checked) => setFormData({ ...formData, customQuotation: checked })}
+            />
+            <div className="items-center gap-2">
+              <Label htmlFor="customQuotation" className="text-sm font-semibold">Custom Quotation Service</Label>
+              <p className="text-xs text-muted-foreground">Enable this to treat orders as leads without immediate print configuration.</p>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <label htmlFor="status" className="text-sm font-medium">
               Status
@@ -336,7 +351,8 @@ export function ServiceFormModal({ service, onClose, onSuccess }: ServiceFormMod
             </Select>
           </div>
 
-          <div className="border-t border-border/50 pt-5">
+          {!formData.customQuotation && (
+            <div className="border-t border-border/50 pt-5">
             <h3 className="text-sm font-semibold mb-4">Service Options</h3>
             <div className="space-y-5">
               <CategorySection
@@ -371,7 +387,8 @@ export function ServiceFormModal({ service, onClose, onSuccess }: ServiceFormMod
                 options={options.bindingOption || []}
               />
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="px-6 py-4 border-t border-border/50 flex justify-end gap-3 bg-card">

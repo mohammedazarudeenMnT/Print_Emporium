@@ -67,6 +67,13 @@ export default function OrderPage() {
     }
   }, [serviceId, isAuthenticated]);
 
+  // Handle redirection for custom quotation services
+  useEffect(() => {
+    if (service && service.customQuotation) {
+      router.replace(`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`);
+    }
+  }, [service, router]);
+
   // Show loading while checking auth
   if (authLoading || (!isAuthenticated && !authLoading)) {
     return (

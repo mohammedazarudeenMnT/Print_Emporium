@@ -10,6 +10,7 @@ import {
   Maximize2,
   FileText,
   Upload,
+  MessageCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -147,16 +148,26 @@ export default async function ServicesPage() {
                     <h3 className="text-2xl font-black text-white mb-2 drop-shadow-lg">
                       {service.name}
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-bold">
-                        {service.printTypes?.length || 0} Print Options
-                      </Badge>
-                      <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-bold">
-                        {service.paperSizes?.length || 0} Sizes
-                      </Badge>
-                    </div>
+                    {!service.customQuotation && (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-bold">
+                          {service.printTypes?.length || 0} Print Options
+                        </Badge>
+                        <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-bold">
+                          {service.paperSizes?.length || 0} Sizes
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 </div>
+                
+                {service.customQuotation && (
+                   /* Custom Quote Banner */
+                   <div className="bg-primary/5 px-6 py-3 border-b border-primary/10 flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-primary" />
+                      <span className="text-xs font-bold text-primary uppercase tracking-wide">Custom Quote Service</span>
+                   </div>
+                )}
 
                 {/* Content Section */}
                 <div className="p-6 flex-1 flex flex-col space-y-6">
@@ -278,14 +289,25 @@ export default async function ServicesPage() {
                   </div>
 
                   {/* Action Button */}
-                  <Link href={`/order/${service._id}`} className="w-full">
-                    <Button className="w-full rounded-2xl h-14 text-base font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all group-hover:shadow-xl group-hover:shadow-primary/30">
-                      <span className="flex items-center gap-2">
-                        <Upload className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                        Upload & Print
-                      </span>
-                    </Button>
-                  </Link>
+                  {service.customQuotation ? (
+                    <Link href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`} className="w-full">
+                       <Button className="w-full rounded-2xl h-14 text-base font-bold bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white hover:border-primary shadow-lg shadow-primary/5 transition-all group-hover:shadow-xl group-hover:shadow-primary/20">
+                        <span className="flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                          Request Quote
+                        </span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href={`/order/${service._id}`} className="w-full">
+                      <Button className="w-full rounded-2xl h-14 text-base font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all group-hover:shadow-xl group-hover:shadow-primary/30">
+                        <span className="flex items-center gap-2">
+                          <Upload className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                          Upload & Print
+                        </span>
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

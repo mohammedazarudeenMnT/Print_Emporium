@@ -15,6 +15,10 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    customQuotation: {
+      type: Boolean,
+      default: false,
+    },
     printTypes: [
       {
         value: String,
