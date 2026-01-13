@@ -40,7 +40,7 @@ import {
   Calendar,
   RefreshCw,
 } from "lucide-react";
-import axios from "axios";
+import { axiosInstance } from "@/lib/axios";
 
 // Deep blue color palette
 const COLOR_PALETTE = {
@@ -129,18 +129,156 @@ interface DashboardStats {
   }>;
 }
 
+// Mock data for demo (moved outside component to avoid re-renders)
+const mockData: DashboardStats = {
+  totalOrders: 87,
+  todayOrders: 4,
+  weekOrders: 16,
+  monthOrders: 37,
+  totalRevenue: 328000,
+  todayRevenue: 12000,
+  weekRevenue: 48000,
+  averageOrderValue: 3770,
+  revenueGrowth: 8.5,
+  orderGrowth: 6.2,
+  statusBreakdown: {
+    pending: 5,
+    confirmed: 20,
+    processing: 8,
+    printing: 12,
+    shipped: 15,
+    delivered: 25,
+    cancelled: 2,
+  },
+  paymentBreakdown: {
+    paid: 65,
+    pending: 22,
+  },
+  charts: {
+    monthlyRevenue: [
+      { month: "2024-01", revenue: 45000, orders: 12 },
+      { month: "2024-02", revenue: 52000, orders: 14 },
+      { month: "2024-03", revenue: 48000, orders: 13 },
+      { month: "2024-04", revenue: 61000, orders: 16 },
+      { month: "2024-05", revenue: 55000, orders: 15 },
+      { month: "2024-06", revenue: 67000, orders: 18 },
+    ],
+    dailyOrders: [
+      { date: "2024-12-25", orders: 5, revenue: 12500 },
+      { date: "2024-12-26", orders: 8, revenue: 20000 },
+      { date: "2024-12-27", orders: 6, revenue: 15000 },
+      { date: "2024-12-28", orders: 12, revenue: 30000 },
+      { date: "2024-12-29", orders: 10, revenue: 25000 },
+      { date: "2024-12-30", orders: 7, revenue: 17500 },
+      { date: "2024-12-31", orders: 4, revenue: 10000 },
+    ],
+    ordersByService: [
+      { service: "Business Cards & Flyers", count: 36, revenue: 89000 },
+      { service: "Brochures", count: 24, revenue: 72000 },
+      { service: "Banners", count: 15, revenue: 45000 },
+      { service: "Custom Printing", count: 18, revenue: 54000 },
+      { service: "Labels & Stickers", count: 12, revenue: 36000 },
+    ],
+    ordersByPaymentMethod: [
+      { method: "Razorpay", count: 11, revenue: 27500 },
+      { method: "Netbanking", count: 10, revenue: 25000 },
+    ],
+  },
+  topCustomers: [
+    {
+      _id: "1",
+      totalOrders: 14,
+      totalSpent: 35000,
+      customerName: "Vikram Singh",
+      customerEmail: "vikram.singh@yahoo.com",
+    },
+    {
+      _id: "2",
+      totalOrders: 7,
+      totalSpent: 17500,
+      customerName: "Ganesh Babu",
+      customerEmail: "ganesh.babu@gmail.com",
+    },
+    {
+      _id: "3",
+      totalOrders: 5,
+      totalSpent: 12500,
+      customerName: "Priya Sharma",
+      customerEmail: "priya.sharma@gmail.com",
+    },
+  ],
+  recentOrders: [
+    {
+      _id: "1",
+      orderNumber: "PE2601130004",
+      status: "confirmed",
+      paymentStatus: "paid",
+      pricing: { total: 3300 },
+      createdAt: "2024-01-13",
+      deliveryInfo: { fullName: "Ganesh Babu" },
+    },
+    {
+      _id: "2",
+      orderNumber: "PE2601130003",
+      status: "shipped",
+      paymentStatus: "paid",
+      pricing: { total: 3300 },
+      createdAt: "2024-01-13",
+      deliveryInfo: { fullName: "Ganesh Babu" },
+    },
+    {
+      _id: "3",
+      orderNumber: "PE2601130002",
+      status: "confirmed",
+      paymentStatus: "paid",
+      pricing: { total: 3300 },
+      createdAt: "2024-01-13",
+      deliveryInfo: { fullName: "Ganesh Babu" },
+    },
+    {
+      _id: "4",
+      orderNumber: "PE2601130001",
+      status: "delivered",
+      paymentStatus: "paid",
+      pricing: { total: 3300 },
+      createdAt: "2024-01-13",
+      deliveryInfo: { fullName: "Ganesh Babu" },
+    },
+    {
+      _id: "5",
+      orderNumber: "PE2601120012",
+      status: "confirmed",
+      paymentStatus: "paid",
+      pricing: { total: 3300 },
+      createdAt: "2024-01-12",
+      deliveryInfo: { fullName: "Manish Patel" },
+    },
+  ],
+};
+
 export function AdminAnalytics() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("month");
   const [refreshing, setRefreshing] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   const fetchStats = useCallback(async () => {
+    if (demoMode) {
+      // Use mock data in demo mode
+      setLoading(true);
+      setTimeout(() => {
+        setStats(mockData);
+        setLoading(false);
+        setRefreshing(false);
+      }, 500); // Simulate loading delay
+      return;
+    }
+
     try {
       setRefreshing(true);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/admin/stats?period=${period}`,
-        { withCredentials: true }
+      const response = await axiosInstance.get(
+        `/api/orders/admin/stats?period=${period}`
       );
       if (response.data.success) {
         setStats(response.data.stats);
@@ -151,7 +289,7 @@ export function AdminAnalytics() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [period]);
+  }, [period, demoMode]);
 
   useEffect(() => {
     fetchStats();
@@ -193,21 +331,39 @@ export function AdminAnalytics() {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
       <div className=" mx-auto space-y-6">
         {/* Header with filters */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">
-              Analytics Dashboard
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-slate-900">
+                Analytics Dashboard
+              </h1>
+              {demoMode && (
+                <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-full shadow-lg">
+                  DEMO MODE
+                </span>
+              )}
+            </div>
             <p className="text-slate-600 mt-1">
-              Overview of your business performance
+              {demoMode 
+                ? "Showcasing dashboard design with sample data" 
+                : "Overview of your business performance"
+              }
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant={demoMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDemoMode(!demoMode)}
+              className={demoMode ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" : ""}
+            >
+              {demoMode ? "Live Data" : "Demo"}
+            </Button>
             <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-35">
                 <Calendar className="h-4 w-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
@@ -272,7 +428,7 @@ export function AdminAnalytics() {
               <CardTitle className="text-lg">Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
+              <ChartContainer config={chartConfig} className="h-75">
                 <AreaChart data={stats.charts.monthlyRevenue}>
                   <defs>
                     <linearGradient
@@ -350,7 +506,7 @@ export function AdminAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
+              <ChartContainer config={chartConfig} className="h-75">
                 <BarChart data={stats.charts.dailyOrders.slice(-14)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
@@ -516,7 +672,7 @@ export function AdminAnalytics() {
                 {stats.topCustomers.map((customer, index) => (
                   <div
                     key={customer._id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-blue-50 to-transparent border border-blue-100"
+                    className="flex items-center justify-between p-3 rounded-lg bg-linear-to-r from-blue-50 to-transparent border border-blue-100"
                   >
                     <div className="flex items-center gap-3">
                       <div
