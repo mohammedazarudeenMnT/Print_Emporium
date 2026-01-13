@@ -3,6 +3,7 @@ import { uploadToCloudinary, uploadRawToCloudinary, getUrlFromPublicId, getRawUr
 import { convertFileToPdf } from './fileConversion.controller.js';
 import { generateInvoiceHTML } from '../services/invoice.service.js';
 import { generatePDFFromHTML } from '../utils/pdf-generator.js';
+import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from '../services/email.service.js';
 
 /**
  * Upload order file to Cloudinary and convert to PDF
@@ -119,24 +120,7 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // Generate Order Number
-    const date = new Date();
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    // Count orders today for sequence
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
-    
-    const count = await Order.countDocuments({
-      createdAt: { $gte: startOfDay, $lte: endOfDay }
-    });
-    
-    const sequence = (count + 1).toString().padStart(4, '0');
-    const orderNumber = `PE${year}${month}${day}${sequence}`;
+    const orderNumber = await generateOrderNumber();
 
     // Create the order
     const order = new Order({
@@ -337,6 +321,96 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
+/**
+ * Reorder a previously placed order
+ */
+export const reorderOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Find the original order
+    const oldOrder = await Order.findOne({ _id: id, userId });
+
+    if (!oldOrder) {
+      return res.status(404).json({ error: 'Original order not found' });
+    }
+
+    // Generate a new order number
+    const orderNumber = await generateOrderNumber();
+
+    // Create a new order by copying items and delivery info
+    const newOrder = new Order({
+      userId,
+      orderNumber,
+      items: oldOrder.items.map(item => ({
+        serviceId: item.serviceId,
+        serviceName: item.serviceName,
+        fileName: item.fileName,
+        fileSize: item.fileSize,
+        pageCount: item.pageCount,
+        filePublicId: item.filePublicId,
+        pdfPublicId: item.pdfPublicId,
+        configuration: item.configuration,
+        pricing: item.pricing
+      })),
+      deliveryInfo: oldOrder.deliveryInfo,
+      pricing: oldOrder.pricing,
+      status: 'pending',
+      paymentStatus: 'pending',
+      notes: `Reordered from #${oldOrder.orderNumber}`
+    });
+
+    await newOrder.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Order reordered successfully',
+      order: {
+        id: newOrder._id,
+        orderNumber: newOrder.orderNumber,
+        status: newOrder.status,
+        paymentStatus: newOrder.paymentStatus,
+        total: newOrder.pricing.total,
+        deliveryInfo: newOrder.deliveryInfo
+      }
+    });
+
+  } catch (error) {
+    console.error('Reorder error:', error);
+    res.status(500).json({ 
+      error: 'Failed to reorder',
+      details: error.message 
+    });
+  }
+};
+
+/**
+ * Helper to generate unique order numbers
+ */
+async function generateOrderNumber() {
+  const date = new Date();
+  const year = date.getFullYear().toString().slice(-2);
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const count = await Order.countDocuments({
+    createdAt: { $gte: startOfDay, $lte: endOfDay }
+  });
+  
+  const sequence = (count + 1).toString().padStart(4, '0');
+  return `PE${year}${month}${day}${sequence}`;
+}
+
 // ============ ADMIN ENDPOINTS ============
 
 /**
@@ -410,11 +484,22 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
+    const oldStatus = order.status;
+    
     if (status) order.status = status;
     if (trackingNumber) order.trackingNumber = trackingNumber;
     if (notes) order.notes = notes;
 
     await order.save();
+
+    // Send email notification if status updated
+    if (status && status !== oldStatus) {
+      try {
+        await sendOrderStatusUpdateEmail(order);
+      } catch (emailError) {
+        console.error('Failed to send status update email:', emailError);
+      }
+    }
 
     res.json({
       success: true,

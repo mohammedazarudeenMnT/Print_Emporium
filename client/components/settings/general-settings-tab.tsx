@@ -56,6 +56,7 @@ interface GeneralSettings {
   gstNumber: string;
   termsAndConditions: string;
   footerNote: string;
+  trackingWebsiteUrl: string;
 }
 
 interface GeneralSettingsTabProps {
@@ -85,6 +86,7 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
     gstNumber: "",
     termsAndConditions: "",
     footerNote: "",
+    trackingWebsiteUrl: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,6 +136,7 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
           gstNumber: generalSettings.gstNumber || "",
           termsAndConditions: generalSettings.termsAndConditions || "",
           footerNote: generalSettings.footerNote || "",
+          trackingWebsiteUrl: generalSettings.trackingWebsiteUrl || "",
         });
       }
     } catch (error) {
@@ -636,6 +639,25 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
               placeholder="Enter footer note"
               rows={3}
             />
+          </div>
+
+          {/* Tracking Website URL */}
+          <div className="space-y-2 mt-6">
+            <Label htmlFor="trackingWebsiteUrl" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Tracking Website URL
+            </Label>
+            <Input
+              id="trackingWebsiteUrl"
+              value={settings.trackingWebsiteUrl}
+              onChange={(e) =>
+                handleSettingsChange("trackingWebsiteUrl", e.target.value)
+              }
+              placeholder="e.g., https://www.delhivery.com/"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              This URL will be included in shipping notification emails to help users track their orders.
+            </p>
           </div>
         </div>
 

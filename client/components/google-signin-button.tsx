@@ -4,6 +4,8 @@ import { useState } from "react";
 import { signInWithGoogle } from "@/lib/auth-api";
 import { Button } from "@/components/ui/button";
 
+import { toast } from "sonner";
+
 interface GoogleSignInButtonProps {
   callbackURL?: string;
   className?: string;
@@ -27,8 +29,7 @@ export function GoogleSignInButton({
       console.error("Google OAuth error:", error);
       setIsLoading(false); // Reset loading state on error
       
-      // You can add toast notification here
-      alert("Failed to sign in with Google. Please try again.");
+      toast.error("Failed to sign in with Google. Please try again.");
     }
     // Note: Don't reset loading state on success since we're redirecting
   };

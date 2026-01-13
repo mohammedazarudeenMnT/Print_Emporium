@@ -99,6 +99,10 @@ const generalSettingsSchema = new mongoose.Schema(
       default:
         "© 2024 The Print Emporium. All rights reserved. Serving Trichy with quality printing since 2020.",
     },
+    trackingWebsiteUrl: {
+      type: String,
+      default: "https://www.delhivery.com/",
+    },
 
     // Email verification fields
     pendingEmailChange: {

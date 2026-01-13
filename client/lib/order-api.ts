@@ -160,6 +160,14 @@ export const updatePaymentStatus = async (
   return response.data;
 };
 
+/**
+ * Reorder a previously placed order
+ */
+export const reorderOrder = async (id: string): Promise<{ success: boolean; message: string; order: OrderResponse }> => {
+  const response = await axiosInstance.post(`/api/orders/${id}/reorder`);
+  return response.data;
+};
+
 // ============ ADMIN API ============
 
 /**

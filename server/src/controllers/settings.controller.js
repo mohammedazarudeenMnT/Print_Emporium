@@ -97,6 +97,7 @@ export const updateGeneralSettings = async (req, res) => {
       gstNumber,
       termsAndConditions,
       footerNote,
+      trackingWebsiteUrl,
     } = req.body;
 
     if (
@@ -229,6 +230,7 @@ export const updateGeneralSettings = async (req, res) => {
         gstNumber,
         termsAndConditions,
         footerNote,
+        trackingWebsiteUrl,
         lastUpdatedBy: req.user?.id || "init",
       });
     } else {
@@ -255,6 +257,7 @@ export const updateGeneralSettings = async (req, res) => {
       settings.gstNumber = gstNumber;
       settings.termsAndConditions = termsAndConditions;
       settings.footerNote = footerNote;
+      settings.trackingWebsiteUrl = trackingWebsiteUrl;
       settings.lastUpdatedBy = req.user?.id;
       await settings.save();
     }

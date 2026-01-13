@@ -4,6 +4,7 @@ import {
   getUserOrders,
   getOrderById,
   cancelOrder,
+  reorderOrder,
   getAllOrders,
   updateOrderStatus,
   getOrderStats,
@@ -23,6 +24,7 @@ router.get('/my-orders', requireAuth, getUserOrders);
 router.get('/:id', requireAuth, getOrderById);
 router.get('/:id/invoice', requireAuth, downloadInvoice);
 router.post('/:id/cancel', requireAuth, cancelOrder);
+router.post('/:id/reorder', requireAuth, reorderOrder);
 
 // Admin and Employee routes (can view and manage all orders)
 router.get('/admin/all', requireAdminOrEmployee, getAllOrders);

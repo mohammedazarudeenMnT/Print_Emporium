@@ -27,10 +27,19 @@ import {
   Download,
   FileText,
   Calendar,
+  RotateCcw,
+  CreditCard as CreditCardIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
+import { TrackingModal } from "./tracking-modal";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import {
+  loadRazorpayScript,
+  createPaymentOrder as createRazorpayOrder,
+  verifyPayment,
+} from "@/lib/payment-api";
 
 interface OrdersTabProps {
   user: any;
@@ -55,6 +64,12 @@ export function OrdersTab({ user }: OrdersTabProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [statusUpdateData, setStatusUpdateData] = useState<{ id: string; status: string; orderNumber: string } | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isReordering, setIsReordering] = useState<string | null>(null);
+  const [reorderConfirmOpen, setReorderConfirmOpen] = useState(false);
+  const [reorderId, setReorderId] = useState<string | null>(null);
 
   const isAdminOrEmployee = user.role === "admin" || user.role === "employee";
 
@@ -88,6 +103,14 @@ export function OrdersTab({ user }: OrdersTabProps) {
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o._id === orderId);
+    
+    if (newStatus === "shipped") {
+      setStatusUpdateData({ id: orderId, status: newStatus, orderNumber: order?.orderNumber || "" });
+      setTrackingModalOpen(true);
+      return;
+    }
+
     try {
       const response = await axiosInstance.put(
         `/api/orders/admin/${orderId}/status`,
@@ -95,6 +118,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
       );
 
       if (response.data.success) {
+        toast.success(`Order status updated to ${newStatus}`);
         fetchOrders();
         if (selectedOrder?._id === orderId) {
           setSelectedOrder({ ...selectedOrder, status: newStatus });
@@ -102,7 +126,138 @@ export function OrdersTab({ user }: OrdersTabProps) {
       }
     } catch (err: any) {
       console.error("Failed to update order status:", err);
-      alert(err.response?.data?.message || "Failed to update order status");
+      toast.error(err.response?.data?.message || "Failed to update order status");
+    }
+  };
+
+  const handleTrackingConfirm = async (trackingNumber: string) => {
+    if (!statusUpdateData) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await axiosInstance.put(
+        `/api/orders/admin/${statusUpdateData.id}/status`,
+        { status: statusUpdateData.status, trackingNumber }
+      );
+
+      if (response.data.success) {
+        toast.success(`Order #${statusUpdateData.orderNumber} status updated to Shipped`);
+        setTrackingModalOpen(false);
+        setStatusUpdateData(null);
+        fetchOrders();
+        if (selectedOrder?._id === statusUpdateData.id) {
+          setSelectedOrder({ 
+            ...selectedOrder, 
+            status: statusUpdateData.status,
+            trackingNumber 
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error("Failed to update order status:", err);
+      toast.error(err.response?.data?.message || "Failed to update order status");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleReorder = async (orderId: string) => {
+    setReorderId(orderId);
+    setReorderConfirmOpen(true);
+  };
+
+  const handleInitPayment = async (order: any) => {
+    try {
+      // 1. Load Razorpay SDK
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        toast.error("Failed to load payment gateway. Please retry from your order history.");
+        return;
+      }
+
+      // 2. Create Payment Order (Razorpay)
+      const paymentOrder = await createRazorpayOrder(order._id || order.id);
+      if (!paymentOrder.success) {
+        toast.error("Failed to initiate payment. Please retry from your order history.");
+        return;
+      }
+
+      // 3. Open Checkout
+      const options = {
+        key: paymentOrder.keyId,
+        amount: paymentOrder.amount,
+        currency: paymentOrder.currency,
+        name: "Print Emporium",
+        description: `Order #${order.orderNumber}`,
+        order_id: paymentOrder.id,
+        prefill: {
+          name: order.deliveryInfo?.fullName,
+          email: order.deliveryInfo?.email,
+          contact: order.deliveryInfo?.phone,
+        },
+        theme: {
+          color: "#7c3aed",
+        },
+        handler: async function (paymentResponse: any) {
+          try {
+            const verifyRes = await verifyPayment({
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+              orderId: order._id || order.id,
+            });
+
+            if (verifyRes.success) {
+              toast.success("Payment successful! Order confirmed.");
+              fetchOrders();
+              if (selectedOrder?._id === (order._id || order.id)) {
+                setSelectedOrder({ ...selectedOrder, paymentStatus: "paid" });
+              }
+            } else {
+              toast.error("Payment verification failed. Please contact support.");
+            }
+          } catch (error) {
+            console.error("Verification error", error);
+            toast.error("Payment verification failed.");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast("Payment cancelled", {
+              description: "You can retry payment anytime from your order history.",
+            });
+          },
+        },
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+    } catch (err) {
+      console.error("Payment initiation failed:", err);
+      toast.error("Failed to initiate payment gateway.");
+    }
+  };
+
+  const confirmReorder = async () => {
+    if (!reorderId) return;
+    
+    try {
+      setIsReordering(reorderId);
+      const response = await axiosInstance.post(`/api/orders/${reorderId}/reorder`);
+
+      if (response.data.success) {
+        const orderData = response.data.order;
+        toast.success("Reorder created! Please complete the payment.");
+        handleInitPayment(orderData);
+        fetchOrders();
+      }
+    } catch (err: any) {
+      console.error("Failed to reorder:", err);
+      toast.error(err.response?.data?.error || "Failed to reorder");
+      fetchOrders();
+    } finally {
+      setIsReordering(null);
+      setReorderId(null);
     }
   };
 
@@ -295,6 +450,33 @@ export function OrdersTab({ user }: OrdersTabProps) {
                         <Eye className="h-4 w-4 mr-2" />
                         Details
                       </Button>
+                      {!isAdminOrEmployee && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleReorder(order._id)}
+                          disabled={isReordering === order._id}
+                          className="bg-primary/10 text-primary hover:bg-primary/20"
+                        >
+                          {isReordering === order._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : (
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                          )}
+                          Reorder
+                        </Button>
+                      )}
+                      {!isAdminOrEmployee && order.paymentStatus !== "paid" && order.status !== "cancelled" && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleInitPayment(order)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CreditCardIcon className="h-4 w-4 mr-2" />
+                          Pay Now
+                        </Button>
+                      )}
                     </div>
                   </div>
 
@@ -439,6 +621,17 @@ export function OrdersTab({ user }: OrdersTabProps) {
                       Invoice
                     </Button>
                   )}
+                  {!isAdminOrEmployee && selectedOrder.paymentStatus !== "paid" && selectedOrder.status !== "cancelled" && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleInitPayment(selectedOrder)}
+                      className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                    >
+                      <CreditCardIcon className="h-4 w-4" />
+                      Complete Payment
+                    </Button>
+                  )}
                   <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
                     <XCircle className="h-5 w-5" />
                   </Button>
@@ -461,6 +654,14 @@ export function OrdersTab({ user }: OrdersTabProps) {
                           {statusConfig[selectedOrder.status as keyof typeof statusConfig]?.label || selectedOrder.status}
                         </span>
                       </div>
+                      {selectedOrder.trackingNumber && (
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-sm">Tracking Number</span>
+                          <span className="text-xs font-mono font-bold text-primary">
+                            {selectedOrder.trackingNumber}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                         <span className="text-sm">Payment Status</span>
                         <span className={cn(
@@ -672,6 +873,27 @@ export function OrdersTab({ user }: OrdersTabProps) {
           </Card>
         </div>
       )}
+
+      <TrackingModal
+        isOpen={trackingModalOpen}
+        onClose={() => {
+          setTrackingModalOpen(false);
+          setStatusUpdateData(null);
+        }}
+        onConfirm={handleTrackingConfirm}
+        isLoading={isUpdatingStatus}
+        orderNumber={statusUpdateData?.orderNumber}
+      />
+
+      <ConfirmationModal
+        isOpen={reorderConfirmOpen}
+        onClose={() => setReorderConfirmOpen(false)}
+        onConfirm={confirmReorder}
+        title="Reorder Confirmation"
+        description="Are you sure you want to reorder this previous order? All items and delivery details will be copied to a new order."
+        confirmLabel="Reorder Now"
+        variant="default"
+      />
     </div>
   );
 }
