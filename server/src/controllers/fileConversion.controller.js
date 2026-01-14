@@ -566,6 +566,78 @@ async function convertWithMammoth(buffer) {
 
 
 /**
+ * Convert plain text to PDF
+ */
+async function convertTextToPdf(text) {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 50;
+  const fontSize = 11;
+  const lineHeight = fontSize * 1.4;
+  const contentWidth = pageWidth - (margin * 2);
+  
+  let page = pdfDoc.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+  
+  const lines = text.split('\n');
+  
+  for (const line of lines) {
+    const cleanLine = cleanTextForPdf(line);
+    const words = cleanLine.split(/\s+/);
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      const width = font.widthOfTextAtSize(testLine, fontSize);
+      
+      if (width > contentWidth && currentLine) {
+        // Draw current line
+        if (y < margin + lineHeight) {
+          page = pdfDoc.addPage([pageWidth, pageHeight]);
+          y = pageHeight - margin;
+        }
+        
+        page.drawText(currentLine, {
+          x: margin,
+          y,
+          size: fontSize,
+          font,
+          color: rgb(0, 0, 0)
+        });
+        
+        y -= lineHeight;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    // Draw remaining text
+    if (currentLine) {
+      if (y < margin + lineHeight) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        y = pageHeight - margin;
+      }
+      
+      page.drawText(currentLine, {
+        x: margin,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0)
+      });
+      
+      y -= lineHeight;
+    }
+  }
+  
+  return await pdfDoc.save();
+}
+
+/**
  * Convert file buffer to PDF - reusable function for order uploads
  * @param {Buffer} buffer - File buffer
  * @param {string} extension - File extension (docx, doc, txt, etc.)
@@ -579,6 +651,16 @@ export const convertFileToPdf = async (buffer, extension) => {
     return buffer;
   }
   
+  // Ensure buffer is a proper Buffer instance
+  if (!Buffer.isBuffer(buffer)) {
+    throw new Error('Invalid buffer provided for conversion');
+  }
+  
+  // Validate buffer has content
+  if (buffer.length === 0) {
+    throw new Error('Empty buffer provided for conversion');
+  }
+  
   let pdfBuffer;
   
   // Handle Word documents
@@ -586,16 +668,25 @@ export const convertFileToPdf = async (buffer, extension) => {
     // Try LibreOffice first (most accurate)
     if (libreConvert) {
       try {
+        console.log('Attempting LibreOffice conversion...');
         pdfBuffer = await convertWithLibreOffice(buffer);
+        console.log('LibreOffice conversion successful');
         return pdfBuffer;
       } catch (libreErr) {
-        console.warn('LibreOffice conversion failed, falling back to Mammoth:', libreErr.message);
+        console.log('LibreOffice conversion failed, falling back to Mammoth:', libreErr.message);
       }
     }
     
     // Fallback to Mammoth + PDF-lib
-    pdfBuffer = await convertWithMammoth(buffer);
-    return pdfBuffer;
+    try {
+      console.log('Using Mammoth conversion...');
+      pdfBuffer = await convertWithMammoth(buffer);
+      console.log('Mammoth conversion successful');
+      return pdfBuffer;
+    } catch (mammothErr) {
+      console.error('Mammoth conversion failed:', mammothErr.message);
+      throw new Error(`Failed to convert ${ext} file: ${mammothErr.message}`);
+    }
   }
   
   // Handle text files
@@ -606,7 +697,7 @@ export const convertFileToPdf = async (buffer, extension) => {
   }
   
   // For unsupported formats, throw error
-  throw new Error(`Unsupported file format: ${ext}`);
+  throw new Error(`Unsupported file format: ${ext}. Supported formats: PDF, DOCX, DOC, TXT`);
 };
 
 /**

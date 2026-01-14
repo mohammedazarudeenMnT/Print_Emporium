@@ -34,44 +34,77 @@ export const uploadOrderFile = async (req, res) => {
 
     // 2. Handle PDF version
     if (fileExtension === 'pdf') {
-      pdfPublicId = originalUpload.public_id;
-      console.log('File is already PDF, using same file for both');
+      // For original PDFs, also upload as image resource type for proper display
+      console.log('File is already PDF, uploading as image resource type for display...');
+      const pdfUpload = await uploadToCloudinary(
+        fileData,
+        'printemporium/orders/pdfs',
+        `${customPublicId}_pdf`,
+        { resource_type: 'image', format: 'pdf' }
+      );
+      pdfPublicId = pdfUpload.public_id;
     } else if (pdfData) {
       // Use the PDF data provided by frontend (converted on client)
       console.log(`Uploading provided PDF data for ${fileName}...`);
       const pdfUpload = await uploadToCloudinary(
         pdfData,
         'printemporium/orders/pdfs',
-        `${customPublicId}_pdf`
+        `${customPublicId}_pdf`,
+        { resource_type: 'image', format: 'pdf' }
       );
       pdfPublicId = pdfUpload.public_id;
     } else {
       // Optional: If no pdfData provided, we could convert it here on server
-      // But for now, let's try to upload the original as auto and hope Cloudinary handles it
-      // or use the server-side converter if we have the buffer.
-      // Since we have base64, we'd need to convert it to buffer first.
-      
       console.log(`No PDF data provided, attempting server-side conversion for ${fileName}...`);
       try {
-        const base64Content = fileData.split(',')[1] || fileData;
+        // Extract base64 content and clean it
+        let base64Content = fileData.includes(',') ? fileData.split(',')[1] : fileData;
+        base64Content = base64Content.replace(/\s/g, ''); // Remove all whitespace
+        
+        // Validate base64 content
+        if (!base64Content || base64Content.length === 0) {
+          throw new Error('Empty base64 content');
+        }
+        
+        // Create buffer from base64
         const buffer = Buffer.from(base64Content, 'base64');
+        
+        // Validate buffer
+        if (buffer.length === 0) {
+          throw new Error('Buffer is empty after base64 decode');
+        }
+        
+        console.log(`Buffer created: ${buffer.length} bytes for ${fileExtension} file`);
+        
+        // Convert to PDF
         const pdfBuffer = await convertFileToPdf(buffer, fileExtension);
         const pdfBase64 = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
         
         const pdfUpload = await uploadToCloudinary(
           pdfBase64,
           'printemporium/orders/pdfs',
-          `${customPublicId}_pdf`
+          `${customPublicId}_pdf`,
+          { resource_type: 'image', format: 'pdf' }
         );
         pdfPublicId = pdfUpload.public_id;
       } catch (convError) {
-        console.warn('Server-side conversion failed, falling back to auto upload:', convError.message);
-        const pdfUpload = await uploadToCloudinary(
-          fileData,
-          'printemporium/orders/pdfs',
-          `${customPublicId}_pdf`
-        );
-        pdfPublicId = pdfUpload.public_id;
+        console.error('Server-side conversion failed:', convError);
+        console.warn('Falling back to uploading original file as PDF...');
+        
+        // Last resort: upload original file and let Cloudinary handle it
+        try {
+          const pdfUpload = await uploadToCloudinary(
+            fileData,
+            'printemporium/orders/pdfs',
+            `${customPublicId}_pdf`,
+            { resource_type: 'image', format: 'pdf' }
+          );
+          pdfPublicId = pdfUpload.public_id;
+        } catch (uploadErr) {
+          console.error('Fallback upload also failed:', uploadErr);
+          // Set pdfPublicId to null - order can still be created without PDF
+          pdfPublicId = null;
+        }
       }
     }
 

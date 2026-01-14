@@ -60,16 +60,27 @@ export const getUrlFromPublicId = (publicId, customOptions = {}) => {
   // If it's already a URL, return it
   if (publicId.startsWith("http")) return publicId;
 
+  // Check if this is a PDF file
+  const isPdf = publicId.toLowerCase().includes("pdf") || 
+                publicId.toLowerCase().endsWith(".pdf");
+
   const options = {
     secure: true,
-    quality: "auto",
-    fetch_format: "auto",
+    resource_type: "image", // PDFs are uploaded as image resource type
     ...customOptions,
   };
 
-  // If publicId ends with .pdf or contains _pdf, ensure it's served as a PDF
-  if (publicId.toLowerCase().includes("pdf")) {
+  // For PDFs, ensure proper format and flags
+  if (isPdf) {
     options.format = "pdf";
+    options.flags = "attachment"; // Force download instead of inline display
+    // Remove any auto format conversion for PDFs
+    delete options.fetch_format;
+    delete options.quality;
+  } else {
+    // For images, use auto optimization
+    options.quality = "auto";
+    options.fetch_format = "auto";
   }
 
   return cloudinary.url(publicId, options);
@@ -80,17 +91,20 @@ export const getUrlFromPublicId = (publicId, customOptions = {}) => {
  * @param {string} file - The file to upload (base64 string or path).
  * @param {string} folder - The folder to upload to.
  * @param {string} publicId - Optional public ID (filename).
+ * @param {Object} additionalOptions - Additional upload options.
  * @returns {Promise<Object>} - Object containing secure_url and public_id.
  */
 export const uploadToCloudinary = async (
   file,
   folder = "print_emporium",
-  customPublicId = null
+  customPublicId = null,
+  additionalOptions = {}
 ) => {
   try {
     const options = {
       folder,
       resource_type: "auto",
+      ...additionalOptions,
     };
 
     if (customPublicId) {
