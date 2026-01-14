@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
+import Image from "next/image";
+import { 
   Image as ImageIcon,
   Plus,
   Trash2,
@@ -32,8 +33,7 @@ import {
   Scan,
   BookOpen,
   Tags,
-} from "lucide-react";
-import { 
+} from "lucide-react";import { 
   Select, 
   SelectContent, 
   SelectItem, 
@@ -230,9 +230,11 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                   )}
                 >
                   <div className="aspect-video w-full overflow-hidden bg-muted">
-                    <img 
-                      src={typeof slide.image === 'string' ? slide.image : ''} 
-                      alt={slide.title} 
+                    <Image
+                      src={typeof slide.image === 'string' ? slide.image : ''}
+                      alt={slide.title}
+                      width={1920}
+                      height={1080}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   </div>

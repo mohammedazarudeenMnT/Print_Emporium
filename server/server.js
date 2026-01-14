@@ -22,6 +22,7 @@ import customerRoutes from "./src/routes/customer.routes.js";
 import leadRoutes from "./src/routes/lead.routes.js";
 import { requireAdminOrSignedRequest } from "./src/middleware/signature.middleware.js";
 import { seedAdmin } from "./src/utils/seedAdmin.js";
+// import { seedOrders } from "./src/utils/seedOrders.js";
 
 dotenv.config();
 
@@ -37,23 +38,25 @@ const allowedOrigins = [
   "https://print-emporium.vercel.app",
 ].filter(Boolean); // Remove undefined values
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Cookie",
-    "X-Requested-With",
-    "x-signature",
-    "x-timestamp",
-    "Cache-Control",
-    "Pragma",
-    "Expires",
-  ],
-  exposedHeaders: ["Set-Cookie"], // Important for cross-origin cookie handling
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+      "X-Requested-With",
+      "x-signature",
+      "x-timestamp",
+      "Cache-Control",
+      "Pragma",
+      "Expires",
+    ],
+    exposedHeaders: ["Set-Cookie"], // Important for cross-origin cookie handling
+  })
+);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -97,6 +100,9 @@ const startServer = async () => {
     // Seed admin user
     await seedAdmin();
 
+    // // Seed example orders for dashboard if needed
+    // await seedOrders(20);
+
     // Better Auth API Handler (MUST be before express.json())
     app.use("/api/auth", toNodeHandler(auth));
 
@@ -111,7 +117,11 @@ const startServer = async () => {
     app.use("/api", paymentUserRouter); // /create-order-razorpay
     app.use("/api/seo", requireAdminOrSignedRequest, seoRoutes);
     app.use("/api/services", requireAdminOrSignedRequest, serviceRoutes);
-    app.use("/api/service-options", requireAdminOrSignedRequest, serviceOptionRoutes);
+    app.use(
+      "/api/service-options",
+      requireAdminOrSignedRequest,
+      serviceOptionRoutes
+    );
     app.use("/api/hero-slides", requireAdminOrSignedRequest, heroSlideRoutes);
     app.use("/api/file-conversion", fileConversionRoutes); // Public endpoint for file conversion
     app.use("/api/orders", orderRoutes); // Order management routes

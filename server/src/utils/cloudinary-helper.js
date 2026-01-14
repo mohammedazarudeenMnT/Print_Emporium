@@ -8,8 +8,11 @@ import cloudinary from "../config/cloudinary.js";
 export const getPublicIdFromUrl = (url) => {
   if (!url || !url.includes("res.cloudinary.com")) return null;
 
-  // Example URL: https://res.cloudinary.com/cloud_name/image/upload/v123456789/folder/public_id.jpg?query=params
-  // We need everything after /upload/ (excluding the version part v123456789/ and any query params)
+  // Example URL: https://res.cloudinary.com/cloud_name/image/upload/f_auto,q_auto/v123456789/folder/public_id.jpg?query=params
+  // We need to handle:
+  // 1. Transformations (f_auto,q_auto)
+  // 2. Version (v123456789)
+  // 3. Folder structure (folder/public_id)
   try {
     // First, remove any query parameters
     const urlWithoutQuery = url.split("?")[0];
@@ -20,8 +23,21 @@ export const getPublicIdFromUrl = (url) => {
     const afterUpload = parts[1];
     const pathParts = afterUpload.split("/");
 
-    // If the first part starts with 'v' followed by digits, it's the version part
-    const startIndex = pathParts[0].match(/^v\d+$/) ? 1 : 0;
+    // Find the LAST index of the version part (e.g., "v123456789")
+    // searching from the end ensures we skip any double-encoded parts
+    let versionIndex = -1;
+    for (let i = pathParts.length - 1; i >= 0; i--) {
+      if (pathParts[i].match(/^v\d+$/)) {
+        versionIndex = i;
+        break;
+      }
+    }
+
+    // If version is found, the public ID starts *after* the version
+    // If not found, we assume it starts at the beginning (index 0) 
+    // UNLESS the first part looks like a specific transformation, but standard behavior usually implies version presence for signed URLs
+    // For safety, we'll try to identify common transformation chars if version isn't found, but version search is the most robust.
+    const startIndex = versionIndex !== -1 ? versionIndex + 1 : 0;
 
     const publicIdWithExt = pathParts.slice(startIndex).join("/");
     const publicId = publicIdWithExt.split(".")[0]; // remove extension

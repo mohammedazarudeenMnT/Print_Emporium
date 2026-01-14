@@ -25,6 +25,7 @@ import {
   Eye,
   Package,
 } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface FileUploadStepProps {
@@ -460,10 +461,11 @@ export function FileUploadStep({
               <div className="p-4 bg-muted/30">
                 {previewFile.type.startsWith("image/") ? (
                   <div className="relative max-w-full max-h-[70vh] mx-auto">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={previewFile.previewUrl}
                       alt={previewFile.name}
+                      width={800}
+                      height={600}
                       className="max-w-full max-h-[70vh] object-contain mx-auto rounded-md shadow-sm"
                     />
                   </div>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { LogOut, User, Mail, Shield, Calendar } from "lucide-react";
 import { useCompanySettings } from "@/hooks/use-company-settings";
+import Image from "next/image";
 
 export default function Dashboard() {
   const { user, isLoading, isAuthenticated, signOut } = useAuth();
@@ -51,9 +52,11 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 {user.image ? (
-                  <img
+                  <Image
                     src={user.image}
-                    alt={user.name}
+                    alt={user.name || "User"}
+                    width={32}
+                    height={32}
                     className="rounded-full"
                   />
                 ) : (

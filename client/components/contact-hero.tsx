@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCompanySettings } from "@/hooks/use-company-settings";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function ContactHero() {
   const { settings, loading } = useCompanySettings();
@@ -192,9 +193,11 @@ export default function ContactHero() {
                     whileHover={{ y: -5, zIndex: 10 }}
                     className="w-14 h-14 rounded-full border-4 border-white bg-slate-100 shadow-xl"
                   >
-                    <img
+                    <Image
                       src={`https://i.pravatar.cc/150?u=print${i}`}
                       alt="user"
+                      width={56}
+                      height={56}
                       className="w-full h-full object-cover rounded-full"
                     />
                   </motion.div>

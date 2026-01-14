@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
 import {
   loadRazorpayScript,
@@ -794,9 +795,11 @@ export function ReviewStep({
                 <div className="border border-border rounded-xl overflow-hidden bg-muted/20 shadow-inner relative group">
                   {previewFile.file.type.startsWith("image/") &&
                   !previewFile.file.name.toLowerCase().endsWith(".pdf") ? (
-                    <img
+                    <Image
                       src={previewFile.file.previewUrl}
                       alt={previewFile.file.name}
+                      width={800}
+                      height={600}
                       className="w-full h-auto max-h-[600px] object-contain mx-auto transition-transform group-hover:scale-[1.01]"
                     />
                   ) : (

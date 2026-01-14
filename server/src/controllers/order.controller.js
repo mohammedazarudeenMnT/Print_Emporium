@@ -3,7 +3,7 @@ import { uploadToCloudinary, uploadRawToCloudinary, getUrlFromPublicId, getRawUr
 import { convertFileToPdf } from './fileConversion.controller.js';
 import { generateInvoiceHTML } from '../services/invoice.service.js';
 import { generatePDFFromHTML } from '../utils/pdf-generator.js';
-import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from '../services/email.service.js';
+import { sendOrderStatusUpdateEmail } from '../services/email.service.js';
 
 /**
  * Upload order file to Cloudinary and convert to PDF

@@ -12,6 +12,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { CompanyLogo } from "@/components/ui/company-logo";
 import { useCompanySettings } from "@/hooks/use-company-settings";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 type AuthMode = "login" | "signup";
@@ -328,9 +329,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   key={i}
                   className={`w-10 h-10 rounded-full border-2 border-primary bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground overflow-hidden`}
                 >
-                  <img
+                  <Image
                     src={`https://i.pravatar.cc/100?img=${i + 15}`}
                     alt="User"
+                    width={40}
+                    height={40}
                   />
                 </div>
               ))}
