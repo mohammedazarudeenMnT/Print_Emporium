@@ -119,7 +119,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
         onMouseLeave={() => !isPinned && !isMobile && setIsExpanded(false)}
       >
         {/* Header / Logo */}
-        <div className="h-20 flex items-center px-6 border-b border-border relative">
+        <div className="h-28 flex items-center px-6 border-b border-border relative">
           <AnimatePresence mode="wait">
             {isExpanded || (isMobile && isMobileOpen) ? (
               <motion.div
@@ -129,8 +129,8 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 className="flex items-center gap-3"
               >
                 <CompanyLogo
-                  width={90}
-                  height={90}
+                  width={150}
+                  height={150}
                   className="rounded-lg"
                   showFallback={true}
                 />
@@ -143,8 +143,8 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 className="w-full flex justify-center"
               >
                 <CompanyLogo
-                  width={40}
-                  height={40}
+                  width={100}
+                  height={100}
                   className="rounded-lg"
                   showFallback={true}
                 />

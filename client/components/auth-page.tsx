@@ -66,7 +66,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         if (!formData.name.trim()) {
           throw new Error("Name is required");
         }
-        const response = await signup(formData.email, formData.password, formData.name);
+        const response = await signup(
+          formData.email,
+          formData.password,
+          formData.name
+        );
         if (response.success && response.data?.user) {
           // Update the auth context with the user data
           authLogin(response.data.user);
@@ -91,8 +95,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12 group">
             <CompanyLogo
-              width={40}
-              height={40}
+              width={80}
+              height={80}
               className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
             />
             <span className="text-xl font-bold tracking-tight text-foreground">

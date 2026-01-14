@@ -86,8 +86,8 @@ export default function ResetPasswordPage() {
             <div className="text-center mb-6">
               <Link href="/" className="inline-flex items-center gap-2 group">
                 <CompanyLogo
-                  width={40}
-                  height={40}
+                  width={80}
+                  height={80}
                   className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
                 />
                 <span className="text-xl font-bold tracking-tight text-foreground">
@@ -133,8 +133,8 @@ export default function ResetPasswordPage() {
           <div className="text-center mb-6">
             <Link href="/" className="inline-flex items-center gap-2 group">
               <CompanyLogo
-                width={40}
-                height={40}
+                width={80}
+                height={80}
                 className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
               />
               <span className="text-xl font-bold tracking-tight text-foreground">

@@ -63,8 +63,8 @@ export default function Footer() {
           <div className="group">
             <div className="flex items-center mb-6">
               <CompanyLogo
-                width={48}
-                height={48}
+                width={130}
+                height={130}
                 className="rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-300"
                 showFallback={true}
               />
