@@ -29,14 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch current user session
   const fetchUser = useCallback(async () => {
     try {
-      console.log("🔄 Fetching user session...", {
-        apiUrl: process.env.NEXT_PUBLIC_API_URL,
-        currentUrl: typeof window !== "undefined" ? window.location.href : "server-side"
-      });
-      
       const response = await getSession();
-      console.log("📡 Session response:", response);
-      
+
       if (response.success && response.data?.user) {
         console.log("✅ User authenticated:", response.data.user);
         setUser(response.data.user);

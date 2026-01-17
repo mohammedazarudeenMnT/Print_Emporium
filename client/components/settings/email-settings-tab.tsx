@@ -58,16 +58,21 @@ export function EmailSettingsTab({ onMessage }: EmailSettingsTabProps) {
           senderEmail: emailConfig.senderEmail || "",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        // 403 errors are displayed globally, don't show duplicate message
+        console.warn("Access denied to email configuration");
+        return;
+      }
       console.error("Failed to load email settings:", error);
       onMessage({ type: "error", text: "Failed to load email settings" });
     }
   }, [onMessage]);
 
-  // Load settings on component mount
+  // Load settings on component mount - only once
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+  }, []);
 
   const handleSettingsChange = (field: keyof EmailSettings, value: string) => {
     setSettings((prev) => ({ ...prev, [field]: value }));

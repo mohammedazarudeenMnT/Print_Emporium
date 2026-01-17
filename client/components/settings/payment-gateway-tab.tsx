@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CreditCard, Save, Loader2, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import {
+  CreditCard,
+  Save,
+  Loader2,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +53,13 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
           razorpayWebhookSecret: paymentConfig.razorpayWebhookSecret || "",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        // 403 errors are displayed globally, don't show duplicate message
+        console.warn("Access denied to payment gateway settings");
+        setIsPageLoading(false);
+        return;
+      }
       console.error("Failed to load payment settings:", error);
       onMessage({ type: "error", text: "Failed to load payment settings" });
     } finally {
@@ -56,9 +69,12 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+  }, []);
 
-  const handleSettingsChange = (field: keyof PaymentSettings, value: string) => {
+  const handleSettingsChange = (
+    field: keyof PaymentSettings,
+    value: string
+  ) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -78,7 +94,8 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
         await loadSettings();
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Failed to save payment settings";
+      const errorMessage =
+        error.response?.data?.message || "Failed to save payment settings";
       onMessage({
         type: "error",
         text: errorMessage,
@@ -115,11 +132,14 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
             <Input
               id="razorpayKeyId"
               value={settings.razorpayKeyId}
-              onChange={(e) => handleSettingsChange("razorpayKeyId", e.target.value)}
+              onChange={(e) =>
+                handleSettingsChange("razorpayKeyId", e.target.value)
+              }
               placeholder="rzp_test_..."
             />
             <p className="text-xs text-muted-foreground">
-              Your Razorpay Key ID from the Razorpay Dashboard (Settings &gt; API Keys).
+              Your Razorpay Key ID from the Razorpay Dashboard (Settings &gt;
+              API Keys).
             </p>
           </div>
 
@@ -151,13 +171,16 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Your Razorpay Key Secret. This will be stored encrypted on the server.
+              Your Razorpay Key Secret. This will be stored encrypted on the
+              server.
             </p>
           </div>
 
           {/* Razorpay Webhook Secret */}
           <div className="space-y-2">
-            <Label htmlFor="razorpayWebhookSecret">Razorpay Webhook Secret</Label>
+            <Label htmlFor="razorpayWebhookSecret">
+              Razorpay Webhook Secret
+            </Label>
             <div className="relative">
               <Input
                 id="razorpayWebhookSecret"
@@ -195,8 +218,9 @@ export function PaymentGatewayTab({ onMessage }: PaymentGatewayTabProps) {
           <div className="text-sm">
             <p className="font-medium">Security Note</p>
             <p className="text-muted-foreground mt-1">
-              These credentials are encrypted at rest and are never exposed to the client application 
-              after being saved. They are used exclusively by the server to communicate with Razorpay.
+              These credentials are encrypted at rest and are never exposed to
+              the client application after being saved. They are used
+              exclusively by the server to communicate with Razorpay.
             </p>
           </div>
         </div>

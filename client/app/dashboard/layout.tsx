@@ -1,9 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Sidebar, SidebarLink, SidebarUser } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Settings, Users, Package, Briefcase, UserRound, MessageSquare } from "lucide-react";
+import {
+  Home,
+  Settings,
+  Users,
+  Package,
+  Briefcase,
+  UserRound,
+  MessageSquare,
+} from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +22,13 @@ export default function DashboardLayout({
   const { user, isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Handle unauthenticated redirects with useEffect
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user)) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, user, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -26,7 +42,6 @@ export default function DashboardLayout({
   }
 
   if (!isAuthenticated || !user) {
-    router.push("/login");
     return null;
   }
 
@@ -81,9 +96,10 @@ export default function DashboardLayout({
   ];
 
   // Combine links based on user role
-  const sidebarLinks = user.role === "admin" 
-    ? [...baseSidebarLinks, ...adminLinks]
-    : baseSidebarLinks;
+  const sidebarLinks =
+    user.role === "admin"
+      ? [...baseSidebarLinks, ...adminLinks]
+      : baseSidebarLinks;
 
   const sidebarUser: SidebarUser = {
     name: user.name || "User",

@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { AccessDeniedDisplay } from "@/components/ui/access-denied-display";
 
 export default function LayoutWrapper({
   children,
@@ -17,6 +18,7 @@ export default function LayoutWrapper({
   return (
     <>
       {!isAuthPage && !isDashboardPage && <Navbar />}
+      <AccessDeniedDisplay />
       <main className={!isAuthPage && !isDashboardPage ? "pt-16" : ""}>
         {children}
       </main>

@@ -5,16 +5,16 @@ import {
   updateLead,
   deleteLead,
 } from "../controllers/lead.controller.js";
-import { requireAuth, requireAdminOrEmployee } from "../middleware/auth.middleware.js";
+import { requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 // Public route to submit contact form
 router.post("/", createLead);
 
-// Protected routes for admins/employees to manage leads
-router.get("/all", requireAdminOrEmployee, getAllLeads);
-router.patch("/:id", requireAdminOrEmployee, updateLead);
-router.delete("/:id", requireAdminOrEmployee, deleteLead);
+// Protected routes for admin to manage leads
+router.get("/all", requireAdmin, getAllLeads);
+router.patch("/:id", requireAdmin, updateLead);
+router.delete("/:id", requireAdmin, deleteLead);
 
 export default router;

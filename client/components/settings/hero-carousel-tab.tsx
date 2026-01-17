@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { 
+import {
   Image as ImageIcon,
   Plus,
   Trash2,
@@ -33,12 +33,13 @@ import {
   Scan,
   BookOpen,
   Tags,
-} from "lucide-react";import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,11 +55,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { 
-  getAllHeroSlides, 
-  upsertHeroSlide, 
-  deleteHeroSlide, 
-  HeroSlide 
+import {
+  getAllHeroSlides,
+  upsertHeroSlide,
+  deleteHeroSlide,
+  HeroSlide,
 } from "@/lib/hero-slide-api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -71,7 +72,9 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [editingSlide, setEditingSlide] = useState<Partial<HeroSlide> | null>(null);
+  const [editingSlide, setEditingSlide] = useState<Partial<HeroSlide> | null>(
+    null
+  );
 
   const loadSlides = useCallback(async () => {
     setIsLoading(true);
@@ -140,7 +143,9 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
         isActive: !slide.isActive,
       });
       if (res.success) {
-        toast.success(res.data.isActive ? "Slide activated" : "Slide deactivated");
+        toast.success(
+          res.data.isActive ? "Slide activated" : "Slide deactivated"
+        );
         await loadSlides();
       }
     } catch (error) {
@@ -163,8 +168,14 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
     // Update orders
     try {
       await Promise.all(
-        newSlides.map((s, idx) => 
-          upsertHeroSlide({ id: s._id, order: idx + 1 })
+        newSlides.map((s, idx) =>
+          upsertHeroSlide({
+            id: s._id,
+            order: idx + 1,
+            title: s.title,
+            image: s.image,
+            isActive: s.isActive,
+          })
         )
       );
       await loadSlides();
@@ -188,20 +199,22 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
               Add, edit or remove slides from your home page hero section
             </CardDescription>
           </div>
-          <Button 
-            onClick={() => setEditingSlide({
-              title: "",
-              subtitle: "",
-              image: null,
-              features: [],
-              ctaText: "Get Started",
-              ctaLink: "/services",
-              secondaryCtaText: "Learn More",
-              secondaryCtaLink: "/about",
-              isActive: true,
-              order: slides.length + 1,
-              iconName: "Printer"
-            })}
+          <Button
+            onClick={() =>
+              setEditingSlide({
+                title: "",
+                subtitle: "",
+                image: null,
+                features: [],
+                ctaText: "Get Started",
+                ctaLink: "/services",
+                secondaryCtaText: "Learn More",
+                secondaryCtaLink: "/about",
+                isActive: true,
+                order: slides.length + 1,
+                iconName: "Printer",
+              })
+            }
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -217,13 +230,15 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
           ) : slides.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-xl bg-muted/30">
               <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground">No slides found. Create your first slide to get started.</p>
+              <p className="text-muted-foreground">
+                No slides found. Create your first slide to get started.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {slides.map((slide, index) => (
-                <div 
-                  key={slide._id} 
+                <div
+                  key={slide._id}
                   className={cn(
                     "group relative overflow-hidden rounded-2xl border bg-card/50 shadow-sm transition-all hover:shadow-md",
                     !slide.isActive && "opacity-60 saturate-50"
@@ -231,68 +246,82 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                 >
                   <div className="aspect-video w-full overflow-hidden bg-muted">
                     <Image
-                      src={typeof slide.image === 'string' ? slide.image : ''}
+                      src={typeof slide.image === "string" ? slide.image : ""}
                       alt={slide.title}
                       width={1920}
                       height={1080}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   </div>
-                  
+
                   <div className="p-5">
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <h3 className="font-bold truncate text-lg">{slide.title}</h3>
-                      <Badge variant={slide.isActive ? "default" : "secondary"} className="shrink-0">
+                      <h3 className="font-bold truncate text-lg">
+                        {slide.title}
+                      </h3>
+                      <Badge
+                        variant={slide.isActive ? "default" : "secondary"}
+                        className="shrink-0"
+                      >
                         {slide.isActive ? "Active" : "Hidden"}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-4 h-10">
                       {slide.subtitle || "No description provided"}
                     </p>
-                    
+
                     <div className="flex items-center gap-2 pt-2 border-t">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
+                      <Button
+                        variant="outline"
+                        size="icon"
                         className="h-9 w-9"
                         onClick={() => setEditingSlide(slide)}
                         title="Edit Slide"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className={cn("h-9 w-9", slide.isActive ? "text-amber-600 border-amber-200 hover:bg-amber-50" : "text-green-600 border-green-200 hover:bg-green-50")}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className={cn(
+                          "h-9 w-9",
+                          slide.isActive
+                            ? "text-amber-600 border-amber-200 hover:bg-amber-50"
+                            : "text-green-600 border-green-200 hover:bg-green-50"
+                        )}
                         onClick={() => handleToggleActive(slide)}
                         title={slide.isActive ? "Deactivate" : "Activate"}
                       >
-                        {slide.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                        {slide.isActive ? (
+                          <XCircle className="h-4 w-4" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4" />
+                        )}
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
+                      <Button
+                        variant="outline"
+                        size="icon"
                         className="h-9 w-9 text-red-600 border-red-200 hover:bg-red-50"
                         onClick={() => slide._id && handleDelete(slide._id)}
                         title="Delete Slide"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                      
+
                       <div className="ml-auto flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           disabled={index === 0}
                           onClick={() => moveSlide(index, "up")}
                         >
                           <ChevronUp className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           disabled={index === slides.length - 1}
                           onClick={() => moveSlide(index, "down")}
                         >
@@ -315,10 +344,18 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
             <CardHeader className="sticky top-0 bg-background z-10 border-b">
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>{editingSlide._id ? "Edit Slide" : "Create New Slide"}</CardTitle>
-                  <CardDescription>Configure the content and appearance of your hero slide</CardDescription>
+                  <CardTitle>
+                    {editingSlide._id ? "Edit Slide" : "Create New Slide"}
+                  </CardTitle>
+                  <CardDescription>
+                    Configure the content and appearance of your hero slide
+                  </CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setEditingSlide(null)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingSlide(null)}
+                >
                   <Trash2 className="h-5 w-5" />
                 </Button>
               </div>
@@ -328,18 +365,25 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="title">Slide Title *</Label>
-                    <Input 
-                      id="title" 
-                      value={editingSlide.title} 
-                      onChange={(e) => setEditingSlide({...editingSlide, title: e.target.value})}
+                    <Input
+                      id="title"
+                      value={editingSlide.title}
+                      onChange={(e) =>
+                        setEditingSlide({
+                          ...editingSlide,
+                          title: e.target.value,
+                        })
+                      }
                       placeholder="e.g. Premium Business Cards"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="iconName">Visual Icon</Label>
-                    <Select 
-                      value={editingSlide.iconName} 
-                      onValueChange={(val) => setEditingSlide({...editingSlide, iconName: val})}
+                    <Select
+                      value={editingSlide.iconName}
+                      onValueChange={(val) =>
+                        setEditingSlide({ ...editingSlide, iconName: val })
+                      }
                     >
                       <SelectTrigger className="h-12 rounded-xl">
                         <SelectValue placeholder="Select an icon" />
@@ -365,7 +409,11 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                           { name: "Tags", icon: Tags },
                           { name: "Settings", icon: SettingsIcon },
                         ].map((item) => (
-                          <SelectItem key={item.name} value={item.name} className="flex items-center gap-2">
+                          <SelectItem
+                            key={item.name}
+                            value={item.name}
+                            className="flex items-center gap-2"
+                          >
                             <div className="flex items-center gap-2">
                               <item.icon className="h-4 w-4 text-primary" />
                               <span>{item.name}</span>
@@ -377,24 +425,41 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subtitle">Subtitle / Description</Label>
-                    <Textarea 
-                      id="subtitle" 
-                      value={editingSlide.subtitle} 
-                      onChange={(e) => setEditingSlide({...editingSlide, subtitle: e.target.value})}
+                    <Textarea
+                      id="subtitle"
+                      value={editingSlide.subtitle}
+                      onChange={(e) =>
+                        setEditingSlide({
+                          ...editingSlide,
+                          subtitle: e.target.value,
+                        })
+                      }
                       placeholder="Explain what this service offers..."
                       rows={3}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Features (Comma separated)</Label>
-                    <Input 
-                      value={editingSlide.features?.join(", ")} 
-                      onChange={(e) => setEditingSlide({...editingSlide, features: e.target.value.split(",").map(f => f.trim()).filter(f => f)})}
+                    <Input
+                      value={editingSlide.features?.join(", ")}
+                      onChange={(e) =>
+                        setEditingSlide({
+                          ...editingSlide,
+                          features: e.target.value
+                            .split(",")
+                            .map((f) => f.trim())
+                            .filter((f) => f),
+                        })
+                      }
                       placeholder="e.g. Same-day service, Quality paper, Low price"
                     />
                     <div className="flex flex-wrap gap-2 mt-2">
                       {editingSlide.features?.map((f, i) => (
-                        <Badge key={i} variant="secondary" className="px-2 py-1">
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="px-2 py-1"
+                        >
                           {f}
                         </Badge>
                       ))}
@@ -403,9 +468,11 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                 </div>
 
                 <div className="space-y-6">
-                  <ImageUpload 
+                  <ImageUpload
                     value={editingSlide.image || ""}
-                    onChange={(val) => setEditingSlide({...editingSlide, image: val})}
+                    onChange={(val) =>
+                      setEditingSlide({ ...editingSlide, image: val })
+                    }
                     label="Hero Slide Image *"
                     aspectRatio="video"
                     recommendation="Recommended size: 1920x1080px"
@@ -423,24 +490,33 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="ctaText">Button Text</Label>
-                      <Input 
-                        id="ctaText" 
-                        value={editingSlide.ctaText} 
-                        onChange={(e) => setEditingSlide({...editingSlide, ctaText: e.target.value})}
+                      <Input
+                        id="ctaText"
+                        value={editingSlide.ctaText}
+                        onChange={(e) =>
+                          setEditingSlide({
+                            ...editingSlide,
+                            ctaText: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ctaLink">Destination Page</Label>
-                      <Select 
-                        value={editingSlide.ctaLink} 
-                        onValueChange={(val) => setEditingSlide({...editingSlide, ctaLink: val})}
+                      <Select
+                        value={editingSlide.ctaLink}
+                        onValueChange={(val) =>
+                          setEditingSlide({ ...editingSlide, ctaLink: val })
+                        }
                       >
                         <SelectTrigger className="h-11 rounded-xl">
                           <SelectValue placeholder="Choose page" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="/">Home Page</SelectItem>
-                          <SelectItem value="/services">Our Services</SelectItem>
+                          <SelectItem value="/services">
+                            Our Services
+                          </SelectItem>
                           <SelectItem value="/about">About Us</SelectItem>
                           <SelectItem value="/contact">Contact Page</SelectItem>
                           <SelectItem value="/login">Login Page</SelectItem>
@@ -449,11 +525,21 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                     </div>
                   </div>
                   <div className="space-y-2 mt-2">
-                    <Label htmlFor="ctaLinkCustom" className="text-[10px] text-muted-foreground">Or Enter Custom URL</Label>
-                    <Input 
-                      id="ctaLinkCustom" 
-                      value={editingSlide.ctaLink} 
-                      onChange={(e) => setEditingSlide({...editingSlide, ctaLink: e.target.value})}
+                    <Label
+                      htmlFor="ctaLinkCustom"
+                      className="text-[10px] text-muted-foreground"
+                    >
+                      Or Enter Custom URL
+                    </Label>
+                    <Input
+                      id="ctaLinkCustom"
+                      value={editingSlide.ctaLink}
+                      onChange={(e) =>
+                        setEditingSlide({
+                          ...editingSlide,
+                          ctaLink: e.target.value,
+                        })
+                      }
                       placeholder="https://example.com"
                       className="h-9 text-xs"
                     />
@@ -462,29 +548,42 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
 
                 <div className="space-y-4">
                   <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4" /> Secondary Call to Action
+                    <ExternalLink className="h-4 w-4" /> Secondary Call to
+                    Action
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="sCtaText">Button Text</Label>
-                      <Input 
-                        id="sCtaText" 
-                        value={editingSlide.secondaryCtaText} 
-                        onChange={(e) => setEditingSlide({...editingSlide, secondaryCtaText: e.target.value})}
+                      <Input
+                        id="sCtaText"
+                        value={editingSlide.secondaryCtaText}
+                        onChange={(e) =>
+                          setEditingSlide({
+                            ...editingSlide,
+                            secondaryCtaText: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="sCtaLink">Destination Page</Label>
-                      <Select 
-                        value={editingSlide.secondaryCtaLink} 
-                        onValueChange={(val) => setEditingSlide({...editingSlide, secondaryCtaLink: val})}
+                      <Select
+                        value={editingSlide.secondaryCtaLink}
+                        onValueChange={(val) =>
+                          setEditingSlide({
+                            ...editingSlide,
+                            secondaryCtaLink: val,
+                          })
+                        }
                       >
                         <SelectTrigger className="h-11 rounded-xl">
                           <SelectValue placeholder="Choose page" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="/">Home Page</SelectItem>
-                          <SelectItem value="/services">Our Services</SelectItem>
+                          <SelectItem value="/services">
+                            Our Services
+                          </SelectItem>
                           <SelectItem value="/about">About Us</SelectItem>
                           <SelectItem value="/contact">Contact Page</SelectItem>
                           <SelectItem value="/login">Login Page</SelectItem>
@@ -493,11 +592,21 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                     </div>
                   </div>
                   <div className="space-y-2 mt-2">
-                    <Label htmlFor="sCtaLinkCustom" className="text-[10px] text-muted-foreground">Or Enter Custom URL</Label>
-                    <Input 
-                      id="sCtaLinkCustom" 
-                      value={editingSlide.secondaryCtaLink} 
-                      onChange={(e) => setEditingSlide({...editingSlide, secondaryCtaLink: e.target.value})}
+                    <Label
+                      htmlFor="sCtaLinkCustom"
+                      className="text-[10px] text-muted-foreground"
+                    >
+                      Or Enter Custom URL
+                    </Label>
+                    <Input
+                      id="sCtaLinkCustom"
+                      value={editingSlide.secondaryCtaLink}
+                      onChange={(e) =>
+                        setEditingSlide({
+                          ...editingSlide,
+                          secondaryCtaLink: e.target.value,
+                        })
+                      }
                       placeholder="https://example.com"
                       className="h-9 text-xs"
                     />
@@ -506,17 +615,21 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
               </div>
 
               <div className="flex items-center gap-6 pt-4 border-t sticky bottom-0 bg-background py-4">
-                <Button 
-                  onClick={handleSave} 
+                <Button
+                  onClick={handleSave}
                   disabled={isSaving}
                   className="w-full md:w-auto px-10 h-12 font-bold"
                 >
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   {editingSlide._id ? "Update Slide" : "Create Slide"}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditingSlide(null)} 
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingSlide(null)}
                   className="w-full md:w-auto px-10 h-12 font-bold"
                 >
                   Cancel
