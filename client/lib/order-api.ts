@@ -96,9 +96,16 @@ export interface Order {
     tax: number;
     total: number;
   };
-  status: 'pending' | 'confirmed' | 'processing' | 'printing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  paymentMethod: 'cod' | 'online' | 'upi';
+  status:
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "printing"
+    | "shipped"
+    | "delivered"
+    | "cancelled";
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  paymentMethod: "cod" | "online" | "upi";
   paymentId: string | null;
   trackingNumber: string | null;
   estimatedDelivery: string | null;
@@ -120,7 +127,9 @@ export interface PaginatedOrders {
 /**
  * Create a new order
  */
-export const createOrder = async (payload: CreateOrderPayload): Promise<{ success: boolean; order: OrderResponse }> => {
+export const createOrder = async (
+  payload: CreateOrderPayload,
+): Promise<{ success: boolean; order: OrderResponse }> => {
   const response = await axiosInstance.post("/api/orders", payload);
   return response.data;
 };
@@ -128,7 +137,11 @@ export const createOrder = async (payload: CreateOrderPayload): Promise<{ succes
 /**
  * Get current user's orders
  */
-export const getUserOrders = async (params?: { status?: string; page?: number; limit?: number }): Promise<{ success: boolean } & PaginatedOrders> => {
+export const getUserOrders = async (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ success: boolean } & PaginatedOrders> => {
   const response = await axiosInstance.get("/api/orders/my-orders", { params });
   return response.data;
 };
@@ -136,15 +149,33 @@ export const getUserOrders = async (params?: { status?: string; page?: number; l
 /**
  * Get a single order by ID
  */
-export const getOrderById = async (id: string): Promise<{ success: boolean; order: Order }> => {
+export const getOrderById = async (
+  id: string,
+): Promise<{ success: boolean; order: Order }> => {
   const response = await axiosInstance.get(`/api/orders/${id}`);
+  return response.data;
+};
+
+/**
+ * Get a single order by ID (Admin/Employee - can view any order)
+ */
+export const getOrderByIdAdmin = async (
+  id: string,
+): Promise<{ success: boolean; order: Order }> => {
+  const response = await axiosInstance.get(`/api/orders/admin/${id}`);
   return response.data;
 };
 
 /**
  * Cancel an order
  */
-export const cancelOrder = async (id: string): Promise<{ success: boolean; message: string; order: { id: string; orderNumber: string; status: string } }> => {
+export const cancelOrder = async (
+  id: string,
+): Promise<{
+  success: boolean;
+  message: string;
+  order: { id: string; orderNumber: string; status: string };
+}> => {
   const response = await axiosInstance.post(`/api/orders/${id}/cancel`);
   return response.data;
 };
@@ -153,9 +184,17 @@ export const cancelOrder = async (id: string): Promise<{ success: boolean; messa
  * Update payment status (for payment callback)
  */
 export const updatePaymentStatus = async (
-  id: string, 
-  data: { paymentStatus: string; paymentId?: string; paymentMethod?: string }
-): Promise<{ success: boolean; order: { id: string; orderNumber: string; status: string; paymentStatus: string } }> => {
+  id: string,
+  data: { paymentStatus: string; paymentId?: string; paymentMethod?: string },
+): Promise<{
+  success: boolean;
+  order: {
+    id: string;
+    orderNumber: string;
+    status: string;
+    paymentStatus: string;
+  };
+}> => {
   const response = await axiosInstance.post(`/api/orders/${id}/payment`, data);
   return response.data;
 };
@@ -163,7 +202,9 @@ export const updatePaymentStatus = async (
 /**
  * Reorder a previously placed order
  */
-export const reorderOrder = async (id: string): Promise<{ success: boolean; message: string; order: OrderResponse }> => {
+export const reorderOrder = async (
+  id: string,
+): Promise<{ success: boolean; message: string; order: OrderResponse }> => {
   const response = await axiosInstance.post(`/api/orders/${id}/reorder`);
   return response.data;
 };
@@ -173,10 +214,10 @@ export const reorderOrder = async (id: string): Promise<{ success: boolean; mess
 /**
  * Get all orders (admin)
  */
-export const getAllOrders = async (params?: { 
-  status?: string; 
-  paymentStatus?: string; 
-  page?: number; 
+export const getAllOrders = async (params?: {
+  status?: string;
+  paymentStatus?: string;
+  page?: number;
   limit?: number;
   search?: string;
 }): Promise<{ success: boolean } & PaginatedOrders> => {
@@ -188,18 +229,29 @@ export const getAllOrders = async (params?: {
  * Update order status (admin)
  */
 export const updateOrderStatus = async (
-  id: string, 
-  data: { status?: string; trackingNumber?: string; notes?: string }
-): Promise<{ success: boolean; order: { id: string; orderNumber: string; status: string; trackingNumber: string } }> => {
-  const response = await axiosInstance.put(`/api/orders/admin/${id}/status`, data);
+  id: string,
+  data: { status?: string; trackingNumber?: string; notes?: string },
+): Promise<{
+  success: boolean;
+  order: {
+    id: string;
+    orderNumber: string;
+    status: string;
+    trackingNumber: string;
+  };
+}> => {
+  const response = await axiosInstance.put(
+    `/api/orders/admin/${id}/status`,
+    data,
+  );
   return response.data;
 };
 
 /**
  * Get order statistics (admin)
  */
-export const getOrderStats = async (): Promise<{ 
-  success: boolean; 
+export const getOrderStats = async (): Promise<{
+  success: boolean;
   stats: {
     totalOrders: number;
     todayOrders: number;
@@ -208,7 +260,7 @@ export const getOrderStats = async (): Promise<{
     processingOrders: number;
     completedOrders: number;
     totalRevenue: number;
-  }
+  };
 }> => {
   const response = await axiosInstance.get("/api/orders/admin/stats");
   return response.data;
