@@ -21,7 +21,7 @@ export function AccessDeniedDisplay() {
             {/* Header */}
             <div className="bg-red-50 px-6 py-4 flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
-                <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-red-900 text-lg">
                     {error.title}
@@ -31,7 +31,7 @@ export function AccessDeniedDisplay() {
               </div>
               <button
                 onClick={clearError}
-                className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2"
+                className="text-red-500 hover:text-red-700 shrink-0 ml-2"
                 aria-label="Close error message"
               >
                 <X className="h-5 w-5" />

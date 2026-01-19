@@ -55,6 +55,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import {
   getAllHeroSlides,
   upsertHeroSlide,
@@ -73,8 +74,9 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingSlide, setEditingSlide] = useState<Partial<HeroSlide> | null>(
-    null
+    null,
   );
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const loadSlides = useCallback(async () => {
     setIsLoading(true);
@@ -122,10 +124,14 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this slide?")) return;
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
 
     try {
-      const res = await deleteHeroSlide(id);
+      const res = await deleteHeroSlide(deleteConfirm);
       if (res.success) {
         toast.success("Slide deleted");
         await loadSlides();
@@ -133,6 +139,8 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
     } catch (error) {
       console.error("Delete slide error:", error);
       toast.error("Failed to delete slide");
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -144,7 +152,7 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
       });
       if (res.success) {
         toast.success(
-          res.data.isActive ? "Slide activated" : "Slide deactivated"
+          res.data.isActive ? "Slide activated" : "Slide deactivated",
         );
         await loadSlides();
       }
@@ -175,8 +183,8 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
             title: s.title,
             image: s.image,
             isActive: s.isActive,
-          })
-        )
+          }),
+        ),
       );
       await loadSlides();
       toast.success("Order updated");
@@ -241,7 +249,7 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                   key={slide._id}
                   className={cn(
                     "group relative overflow-hidden rounded-2xl border bg-card/50 shadow-sm transition-all hover:shadow-md",
-                    !slide.isActive && "opacity-60 saturate-50"
+                    !slide.isActive && "opacity-60 saturate-50",
                   )}
                 >
                   <div className="aspect-video w-full overflow-hidden bg-muted">
@@ -287,7 +295,7 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
                           "h-9 w-9",
                           slide.isActive
                             ? "text-amber-600 border-amber-200 hover:bg-amber-50"
-                            : "text-green-600 border-green-200 hover:bg-green-50"
+                            : "text-green-600 border-green-200 hover:bg-green-50",
                         )}
                         onClick={() => handleToggleActive(slide)}
                         title={slide.isActive ? "Deactivate" : "Activate"}
@@ -639,6 +647,17 @@ export function HeroCarouselTab({ onMessage }: HeroCarouselTabProps) {
           </Card>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Delete Slide"
+        description="Are you sure you want to delete this slide? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 }

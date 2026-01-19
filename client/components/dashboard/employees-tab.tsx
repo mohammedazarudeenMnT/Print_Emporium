@@ -15,25 +15,40 @@ import {
 import {
   Users,
   Plus,
-  Mail,
   Loader2,
   AlertCircle,
   CheckCircle2,
-  XCircle,
   RefreshCw,
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 export function EmployeesTab() {
-  const [employees, setEmployees] = useState<any[]>([]);
+  interface Employee {
+    _id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    banned: boolean;
+    role: string;
+    createdAt: string;
+    lastLogin?: string;
+    verificationToken?: string;
+  }
+
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newEmployee, setNewEmployee] = useState({ name: "", email: "" });
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -44,13 +59,15 @@ export function EmployeesTab() {
       setLoading(true);
       setError(null);
       const response = await axiosInstance.get("/api/employees");
-      
+
       if (response.data.success) {
         setEmployees(response.data.employees);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to fetch employees:", err);
-      setError(err.response?.data?.message || "Failed to load employees");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load employees";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -58,7 +75,7 @@ export function EmployeesTab() {
 
   const createEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newEmployee.name || !newEmployee.email) {
       toast.error("Please fill in all fields");
       return;
@@ -67,16 +84,18 @@ export function EmployeesTab() {
     try {
       setIsCreating(true);
       const response = await axiosInstance.post("/api/employees", newEmployee);
-      
+
       if (response.data.success) {
         toast.success("Employee created! Verification email sent.");
         setIsCreateDialogOpen(false);
         setNewEmployee({ name: "", email: "" });
         fetchEmployees();
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to create employee:", err);
-      toast.error(err.response?.data?.message || "Failed to create employee");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create employee";
+      toast.error(errorMessage);
     } finally {
       setIsCreating(false);
     }
@@ -84,18 +103,21 @@ export function EmployeesTab() {
 
   const toggleEmployeeStatus = async (id: string, currentStatus: boolean) => {
     try {
-      const response = await axiosInstance.put(
-        `/api/employees/${id}/status`,
-        { banned: !currentStatus }
-      );
-      
+      const response = await axiosInstance.put(`/api/employees/${id}/status`, {
+        banned: !currentStatus,
+      });
+
       if (response.data.success) {
-        toast.success(`Employee ${!currentStatus ? "deactivated" : "activated"} successfully`);
+        toast.success(
+          `Employee ${!currentStatus ? "deactivated" : "activated"} successfully`,
+        );
         fetchEmployees();
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to update employee status:", err);
-      toast.error(err.response?.data?.message || "Failed to update employee status");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update employee status";
+      toast.error(errorMessage);
     }
   };
 
@@ -103,33 +125,43 @@ export function EmployeesTab() {
     try {
       const response = await axiosInstance.post(
         `/api/employees/${id}/resend-verification`,
-        {}
+        {},
       );
-      
+
       if (response.data.success) {
         toast.success("Verification email sent successfully");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to resend verification:", err);
-      toast.error(err.response?.data?.message || "Failed to resend verification");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to resend verification";
+      toast.error(errorMessage);
     }
   };
 
   const deleteEmployee = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
-      return;
-    }
+    setDeleteConfirm({ id, name });
+  };
+
+  const confirmDeleteEmployee = async () => {
+    if (!deleteConfirm) return;
 
     try {
-      const response = await axiosInstance.delete(`/api/employees/${id}`);
-      
+      const response = await axiosInstance.delete(
+        `/api/employees/${deleteConfirm.id}`,
+      );
+
       if (response.data.success) {
         toast.success("Employee deleted successfully");
         fetchEmployees();
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to delete employee:", err);
-      toast.error(err.response?.data?.message || "Failed to delete employee");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete employee";
+      toast.error(errorMessage);
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -160,13 +192,18 @@ export function EmployeesTab() {
           <div className="flex items-center gap-4">
             <Users className="h-6 w-6 text-primary" />
             <div>
-              <h2 className="text-xl font-bold text-foreground">Employee Management</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                Employee Management
+              </h2>
               <p className="text-sm text-muted-foreground">
                 Manage employee accounts and permissions
               </p>
             </div>
           </div>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -183,7 +220,9 @@ export function EmployeesTab() {
                   <Input
                     id="name"
                     value={newEmployee.name}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewEmployee({ ...newEmployee, name: e.target.value })
+                    }
                     placeholder="John Doe"
                     required
                   />
@@ -194,7 +233,9 @@ export function EmployeesTab() {
                     id="email"
                     type="email"
                     value={newEmployee.email}
-                    onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                    onChange={(e) =>
+                      setNewEmployee({ ...newEmployee, email: e.target.value })
+                    }
                     placeholder="john@example.com"
                     required
                   />
@@ -203,7 +244,11 @@ export function EmployeesTab() {
                   A verification email will be sent to activate the account.
                 </p>
                 <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isCreating}>
@@ -239,7 +284,10 @@ export function EmployeesTab() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {employees.map((employee) => (
-            <Card key={employee._id} className="p-6 hover:shadow-md transition-shadow">
+            <Card
+              key={employee._id}
+              className="p-6 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -248,8 +296,12 @@ export function EmployeesTab() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">{employee.name}</h3>
-                    <p className="text-xs text-muted-foreground">{employee.email}</p>
+                    <h3 className="font-semibold text-foreground">
+                      {employee.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {employee.email}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -262,7 +314,7 @@ export function EmployeesTab() {
                       "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
                       employee.emailVerified
                         ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
                     )}
                   >
                     {employee.emailVerified ? (
@@ -282,7 +334,7 @@ export function EmployeesTab() {
                       "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
                       employee.banned
                         ? "bg-destructive/10 text-destructive"
-                        : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
                     )}
                   >
                     {employee.banned ? "Inactive" : "Active"}
@@ -293,16 +345,22 @@ export function EmployeesTab() {
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between p-2 bg-muted/50 rounded">
                     <span className="text-muted-foreground">Role</span>
-                    <span className="font-medium capitalize">{employee.role || 'employee'}</span>
+                    <span className="font-medium capitalize">
+                      {employee.role || "employee"}
+                    </span>
                   </div>
                   <div className="flex justify-between p-2 bg-muted/50 rounded">
                     <span className="text-muted-foreground">Created</span>
-                    <span className="font-medium">{new Date(employee.createdAt).toLocaleDateString()}</span>
+                    <span className="font-medium">
+                      {new Date(employee.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                   {employee.lastLogin && (
                     <div className="flex justify-between p-2 bg-muted/50 rounded">
                       <span className="text-muted-foreground">Last Login</span>
-                      <span className="font-medium">{new Date(employee.lastLogin).toLocaleDateString()}</span>
+                      <span className="font-medium">
+                        {new Date(employee.lastLogin).toLocaleDateString()}
+                      </span>
                     </div>
                   )}
                   {employee.verificationToken && !employee.emailVerified && (
@@ -330,7 +388,9 @@ export function EmployeesTab() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => toggleEmployeeStatus(employee._id, employee.banned)}
+                  onClick={() =>
+                    toggleEmployeeStatus(employee._id, employee.banned)
+                  }
                   className="flex-1"
                 >
                   {employee.banned ? "Activate" : "Deactivate"}
@@ -348,6 +408,17 @@ export function EmployeesTab() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Delete Employee"
+        description={`Are you sure you want to delete ${deleteConfirm?.name}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteEmployee}
+        variant="destructive"
+      />
     </div>
   );
 }

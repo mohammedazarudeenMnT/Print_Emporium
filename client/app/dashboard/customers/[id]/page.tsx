@@ -11,7 +11,6 @@ import {
   User,
   Shield,
   Clock,
-  ChevronRight,
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,7 @@ export default function CustomerDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState<{ customer: any; orders: Order[] } | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
 
@@ -134,7 +133,7 @@ export default function CustomerDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Customer Profile */}
         <div className="space-y-6">
-          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-card to-muted/20">
+          <Card className="overflow-hidden border-none shadow-lg bg-linear-to-br from-card to-muted/20">
             <CardContent className="p-8 pt-10 text-center space-y-4">
               <Avatar className="h-24 w-24 mx-auto ring-4 ring-background shadow-xl">
                 <AvatarImage src={customer.image} />
@@ -303,7 +302,7 @@ export default function CustomerDetailsPage() {
                             <span className="text-xs font-medium">
                               {format(
                                 new Date(order.createdAt),
-                                "MMM dd, yyyy"
+                                "MMM dd, yyyy",
                               )}
                             </span>
                             <span className="text-[10px] text-muted-foreground">

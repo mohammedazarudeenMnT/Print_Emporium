@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Save,
   Loader2,
-  Plus,
   Trash2,
   FileText,
   Tag,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import {
   getAllSEOSettings,
   upsertSEOSettings,
@@ -44,10 +44,9 @@ interface SEOSettingsTabProps {
 const AVAILABLE_PAGES = [
   { value: "home", label: "Home Page" },
   { value: "about", label: "About Page" },
-    { value: "services", label: "Services Page" },
+  { value: "services", label: "Services Page" },
 
-  { value: "contact", label: "Contact Page" }
-  
+  { value: "contact", label: "Contact Page" },
 ];
 
 export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
@@ -62,6 +61,7 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const loadAllSettings = useCallback(async () => {
     try {
@@ -99,7 +99,7 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
 
   const handleSettingsChange = (
     field: keyof SEOSettings,
-    value: string | object | null
+    value: string | object | null,
   ) => {
     setCurrentSettings((prev) => ({ ...prev, [field]: value }));
   };
@@ -113,9 +113,9 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
         onMessage({ type: "success", text: response.message });
         await loadAllSettings();
       }
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
-        error?.response?.data?.message || "Failed to save SEO settings";
+        error instanceof Error ? error.message : "Failed to save SEO settings";
       onMessage({ type: "error", text: errorMessage });
     } finally {
       setIsLoading(false);
@@ -123,10 +123,11 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete SEO settings for ${selectedPage}?`)) {
-      return;
-    }
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDelete = async () => {
+    setShowDeleteConfirm(false);
     setIsLoading(true);
 
     try {
@@ -142,9 +143,11 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
           ogImage: null,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
-        error?.response?.data?.message || "Failed to delete SEO settings";
+        error instanceof Error
+          ? error.message
+          : "Failed to delete SEO settings";
       onMessage({ type: "error", text: errorMessage });
     } finally {
       setIsLoading(false);
@@ -180,7 +183,9 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
                 <SelectItem key={page.value} value={page.value}>
                   {page.label}
                   {allSettings.some((s) => s.pageName === page.value) && (
-                    <span className="ml-2 text-xs text-green-600">✓ Configured</span>
+                    <span className="ml-2 text-xs text-green-600">
+                      ✓ Configured
+                    </span>
                   )}
                 </SelectItem>
               ))}
@@ -192,7 +197,10 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
 
         {/* Meta Title */}
         <div className="space-y-2">
-          <Label htmlFor="metaTitle" className="flex items-center justify-between">
+          <Label
+            htmlFor="metaTitle"
+            className="flex items-center justify-between"
+          >
             <span>Meta Title</span>
             <span className="text-xs text-muted-foreground">
               {currentSettings.metaTitle?.length || 0}/60 characters
@@ -212,7 +220,10 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
 
         {/* Meta Description */}
         <div className="space-y-2">
-          <Label htmlFor="metaDescription" className="flex items-center justify-between">
+          <Label
+            htmlFor="metaDescription"
+            className="flex items-center justify-between"
+          >
             <span>Meta Description</span>
             <span className="text-xs text-muted-foreground">
               {currentSettings.metaDescription?.length || 0}/160 characters
@@ -229,7 +240,8 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
             maxLength={160}
           />
           <p className="text-xs text-muted-foreground">
-            Recommended: 150-160 characters. Shows up in search results below the title.
+            Recommended: 150-160 characters. Shows up in search results below
+            the title.
           </p>
         </div>
 
@@ -265,7 +277,8 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
             aspectRatio="wide"
           />
           <p className="text-xs text-muted-foreground mt-2">
-            Recommended: 1200x630px. This image appears when your page is shared on social media.
+            Recommended: 1200x630px. This image appears when your page is shared
+            on social media.
           </p>
         </div>
 
@@ -297,6 +310,17 @@ export function SEOSettingsTab({ onMessage }: SEOSettingsTabProps) {
             Save SEO Settings
           </Button>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          title="Delete SEO Settings"
+          description={`Are you sure you want to delete SEO settings for ${selectedPage}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          variant="destructive"
+        />
       </CardContent>
     </Card>
   );
