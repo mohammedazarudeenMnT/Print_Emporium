@@ -2,6 +2,7 @@ import express from "express";
 import {
   getSettings,
   updateGeneralSettings,
+  verifyEmailChange,
 } from "../controllers/settings.controller.js";
 import {
   getEmailConfiguration,
@@ -18,6 +19,7 @@ const router = express.Router();
 
 // Fetching routes (Global Signature/Session protection applied in server.js)
 router.get("/", getSettings);
+router.get("/verify-email-change", verifyEmailChange);
 
 // Protected admin routes (Mutation operations)
 router.put("/general", requireAdmin, updateGeneralSettings);
