@@ -81,6 +81,12 @@ export function calculateItemPricing(
     gsmPrice,
     printSidePrice,
     bindingPrice,
+    printTypeIsPerCopy,
+    paperSizeIsPerCopy,
+    paperTypeIsPerCopy,
+    gsmIsPerCopy,
+    printSideIsPerCopy,
+    bindingIsPerCopy,
     pricePerPage,
     subtotal,
     totalPages,
@@ -94,13 +100,11 @@ export function calculateItemPricing(
 export function calculateOrderTotals(
   itemSubtotals: number[],
   deliveryCharge: number = 0,
-  taxRate: number = 0.18 // 18% GST
-): { subtotal: number; tax: number; total: number } {
+  packingCharge: number = 0
+): { subtotal: number; packingCharge: number; total: number } {
   const subtotal = itemSubtotals.reduce((sum, item) => sum + item, 0);
-  const tax = Math.round(subtotal * taxRate * 100) / 100;
-  const total = subtotal + deliveryCharge + tax;
-
-  return { subtotal, tax, total };
+  const total = subtotal + deliveryCharge + packingCharge;
+  return { subtotal, packingCharge, total };
 }
 
 /**
@@ -115,11 +119,55 @@ export function formatPrice(amount: number): string {
   }).format(amount);
 }
 
+interface Threshold {
+  minAmount: number;
+  charge: number;
+}
+
 /**
- * Get delivery charge based on order value
+ * Get charge based on thresholds (used for both delivery and packing)
  */
-export function getDeliveryCharge(subtotal: number): number {
+function calculateDynamicCharge(amount: number, thresholds: Threshold[]): number {
+  if (!thresholds || thresholds.length === 0) return 0;
+  
+  // Sort thresholds by minAmount descending to find the highest applicable tier
+  const sortedThresholds = [...thresholds].sort((a, b) => b.minAmount - a.minAmount);
+  
+  for (const threshold of sortedThresholds) {
+    if (amount >= threshold.minAmount) {
+      return threshold.charge;
+    }
+  }
+  
+  return 0;
+}
+
+/**
+ * Get delivery charge based on order value and settings
+ */
+export function getDeliveryCharge(subtotal: number, settings?: any): number {
+  if (settings && !settings.isDeliveryEnabled) return 0;
+  
+  if (settings && settings.deliveryThresholds) {
+    return calculateDynamicCharge(subtotal, settings.deliveryThresholds);
+  }
+
+  // Fallback defaults
   if (subtotal >= 500) return 0; // Free delivery above ₹500
   if (subtotal >= 200) return 30;
   return 50;
+}
+
+/**
+ * Get packing charge based on order value and settings
+ */
+export function getPackingCharge(subtotal: number, settings?: any): number {
+  if (settings && !settings.isPackingEnabled) return 0;
+  
+  if (settings && settings.packingThresholds) {
+    return calculateDynamicCharge(subtotal, settings.packingThresholds);
+  }
+
+  // Fallback defaults
+  return 0; 
 }

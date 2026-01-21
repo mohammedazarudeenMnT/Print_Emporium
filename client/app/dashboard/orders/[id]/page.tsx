@@ -313,12 +313,16 @@ export default function OrderDetailsPage() {
                   ₹{order.pricing.deliveryCharge.toLocaleString()}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-border/50">
-                <span className="text-sm text-muted-foreground">Tax (GST)</span>
-                <span className="font-medium">
-                  ₹{order.pricing.tax.toLocaleString()}
-                </span>
-              </div>
+              {order.pricing.packingCharge > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">
+                    Packing Charge
+                  </span>
+                  <span className="font-medium">
+                    ₹{order.pricing.packingCharge.toLocaleString()}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-3 border-t-2 border-border">
                 <span className="font-bold">Total</span>
                 <span className="text-lg font-bold text-primary">

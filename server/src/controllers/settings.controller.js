@@ -1,4 +1,5 @@
 import GeneralSettings from "../models/GeneralSettings.js";
+import PricingSettings from "../models/PricingSettings.js";
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
 import { getEmailConfig } from "../config/sendmail.js";
@@ -650,5 +651,88 @@ export const verifyEmailChange = async (req, res) => {
       </body>
       </html>
     `);
+  }
+};
+
+/**
+ * Get pricing settings (Delivery and Packing)
+ */
+export const getPricingSettings = async (req, res) => {
+  try {
+    let pricingSettings = await PricingSettings.findOne({ settingsId: "global" });
+
+    // Create default settings if they don't exist
+    if (!pricingSettings) {
+      pricingSettings = await PricingSettings.create({
+        settingsId: "global",
+        deliveryThresholds: [
+          { minAmount: 0, charge: 50 },
+          { minAmount: 200, charge: 30 },
+          { minAmount: 500, charge: 0 },
+        ],
+        packingThresholds: [
+          { minAmount: 0, charge: 20 },
+          { minAmount: 1000, charge: 0 },
+        ],
+        isDeliveryEnabled: true,
+        isPackingEnabled: true,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: pricingSettings,
+    });
+  } catch (error) {
+    console.error("Get pricing settings error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch pricing settings",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Update pricing settings (Delivery and Packing)
+ */
+export const updatePricingSettings = async (req, res) => {
+  try {
+    const {
+      deliveryThresholds,
+      packingThresholds,
+      isDeliveryEnabled,
+      isPackingEnabled,
+    } = req.body;
+
+    let pricingSettings = await PricingSettings.findOne({ settingsId: "global" });
+
+    if (!pricingSettings) {
+      pricingSettings = new PricingSettings({ settingsId: "global" });
+    }
+
+    if (deliveryThresholds) pricingSettings.deliveryThresholds = deliveryThresholds;
+    if (packingThresholds) pricingSettings.packingThresholds = packingThresholds;
+    if (isDeliveryEnabled !== undefined)
+      pricingSettings.isDeliveryEnabled = isDeliveryEnabled;
+    if (isPackingEnabled !== undefined)
+      pricingSettings.isPackingEnabled = isPackingEnabled;
+
+    pricingSettings.lastUpdatedBy = req.user?.id;
+
+    await pricingSettings.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pricing settings updated successfully",
+      data: pricingSettings,
+    });
+  } catch (error) {
+    console.error("Update pricing settings error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pricing settings",
+      error: error.message,
+    });
   }
 };

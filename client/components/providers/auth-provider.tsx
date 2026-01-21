@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await getSession();
 
       if (response.success && response.data?.user) {
-        console.log("✅ User authenticated:", response.data.user);
         setUser(response.data.user);
       } else {
         console.log("❌ No valid session found");

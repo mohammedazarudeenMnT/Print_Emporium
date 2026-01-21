@@ -27,6 +27,12 @@ export interface OrderItemPayload {
     gsmPrice: number;
     printSidePrice: number;
     bindingPrice: number;
+    printTypeIsPerCopy: boolean;
+    paperSizeIsPerCopy: boolean;
+    paperTypeIsPerCopy: boolean;
+    gsmIsPerCopy: boolean;
+    printSideIsPerCopy: boolean;
+    bindingIsPerCopy: boolean;
     pricePerPage: number;
     totalPages: number;
     copies: number;
@@ -40,7 +46,7 @@ export interface CreateOrderPayload {
   pricing: {
     subtotal: number;
     deliveryCharge: number;
-    tax: number;
+    packingCharge: number;
     total: number;
   };
 }
@@ -83,6 +89,12 @@ export interface Order {
       gsmPrice: number;
       printSidePrice: number;
       bindingPrice: number;
+      printTypeIsPerCopy: boolean;
+      paperSizeIsPerCopy: boolean;
+      paperTypeIsPerCopy: boolean;
+      gsmIsPerCopy: boolean;
+      printSideIsPerCopy: boolean;
+      bindingIsPerCopy: boolean;
       pricePerPage: number;
       totalPages: number;
       copies: number;
@@ -93,7 +105,7 @@ export interface Order {
   pricing: {
     subtotal: number;
     deliveryCharge: number;
-    tax: number;
+    packingCharge: number;
     total: number;
   };
   status:

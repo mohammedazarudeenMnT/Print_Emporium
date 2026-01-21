@@ -410,7 +410,7 @@ export const generateInvoiceHTML = async (order) => {
               </div>
               <div class="info-row">
                 <span class="info-label">Date:</span> ${new Date(
-                  order.createdAt
+                  order.createdAt,
                 ).toLocaleDateString("en-IN", {
                   year: "numeric",
                   month: "long",
@@ -426,7 +426,7 @@ export const generateInvoiceHTML = async (order) => {
                   ? `<div class="info-row">
                       <span class="info-label">Scheduled:</span>
                       <span class="badge badge-scheduled">${new Date(
-                        order.estimatedDelivery
+                        order.estimatedDelivery,
                       ).toLocaleDateString("en-IN", {
                         year: "numeric",
                         month: "long",
@@ -454,8 +454,8 @@ export const generateInvoiceHTML = async (order) => {
             <p>
               ${order.deliveryInfo?.address || ""}<br>
               ${order.deliveryInfo?.city || ""}, ${
-    order.deliveryInfo?.state || ""
-  }<br>
+                order.deliveryInfo?.state || ""
+              }<br>
               ${order.deliveryInfo?.pincode || ""}
             </p>
           </div>
@@ -479,67 +479,81 @@ export const generateInvoiceHTML = async (order) => {
                 <td>
                   <div class="item-name">${item.serviceName}</div>
                   <div class="item-file">${item.fileName} (${
-                  item.pageCount
-                } pages)</div>
+                    item.pageCount
+                  } pages)</div>
                   <div class="item-config">
                     ${item.configuration.printType} • ${
-                  item.configuration.paperSize
-                } • ${item.configuration.paperType} • ${
-                  item.configuration.gsm
-                }GSM • ${item.configuration.printSide}${
-                  item.configuration.bindingOption &&
-                  item.configuration.bindingOption !== "none"
-                    ? ` • ${item.configuration.bindingOption}`
-                    : ""
-                }
+                      item.configuration.paperSize
+                    } • ${item.configuration.paperType} • ${
+                      item.configuration.gsm
+                    }GSM • ${item.configuration.printSide}${
+                      item.configuration.bindingOption &&
+                      item.configuration.bindingOption !== "none"
+                        ? ` • ${item.configuration.bindingOption}`
+                        : ""
+                    }
                   </div>
                   <div class="pricing-breakdown">
                     <div class="pricing-row">
                       <span>Base Price:</span>
                       <span>₹${item.pricing.basePricePerPage.toFixed(
-                        2
+                        2,
                       )}/page</span>
                     </div>
                     ${
                       item.pricing.printTypePrice > 0
                         ? `<div class="pricing-row"><span>Print Type:</span><span>+₹${item.pricing.printTypePrice.toFixed(
-                            2
-                          )}/page</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.printTypeIsPerCopy ? "copy" : "page"
+                          }</span></div>`
                         : ""
                     }
                     ${
                       item.pricing.paperSizePrice > 0
                         ? `<div class="pricing-row"><span>Paper Size:</span><span>+₹${item.pricing.paperSizePrice.toFixed(
-                            2
-                          )}/page</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.paperSizeIsPerCopy ? "copy" : "page"
+                          }</span></div>`
                         : ""
                     }
                     ${
                       item.pricing.paperTypePrice > 0
                         ? `<div class="pricing-row"><span>Paper Type:</span><span>+₹${item.pricing.paperTypePrice.toFixed(
-                            2
-                          )}/page</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.paperTypeIsPerCopy ? "copy" : "page"
+                          }</span></div>`
                         : ""
                     }
                     ${
                       item.pricing.gsmPrice > 0
                         ? `<div class="pricing-row"><span>GSM:</span><span>+₹${item.pricing.gsmPrice.toFixed(
-                            2
-                          )}/page</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.gsmIsPerCopy ? "copy" : "page"
+                          }</span></div>`
                         : ""
                     }
                     ${
                       item.pricing.printSidePrice > 0
                         ? `<div class="pricing-row"><span>Print Side:</span><span>+₹${item.pricing.printSidePrice.toFixed(
-                            2
-                          )}/page</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.printSideIsPerCopy ? "copy" : "page"
+                          }</span></div>`
                         : ""
                     }
                     ${
                       item.pricing.bindingPrice > 0
                         ? `<div class="pricing-row"><span>Binding:</span><span>+₹${item.pricing.bindingPrice.toFixed(
-                            2
-                          )}</span></div>`
+                            2,
+                          )}/${
+                            item.pricing.bindingIsPerCopy !== false
+                              ? "copy"
+                              : "page"
+                          }</span></div>`
                         : ""
                     }
                     <div class="pricing-total">
@@ -554,12 +568,12 @@ export const generateInvoiceHTML = async (order) => {
                   <div class="amount">₹${item.pricing.subtotal.toFixed(2)}</div>
                   <div class="calc">
                     ${item.pageCount} × ${
-                  item.configuration.copies
-                } × ₹${item.pricing.pricePerPage.toFixed(2)}
+                      item.configuration.copies
+                    } × ₹${item.pricing.pricePerPage.toFixed(2)}
                   </div>
                 </td>
               </tr>
-            `
+            `,
               )
               .join("")}
           </tbody>
@@ -575,14 +589,14 @@ export const generateInvoiceHTML = async (order) => {
             ${
               order.pricing.deliveryCharge > 0
                 ? `<div class="total-row line-item"><span>Delivery:</span><span>₹${order.pricing.deliveryCharge.toFixed(
-                    2
+                    2,
                   )}</span></div>`
                 : ""
             }
             ${
-              order.pricing.tax > 0
-                ? `<div class="total-row line-item"><span>Tax (GST):</span><span>₹${order.pricing.tax.toFixed(
-                    2
+              order.pricing.packingCharge > 0
+                ? `<div class="total-row line-item"><span>Packing:</span><span>₹${order.pricing.packingCharge.toFixed(
+                    2,
                   )}</span></div>`
                 : ""
             }
@@ -607,8 +621,8 @@ export const generateInvoiceHTML = async (order) => {
             <div class="footer-section">
               <h4>Need Help?</h4>
               <p>Contact us at ${settings.companyPhone} or email ${
-    settings.companyEmail
-  } for any queries or issues.</p>
+                settings.companyEmail
+              } for any queries or issues.</p>
             </div>
           </div>
           <div class="footer-note">

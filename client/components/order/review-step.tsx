@@ -140,16 +140,24 @@ interface ReviewStepProps {
   orderItems: OrderItem[];
   deliveryInfo: DeliveryInfo;
   onDeliveryInfoChange: (info: DeliveryInfo) => void;
+  subtotal: number;
+  deliveryCharge: number;
+  packingCharge: number;
   total: number;
   onBack: () => void;
+  pricingSettings?: any;
 }
 
 export function ReviewStep({
   orderItems,
   deliveryInfo,
   onDeliveryInfoChange,
+  subtotal,
+  deliveryCharge,
+  packingCharge,
   total,
   onBack,
+  pricingSettings,
 }: ReviewStepProps) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -289,9 +297,9 @@ export function ReviewStep({
         items: uploadedItems,
         deliveryInfo,
         pricing: {
-          subtotal: total,
-          deliveryCharge: 0,
-          tax: 0,
+          subtotal,
+          deliveryCharge,
+          packingCharge,
           total,
         },
       };
@@ -678,7 +686,63 @@ export function ReviewStep({
                 Order Summary
               </h3>
 
-              <div className="space-y-4 mb-8 relative z-10">
+              <div className="space-y-4 mb-6 relative z-10">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
+                </div>
+                
+                {pricingSettings?.isDeliveryEnabled && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">Delivery Charge</span>
+                        {deliveryCharge === 0 && (
+                          <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded uppercase">Free</span>
+                        ) || (
+                          <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded uppercase">Standard</span>
+                        )}
+                      </div>
+                      <span className={cn("font-medium", deliveryCharge === 0 ? "text-green-600" : "text-foreground")}>
+                        {deliveryCharge === 0 ? "Free" : formatPrice(deliveryCharge)}
+                      </span>
+                    </div>
+                    
+                    {/* Delivery Progress Bar */}
+                    {(() => {
+                      const freeThreshold = pricingSettings.deliveryThresholds?.find((t: any) => t.charge === 0)?.minAmount;
+                      if (freeThreshold && subtotal < freeThreshold) {
+                        const progress = (subtotal / freeThreshold) * 100;
+                        const remaining = freeThreshold - subtotal;
+                        return (
+                          <div className="pt-1">
+                            <div className="flex justify-between items-center text-[10px] mb-1">
+                              <span className="text-muted-foreground">Add {formatPrice(remaining)} for free delivery</span>
+                              <span className="font-medium text-primary">{Math.round(progress)}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
+                              <div 
+                                className="h-full bg-primary transition-all duration-1000 ease-out" 
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                )}
+
+                {pricingSettings?.isPackingEnabled && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Packing Charge</span>
+                    <span className="font-medium text-foreground">{formatPrice(packingCharge)}</span>
+                  </div>
+                )}
+
+
+
                 <div className="pt-4 border-t border-border flex justify-between items-center">
                   <span className="text-lg font-bold text-foreground">
                     Total Amount

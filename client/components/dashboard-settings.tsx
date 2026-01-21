@@ -11,7 +11,8 @@ import { EmailSettingsTab } from "@/components/settings/email-settings-tab";
 import { SEOSettingsTab } from "@/components/settings/seo-settings-tab";
 import { HeroCarouselTab } from "@/components/settings/hero-carousel-tab";
 import { PaymentGatewayTab } from "@/components/settings/payment-gateway-tab";
-import { Layout, CreditCard } from "lucide-react";
+import { PricingSettingsTab } from "@/components/settings/pricing-settings-tab";
+import { Layout, CreditCard, ReceiptIndianRupee } from "lucide-react";
 
 export default function DashboardSettings() {
   const [activeTab, setActiveTab] = useState("general");
@@ -43,7 +44,7 @@ export default function DashboardSettings() {
           transition={{ delay: 0.1 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:w-fit">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:w-fit">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 General Settings
@@ -63,6 +64,10 @@ export default function DashboardSettings() {
               <TabsTrigger value="payment" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Payment Gateway
+              </TabsTrigger>
+              <TabsTrigger value="pricing" className="flex items-center gap-2">
+                <ReceiptIndianRupee className="h-4 w-4" />
+                Pricing
               </TabsTrigger>
             </TabsList>
 
@@ -89,6 +94,11 @@ export default function DashboardSettings() {
             {/* Payment Gateway Tab */}
             <TabsContent value="payment" className="space-y-6">
               <PaymentGatewayTab onMessage={handleMessage} />
+            </TabsContent>
+
+            {/* Pricing Settings Tab */}
+            <TabsContent value="pricing" className="space-y-6">
+              <PricingSettingsTab onMessage={handleMessage} />
             </TabsContent>
           </Tabs>
         </motion.div>

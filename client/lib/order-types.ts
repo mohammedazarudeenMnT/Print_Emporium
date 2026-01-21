@@ -44,6 +44,12 @@ export interface ItemPricing {
   gsmPrice: number;
   printSidePrice: number;
   bindingPrice: number;
+  printTypeIsPerCopy: boolean;
+  paperSizeIsPerCopy: boolean;
+  paperTypeIsPerCopy: boolean;
+  gsmIsPerCopy: boolean;
+  printSideIsPerCopy: boolean;
+  bindingIsPerCopy: boolean;
   pricePerPage: number;
   subtotal: number;
   totalPages: number;
@@ -68,7 +74,7 @@ export interface OrderSummary {
   deliveryInfo: DeliveryInfo;
   subtotal: number;
   deliveryCharge: number;
-  tax: number;
+  packingCharge: number;
   total: number;
 }
 

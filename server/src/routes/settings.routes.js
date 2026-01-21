@@ -3,6 +3,8 @@ import {
   getSettings,
   updateGeneralSettings,
   verifyEmailChange,
+  getPricingSettings,
+  updatePricingSettings,
 } from "../controllers/settings.controller.js";
 import {
   getEmailConfiguration,
@@ -30,6 +32,10 @@ router.post("/email-configuration/test", requireAdmin, testEmailConfiguration);
 // Razorpay settings routes
 router.get("/payment-gateway", requireAdmin, getPaymentSettings);
 router.put("/payment-gateway", requireAdmin, updatePaymentSettings);
+
+// Pricing settings routes (Delivery and Packing)
+router.get("/pricing", requireAdmin, getPricingSettings);
+router.put("/pricing", requireAdmin, updatePricingSettings);
 
 // Public Order Routes (Should normally be in order.routes? But for now keeping here or move to a new file?
 // Actually, creating a payment ORDER is usually initiated by the user during checkout.

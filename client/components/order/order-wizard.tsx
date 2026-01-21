@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Service } from "@/lib/service-api";
 import {
   OrderItem,
@@ -11,7 +11,13 @@ import {
   DEFAULT_CONFIGURATION,
   DEFAULT_DELIVERY_INFO,
 } from "@/lib/order-types";
-import { calculateItemPricing } from "@/lib/pricing-utils";
+import { 
+  calculateItemPricing, 
+  getDeliveryCharge, 
+  getPackingCharge, 
+  calculateOrderTotals 
+} from "@/lib/pricing-utils";
+import { axiosInstance } from "@/lib/axios";
 import { generateId } from "@/lib/file-utils";
 import { StepIndicator } from "./step-indicator";
 import { FileUploadStep } from "./file-upload-step";
@@ -34,6 +40,22 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
   const [activeItemIndex, setActiveItemIndex] = useState(0);
   const [selectedServiceForUpload, setSelectedServiceForUpload] = useState<Service>(service);
   const [allServices, setAllServices] = useState<Service[]>([service]);
+  const [pricingSettings, setPricingSettings] = useState<any>(null);
+
+  // Fetch pricing settings on mount
+  useEffect(() => {
+    const fetchPricingSettings = async () => {
+      try {
+        const response = await axiosInstance.get("/api/settings/pricing");
+        if (response.data.success) {
+          setPricingSettings(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch pricing settings:", error);
+      }
+    };
+    fetchPricingSettings();
+  }, []);
 
   // Handle loading all services when user wants to add different service
   const handleLoadAllServices = useCallback(async () => {
@@ -107,9 +129,15 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
     setDeliveryInfo(info);
   }, []);
 
-  // Calculate order totals (no tax, no delivery charge)
+  // Calculate order totals
   const subtotal = orderItems.reduce((sum, item) => sum + item.pricing.subtotal, 0);
-  const total = subtotal; // Total is same as subtotal
+  const deliveryCharge = getDeliveryCharge(subtotal, pricingSettings);
+  const packingCharge = getPackingCharge(subtotal, pricingSettings);
+  const { total } = calculateOrderTotals(
+    orderItems.map(item => item.pricing.subtotal),
+    deliveryCharge,
+    packingCharge
+  );
 
   // Navigation handlers
   const goToStep = (step: OrderStep) => setCurrentStep(step);
@@ -189,8 +217,12 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
             orderItems={orderItems}
             deliveryInfo={deliveryInfo}
             onDeliveryInfoChange={handleDeliveryInfoChange}
+            subtotal={subtotal}
+            deliveryCharge={deliveryCharge}
+            packingCharge={packingCharge}
             total={total}
             onBack={() => goToStep("configure")}
+            pricingSettings={pricingSettings}
           />
         )}
       </div>

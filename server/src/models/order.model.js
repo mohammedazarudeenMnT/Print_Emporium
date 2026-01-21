@@ -47,6 +47,12 @@ const orderItemSchema = new mongoose.Schema({
     gsmPrice: { type: Number, default: 0 },
     printSidePrice: { type: Number, default: 0 },
     bindingPrice: { type: Number, default: 0 },
+    printTypeIsPerCopy: { type: Boolean, default: false },
+    paperSizeIsPerCopy: { type: Boolean, default: false },
+    paperTypeIsPerCopy: { type: Boolean, default: false },
+    gsmIsPerCopy: { type: Boolean, default: false },
+    printSideIsPerCopy: { type: Boolean, default: false },
+    bindingIsPerCopy: { type: Boolean, default: false },
     pricePerPage: { type: Number, required: true },
     totalPages: { type: Number, required: true },
     copies: { type: Number, required: true },
@@ -84,7 +90,7 @@ const orderSchema = new mongoose.Schema(
     pricing: {
       subtotal: { type: Number, required: true },
       deliveryCharge: { type: Number, required: true },
-      tax: { type: Number, required: true },
+      packingCharge: { type: Number, default: 0 },
       total: { type: Number, required: true },
     },
     status: {
