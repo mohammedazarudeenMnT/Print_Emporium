@@ -137,12 +137,14 @@ export const uploadOrderFile = async (req, res) => {
   }
 };
 
+import Coupon from "../models/coupon.model.js";
+
 /**
  * Create a new order
  */
 export const createOrder = async (req, res) => {
   try {
-    const { items, deliveryInfo, pricing } = req.body;
+    const { items, deliveryInfo, pricing, couponCode } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -161,6 +163,52 @@ export const createOrder = async (req, res) => {
         .json({ error: "Delivery information is required" });
     }
 
+    // Validate coupon if provided
+    let appliedDiscount = 0;
+    let couponDoc = null;
+    
+    if (couponCode) {
+      couponDoc = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (couponDoc) {
+        // Simple server-side validation
+        const now = new Date();
+        const isNotExpired = !couponDoc.expiryDate || now <= couponDoc.expiryDate;
+        const isUnderLimit = !couponDoc.usageLimit || couponDoc.usedCount < couponDoc.usageLimit;
+        const isAboveMinAmount = pricing.subtotal >= couponDoc.minOrderAmount;
+
+        if (isNotExpired && isUnderLimit && isAboveMinAmount) {
+          if (couponDoc.type === "percentage") {
+            appliedDiscount = (pricing.subtotal * couponDoc.value) / 100;
+            if (couponDoc.maxDiscountAmount && appliedDiscount > couponDoc.maxDiscountAmount) {
+              appliedDiscount = couponDoc.maxDiscountAmount;
+            }
+          } else {
+            appliedDiscount = couponDoc.value;
+          }
+          
+          // Increment used count
+          couponDoc.usedCount += 1;
+          await couponDoc.save();
+        } else {
+          console.warn(`Attempted invalid coupon use: ${couponCode}`);
+          // We could return error here, but for now we'll just ignore the invalid coupon
+          // to keep the order flow smooth, or we can be strict.
+          // Let's be strict for security.
+          let reason = "invalid";
+          if (!isNotExpired) reason = "expired";
+          if (!isUnderLimit) reason = "limit reached";
+          if (!isAboveMinAmount) reason = "minimum amount not met";
+          
+          return res.status(400).json({ error: `Coupon is ${reason}` });
+        }
+      } else {
+        return res.status(400).json({ error: "Invalid coupon code" });
+      }
+    }
+
+    // Recalculate total on server for safety
+    const serverCalculatedTotal = Math.max(0, pricing.subtotal + pricing.deliveryCharge + pricing.packingCharge - appliedDiscount);
+    
     // Validate required delivery fields
     const requiredFields = [
       "fullName",
@@ -201,7 +249,12 @@ export const createOrder = async (req, res) => {
             ? new Date(deliveryInfo.scheduledDate)
             : null,
       },
-      pricing,
+      pricing: {
+        ...pricing,
+        discount: appliedDiscount,
+        total: serverCalculatedTotal,
+        couponCode: couponCode || null,
+      },
       status: "pending",
       paymentStatus: "pending",
       estimatedDelivery:

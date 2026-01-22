@@ -20,6 +20,7 @@ import orderRoutes from "./src/routes/order.routes.js";
 import employeeRoutes from "./src/routes/employee.routes.js";
 import customerRoutes from "./src/routes/customer.routes.js";
 import leadRoutes from "./src/routes/lead.routes.js";
+import couponRoutes from "./src/routes/coupon.routes.js";
 import { requireAdminOrSignedRequest } from "./src/middleware/signature.middleware.js";
 import { seedAdmin } from "./src/utils/seedAdmin.js";
 // import { seedOrders } from "./src/utils/seedOrders.js";
@@ -128,6 +129,7 @@ const startServer = async () => {
     app.use("/api/employees", employeeRoutes); // Employee management routes
     app.use("/api/customers", requireAdminOrSignedRequest, customerRoutes); // Customer management routes
     app.use("/api/leads", leadRoutes); // CRM Lead routes
+    app.use("/api/coupons", couponRoutes); // Coupon management routes
 
     // Example of getting session in a custom route
     app.get("/api/me", async (req, res) => {

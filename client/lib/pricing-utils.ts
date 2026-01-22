@@ -100,11 +100,12 @@ export function calculateItemPricing(
 export function calculateOrderTotals(
   itemSubtotals: number[],
   deliveryCharge: number = 0,
-  packingCharge: number = 0
-): { subtotal: number; packingCharge: number; total: number } {
+  packingCharge: number = 0,
+  discount: number = 0
+): { subtotal: number; packingCharge: number; discount: number; total: number } {
   const subtotal = itemSubtotals.reduce((sum, item) => sum + item, 0);
-  const total = subtotal + deliveryCharge + packingCharge;
-  return { subtotal, packingCharge, total };
+  const total = Math.max(0, subtotal + deliveryCharge + packingCharge - discount);
+  return { subtotal, packingCharge, discount, total };
 }
 
 /**
@@ -143,19 +144,42 @@ function calculateDynamicCharge(amount: number, thresholds: Threshold[]): number
 }
 
 /**
- * Get delivery charge based on order value and settings
+ * Get delivery charge based on order value, settings, and region
  */
-export function getDeliveryCharge(subtotal: number, settings?: any): number {
+export function getDeliveryCharge(subtotal: number, state?: string, settings?: any): number {
   if (settings && !settings.isDeliveryEnabled) return 0;
   
-  if (settings && settings.deliveryThresholds) {
-    return calculateDynamicCharge(subtotal, settings.deliveryThresholds);
+  let baseCharge = 0;
+  let regionalSurcharge = 0;
+
+  if (settings) {
+    // 1. Calculate amount-based base charge
+    if (settings.deliveryThresholds && settings.deliveryThresholds.length > 0) {
+      baseCharge = calculateDynamicCharge(subtotal, settings.deliveryThresholds);
+    } else {
+      // Fallback defaults for base charge
+      if (subtotal >= 500) baseCharge = 0;
+      else if (subtotal >= 200) baseCharge = 30;
+      else baseCharge = 50;
+    }
+
+    // 2. Add fixed regional surcharge
+    const isTN = state?.toLowerCase().includes('tamil nadu') || state?.toLowerCase() === 'tn';
+    if (isTN) {
+      regionalSurcharge = settings.regionalDeliveryChargeTN || 0;
+    } else {
+      regionalSurcharge = settings.regionalDeliveryChargeOutsideTN || 0;
+    }
+    
+    return baseCharge + regionalSurcharge;
   }
 
-  // Fallback defaults
-  if (subtotal >= 500) return 0; // Free delivery above ₹500
-  if (subtotal >= 200) return 30;
-  return 50;
+  // Pure fallback if no settings at all
+  const isTN = state?.toLowerCase().includes('tamil nadu') || state?.toLowerCase() === 'tn';
+  baseCharge = subtotal >= 500 ? 0 : (subtotal >= 200 ? 30 : 50);
+  regionalSurcharge = isTN ? 0 : 30; // Default outside TN is +30
+  
+  return baseCharge + regionalSurcharge;
 }
 
 /**

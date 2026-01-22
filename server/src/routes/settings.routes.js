@@ -34,7 +34,7 @@ router.get("/payment-gateway", requireAdmin, getPaymentSettings);
 router.put("/payment-gateway", requireAdmin, updatePaymentSettings);
 
 // Pricing settings routes (Delivery and Packing)
-router.get("/pricing", requireAdmin, getPricingSettings);
+router.get("/pricing", getPricingSettings);
 router.put("/pricing", requireAdmin, updatePricingSettings);
 
 // Public Order Routes (Should normally be in order.routes? But for now keeping here or move to a new file?

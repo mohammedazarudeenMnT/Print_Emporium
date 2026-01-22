@@ -495,7 +495,14 @@ export function OrdersTab({ user }: OrdersTabProps) {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Order Value</p>
-                        <p className="font-bold text-lg text-primary">₹{order.pricing?.total?.toFixed(2) || '0.00'}</p>
+                        <div className="flex flex-col">
+                          <p className="font-bold text-lg text-primary">₹{order.pricing?.total?.toFixed(2) || '0.00'}</p>
+                          {order.pricing?.discount > 0 && (
+                            <span className="text-[10px] text-green-600 font-bold uppercase">
+                              - ₹{order.pricing.discount.toFixed(2)} Off
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">{order.items?.length || 0} item(s)</p>
                       </div>
                     </div>
@@ -544,12 +551,24 @@ export function OrdersTab({ user }: OrdersTabProps) {
 
                   {/* User View - Simple Summary */}
                   {!isAdminOrEmployee && (
-                    <div className="flex items-center justify-between text-sm pt-2 border-t border-border">
-                      <div>
-                        <p className="text-muted-foreground">{order.items?.length || 0} item(s)</p>
+                      <div className="text-right">
+                        <div className="flex flex-col items-end gap-1">
+                          <p className="text-muted-foreground">{order.items?.length || 0} item(s)</p>
+                          <div className="flex flex-col items-end">
+                            {order.pricing?.discount > 0 && (
+                              <p className="text-[10px] font-bold text-green-600 line-through opacity-70">
+                                ₹{(order.pricing.total + order.pricing.discount).toFixed(2)}
+                              </p>
+                            )}
+                            <p className="font-bold text-xl text-primary">₹{order.pricing?.total?.toFixed(2) || '0.00'}</p>
+                            {order.pricing?.discount > 0 && (
+                              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                                Saved ₹{order.pricing.discount.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <p className="font-bold text-lg">₹{order.pricing?.total?.toFixed(2) || '0.00'}</p>
-                    </div>
                   )}
                 </div>
               </Card>
@@ -857,13 +876,37 @@ export function OrdersTab({ user }: OrdersTabProps) {
                   <div>
                     <h3 className="font-semibold mb-3">Pricing Summary</h3>
                     <div className="space-y-2 p-4 bg-muted rounded-lg">
-                      <div className="flex justify-between text-sm pb-2 border-b border-border">
+                      <div className="flex justify-between text-sm py-1">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span>₹{selectedOrder.pricing?.subtotal?.toFixed(2) || '0.00'}</span>
+                        <span className="font-medium">₹{selectedOrder.pricing?.subtotal?.toFixed(2) || '0.00'}</span>
                       </div>
-                      <div className="flex justify-between text-lg font-bold pt-2">
-                        <span>Total Amount</span>
-                        <span className="text-primary">₹{selectedOrder.pricing?.total?.toFixed(2) || '0.00'}</span>
+                      
+                      {selectedOrder.pricing?.deliveryCharge > 0 && (
+                        <div className="flex justify-between text-sm py-1">
+                          <span className="text-muted-foreground">Delivery Charge</span>
+                          <span className="font-medium">₹{selectedOrder.pricing.deliveryCharge.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      {selectedOrder.pricing?.packingCharge > 0 && (
+                        <div className="flex justify-between text-sm py-1">
+                          <span className="text-muted-foreground">Packing Charge</span>
+                          <span className="font-medium">₹{selectedOrder.pricing.packingCharge.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      {selectedOrder.pricing?.discount > 0 && (
+                        <div className="flex justify-between text-sm py-1 text-green-600 font-bold">
+                          <div className="flex flex-col">
+                            <span>Discount ({selectedOrder.pricing.couponCode || 'Coupon'})</span>
+                          </div>
+                          <span>-₹{selectedOrder.pricing.discount.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between text-xl font-black pt-3 border-t-2 border-primary/10 mt-2">
+                        <span>Total Paid</span>
+                        <span className="text-primary text-2xl">₹{selectedOrder.pricing?.total?.toFixed(2) || '0.00'}</span>
                       </div>
                     </div>
                   </div>

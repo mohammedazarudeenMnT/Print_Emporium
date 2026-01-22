@@ -670,6 +670,8 @@ export const getPricingSettings = async (req, res) => {
           { minAmount: 200, charge: 30 },
           { minAmount: 500, charge: 0 },
         ],
+        regionalDeliveryChargeTN: 0,
+        regionalDeliveryChargeOutsideTN: 30,
         packingThresholds: [
           { minAmount: 0, charge: 20 },
           { minAmount: 1000, charge: 0 },
@@ -700,6 +702,8 @@ export const updatePricingSettings = async (req, res) => {
   try {
     const {
       deliveryThresholds,
+      regionalDeliveryChargeTN,
+      regionalDeliveryChargeOutsideTN,
       packingThresholds,
       isDeliveryEnabled,
       isPackingEnabled,
@@ -712,6 +716,10 @@ export const updatePricingSettings = async (req, res) => {
     }
 
     if (deliveryThresholds) pricingSettings.deliveryThresholds = deliveryThresholds;
+    if (regionalDeliveryChargeTN !== undefined)
+      pricingSettings.regionalDeliveryChargeTN = regionalDeliveryChargeTN;
+    if (regionalDeliveryChargeOutsideTN !== undefined)
+      pricingSettings.regionalDeliveryChargeOutsideTN = regionalDeliveryChargeOutsideTN;
     if (packingThresholds) pricingSettings.packingThresholds = packingThresholds;
     if (isDeliveryEnabled !== undefined)
       pricingSettings.isDeliveryEnabled = isDeliveryEnabled;

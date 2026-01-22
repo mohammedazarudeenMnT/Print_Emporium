@@ -131,7 +131,7 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
 
   // Calculate order totals
   const subtotal = orderItems.reduce((sum, item) => sum + item.pricing.subtotal, 0);
-  const deliveryCharge = getDeliveryCharge(subtotal, pricingSettings);
+  const deliveryCharge = getDeliveryCharge(subtotal, deliveryInfo.state, pricingSettings);
   const packingCharge = getPackingCharge(subtotal, pricingSettings);
   const { total } = calculateOrderTotals(
     orderItems.map(item => item.pricing.subtotal),

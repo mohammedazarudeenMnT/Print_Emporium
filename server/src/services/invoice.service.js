@@ -600,6 +600,14 @@ export const generateInvoiceHTML = async (order) => {
                   )}</span></div>`
                 : ""
             }
+            ${
+              order.pricing.discount > 0
+                ? `<div class="total-row line-item" style="color: #2e7d32; font-weight: 700;">
+                    <span>Discount (${order.pricing.couponCode || 'Coupon'}):</span>
+                    <span>-₹${order.pricing.discount.toFixed(2)}</span>
+                  </div>`
+                : ""
+            }
             <div class="total-row final-total">
               <span>Total Amount:</span>
               <span>₹${order.pricing.total.toFixed(2)}</span>

@@ -47,8 +47,10 @@ export interface CreateOrderPayload {
     subtotal: number;
     deliveryCharge: number;
     packingCharge: number;
+    discount?: number;
     total: number;
   };
+  couponCode?: string;
 }
 
 export interface OrderResponse {

@@ -2,8 +2,17 @@ import mongoose from "mongoose";
 
 const pricingSettingsSchema = new mongoose.Schema(
   {
-    // Thresholds for delivery charges
-    // Example: [{ minAmount: 0, charge: 50 }, { minAmount: 300, charge: 30 }, { minAmount: 500, charge: 0 }]
+    // Fixed regional delivery charges (Additive)
+    regionalDeliveryChargeTN: {
+      type: Number,
+      default: 0,
+    },
+    regionalDeliveryChargeOutsideTN: {
+      type: Number,
+      default: 0,
+    },
+
+    // Legacy threshold - kept for compatibility
     deliveryThresholds: [
       {
         minAmount: { type: Number, required: true },

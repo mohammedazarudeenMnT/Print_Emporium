@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, IndianRupee, Layers, Upload } from "lucide-react";
+import { ArrowRight, Star, IndianRupee, Layers, Upload, CheckCircle2, MessageSquare } from "lucide-react";
 import { Service } from "@/lib/service-api";
 import Link from "next/link";
 import Image from "next/image";
@@ -55,15 +55,21 @@ const ServiceCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
         {/* Price Badge */}
-        <div className="absolute top-4 right-4 px-3 py-2 rounded-xl bg-background/95 backdrop-blur-md shadow-lg">
+        <div className="absolute top-4 right-4 px-3 py-2 rounded-xl bg-background/95 backdrop-blur-md shadow-lg border border-primary/10">
           <div className="flex items-center gap-1">
-            <IndianRupee className="h-4 w-4 text-primary" />
-            <span className="font-bold text-lg text-foreground">
-              {service.basePricePerPage}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              /{hasPerCopyPricing ? "copy" : "page"}
-            </span>
+            {service.customQuotation && service.basePricePerPage === 0 ? (
+              <span className="font-bold text-sm text-primary uppercase tracking-wider px-1">Quote</span>
+            ) : (
+              <>
+                <IndianRupee className="h-4 w-4 text-primary" />
+                <span className="font-bold text-lg text-foreground">
+                  {service.basePricePerPage}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  /{hasPerCopyPricing ? "copy" : "page"}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -75,48 +81,100 @@ const ServiceCard = ({
 
       {/* Content Container */}
       <div className="relative flex flex-col flex-1 p-6 z-10">
-        <h3 className="text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors duration-300">
-          {service.name}
-        </h3>
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+            {service.name}
+          </h3>
+          {service.customQuotation && (
+            <div className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20">
+              <span className="text-[10px] font-black text-primary uppercase tracking-tighter">Quote</span>
+            </div>
+          )}
+        </div>
 
-        {/* Service Details */}
-        <div className="space-y-2 mb-6 flex-1">
-          {service.printTypes && service.printTypes.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {service.printTypes.length}
-              </span>{" "}
-              print options available
-            </p>
-          )}
-          {service.paperSizes && service.paperSizes.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {service.paperSizes.length}
-              </span>{" "}
-              paper sizes
-            </p>
-          )}
-          {service.bindingOptions && service.bindingOptions.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Binding options available
-            </p>
+        {/* Service Details / Highlights */}
+        <div className="space-y-3 mb-8 flex-1">
+          {service.customQuotation ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-primary">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider opacity-70">Service Highlights</span>
+              </div>
+              <ul className="space-y-1.5">
+                {[
+                  "Custom Design Consultation",
+                  "Specialized Printing Solutions",
+                  "Bulk Order Discounts",
+                  "Priority Expert Support"
+                ].map((highlight, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground group/item">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary opacity-50 group-hover/item:opacity-100 transition-opacity" />
+                    <span>{highlight}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <>
+              {service.printTypes && service.printTypes.length > 0 && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                  <span>
+                    <span className="font-semibold text-foreground">
+                      {service.printTypes.length}
+                    </span>{" "}
+                    print options available
+                  </span>
+                </p>
+              )}
+              {service.paperSizes && service.paperSizes.length > 0 && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                  <span>
+                    <span className="font-semibold text-foreground">
+                      {service.paperSizes.length}
+                    </span>{" "}
+                    paper sizes
+                  </span>
+                </p>
+              )}
+              {service.bindingOptions && service.bindingOptions.length > 0 && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                  <span>Binding options available</span>
+                </p>
+              )}
+            </>
           )}
         </div>
 
         {/* CTA Button */}
-        <Link href={`/order/${service._id}`} className="w-full">
-          <Button
-            className="w-full group/btn relative overflow-hidden rounded-xl font-semibold"
-            variant="default"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              Upload & Print{" "}
-              <Upload className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
-          </Button>
-        </Link>
+        {service.customQuotation ? (
+          <Link href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`} className="w-full">
+            <Button
+              className="w-full group/btn relative overflow-hidden rounded-xl font-bold bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300"
+              variant="outline"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Request Quote{" "}
+                <MessageSquare className="w-4 h-4 transition-transform duration-300 group-hover/btn:scale-110" />
+              </span>
+            </Button>
+          </Link>
+        ) : (
+          <Link href={`/order/${service._id}`} className="w-full">
+            <Button
+              className="w-full group/btn relative overflow-hidden rounded-xl font-semibold"
+              variant="default"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Upload & Print{" "}
+                <Upload className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Animated Border */}

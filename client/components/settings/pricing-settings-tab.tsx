@@ -32,6 +32,8 @@ interface Threshold {
 
 interface PricingSettings {
   deliveryThresholds: Threshold[];
+  regionalDeliveryChargeTN: number;
+  regionalDeliveryChargeOutsideTN: number;
   packingThresholds: Threshold[];
   isDeliveryEnabled: boolean;
   isPackingEnabled: boolean;
@@ -44,6 +46,8 @@ interface PricingSettingsTabProps {
 export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
   const [settings, setSettings] = useState<PricingSettings>({
     deliveryThresholds: [],
+    regionalDeliveryChargeTN: 0,
+    regionalDeliveryChargeOutsideTN: 0,
     packingThresholds: [],
     isDeliveryEnabled: true,
     isPackingEnabled: true,
@@ -71,20 +75,15 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
   }, [loadSettings]);
 
   const handleAddThreshold = (type: "delivery" | "packing") => {
-    const key =
-      type === "delivery" ? "deliveryThresholds" : "packingThresholds";
+    const key = type === "delivery" ? "deliveryThresholds" : "packingThresholds";
     setSettings((prev) => ({
       ...prev,
-      [key]: [...prev[key], { minAmount: 0, charge: 0 }],
+      [key]: [...(prev[key] || []), { minAmount: 0, charge: 0 }],
     }));
   };
 
-  const handleRemoveThreshold = (
-    type: "delivery" | "packing",
-    index: number,
-  ) => {
-    const key =
-      type === "delivery" ? "deliveryThresholds" : "packingThresholds";
+  const handleRemoveThreshold = (type: "delivery" | "packing", index: number) => {
+    const key = type === "delivery" ? "deliveryThresholds" : "packingThresholds";
     setSettings((prev) => ({
       ...prev,
       [key]: prev[key].filter((_, i) => i !== index),
@@ -97,8 +96,7 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
     field: keyof Threshold,
     value: number,
   ) => {
-    const key =
-      type === "delivery" ? "deliveryThresholds" : "packingThresholds";
+    const key = type === "delivery" ? "deliveryThresholds" : "packingThresholds";
     setSettings((prev) => {
       const newThresholds = [...prev[key]];
       newThresholds[index] = { ...newThresholds[index], [field]: value };
@@ -112,7 +110,7 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
       // Sort thresholds by minAmount before saving for consistency
       const sortedSettings = {
         ...settings,
-        deliveryThresholds: [...settings.deliveryThresholds].sort(
+        deliveryThresholds: [...(settings.deliveryThresholds || [])].sort(
           (a, b) => a.minAmount - b.minAmount,
         ),
         packingThresholds: [...settings.packingThresholds].sort(
@@ -225,18 +223,20 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="space-y-4">
+          <CardContent className="p-6 space-y-8">
+            {/* Amount Based Thresholds */}
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">
-                  Price Thresholds
-                </Label>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-700">Amount-Based Charges</h3>
+                  <p className="text-sm text-muted-foreground">Define delivery fees based on order subtotal</p>
+                </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => handleAddThreshold("delivery")}
-                  className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+                  className="gap-2 border-primary/20 hover:border-primary/50"
                 >
                   <Plus className="h-4 w-4" />
                   Add Threshold
@@ -245,85 +245,95 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
 
               <div className="grid grid-cols-1 gap-3">
                 <AnimatePresence mode="popLayout">
-                  {settings.deliveryThresholds.map((threshold, index) => (
+                  {settings.deliveryThresholds?.map((threshold, index) => (
                     <motion.div
                       key={`delivery-${index}`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="flex items-end gap-4 p-4 rounded-xl bg-muted/30 border border-border group relative transition-all hover:bg-muted/50"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-end gap-3 p-4 rounded-xl bg-muted/30 border border-border"
                     >
                       <div className="flex-1 space-y-2">
-                        <Label className="text-xs text-muted-foreground ml-1">
-                          Minimum Order Amount (₹)
-                        </Label>
+                        <Label className="text-xs font-semibold">Min Order (₹)</Label>
                         <div className="relative">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                            ₹
-                          </div>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                           <Input
                             type="number"
                             value={threshold.minAmount}
-                            onChange={(e) =>
-                              handleThresholdChange(
-                                "delivery",
-                                index,
-                                "minAmount",
-                                Number(e.target.value),
-                              )
-                            }
-                            className="pl-7 bg-background"
+                            onChange={(e) => handleThresholdChange("delivery", index, "minAmount", Number(e.target.value))}
+                            className="pl-7"
                           />
                         </div>
                       </div>
                       <div className="flex-1 space-y-2">
-                        <Label className="text-xs text-muted-foreground ml-1">
-                          Delivery Charge (₹)
-                        </Label>
+                        <Label className="text-xs font-semibold">Delivery Fee (₹)</Label>
                         <div className="relative">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                            ₹
-                          </div>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                           <Input
                             type="number"
                             value={threshold.charge}
-                            onChange={(e) =>
-                              handleThresholdChange(
-                                "delivery",
-                                index,
-                                "charge",
-                                Number(e.target.value),
-                              )
-                            }
-                            className={`pl-7 bg-background ${threshold.charge === 0 ? "border-green-500/50 text-green-600 font-medium" : ""}`}
+                            onChange={(e) => handleThresholdChange("delivery", index, "charge", Number(e.target.value))}
+                            className="pl-7"
                           />
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveThreshold("delivery", index)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveThreshold("delivery", index)} className="text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   ))}
                 </AnimatePresence>
+                {(!settings.deliveryThresholds || settings.deliveryThresholds.length === 0) && (
+                  <div className="text-center py-6 border-2 border-dashed rounded-xl text-muted-foreground">
+                    No amount-based charges defined.
+                  </div>
+                )}
               </div>
+            </div>
 
-              {settings.deliveryThresholds.length === 0 && (
-                <div className="text-center py-10 border-2 border-dashed border-muted rounded-xl bg-muted/10">
-                  <Info className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                  <p className="text-muted-foreground text-sm font-medium">
-                    No delivery thresholds defined.
-                  </p>
-                  <p className="text-xs text-muted-foreground/70">
-                    Orders will have ₹0 delivery charge by default.
-                  </p>
+            <div className="border-t pt-8" />
+
+            {/* Regional Fixed Charges */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-700">Regional Surcharges</h3>
+                <p className="text-sm text-muted-foreground">Additional fixed charges added based on delivery state</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3 p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-bold text-primary">Tamil Nadu</Label>
+                    <div className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Fixed Charge</div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 font-bold">₹</span>
+                    <Input
+                      type="number"
+                      value={settings.regionalDeliveryChargeTN}
+                      onChange={(e) => setSettings(prev => ({ ...prev, regionalDeliveryChargeTN: Number(e.target.value) }))}
+                      className="pl-7 h-12 bg-background border-primary/20 focus:border-primary text-lg font-bold"
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground italic">Applied to orders within Tamil Nadu (Additive)</p>
                 </div>
-              )}
+
+                <div className="space-y-3 p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-bold text-indigo-600">Outside Tamil Nadu</Label>
+                    <div className="text-[10px] bg-indigo-500/10 text-indigo-600 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Fixed Charge</div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-600/40 font-bold">₹</span>
+                    <Input
+                      type="number"
+                      value={settings.regionalDeliveryChargeOutsideTN}
+                      onChange={(e) => setSettings(prev => ({ ...prev, regionalDeliveryChargeOutsideTN: Number(e.target.value) }))}
+                      className="pl-7 h-12 bg-background border-indigo-500/20 focus:border-indigo-600 text-lg font-bold"
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground italic">Applied to orders outside Tamil Nadu (Additive)</p>
+                </div>
+              </div>
             </div>
 
             <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex gap-3">
@@ -337,8 +347,8 @@ export function PricingSettingsTab({ onMessage }: PricingSettingsTabProps) {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Set a threshold with{" "}
                   <span className="font-bold">₹0 charge</span> to offer free
-                  delivery (e.g., Min Amount ₹500, Charge ₹0). This encourages
-                  users to buy more to reach the threshold!
+                  delivery. This encourages users to buy more to reach the
+                  threshold!
                 </p>
               </div>
             </div>
