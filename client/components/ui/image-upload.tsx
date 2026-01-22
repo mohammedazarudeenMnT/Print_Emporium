@@ -15,7 +15,8 @@ interface ImageUploadProps {
   label?: string;
   className?: string;
   recommendation?: string;
-  aspectRatio?: "square" | "video" | "wide";
+  aspectRatio?: "square" | "video" | "wide" | "auto";
+  objectFit?: "cover" | "contain";
 }
 
 export function ImageUpload({
@@ -25,6 +26,7 @@ export function ImageUpload({
   className = "",
   recommendation = "PNG, JPG (Max 5MB)",
   aspectRatio = "video",
+  objectFit = "cover",
 }: ImageUploadProps) {
   const {
     previewUrl,
@@ -44,6 +46,7 @@ export function ImageUpload({
     square: "aspect-square w-full max-w-32",
     video: "aspect-video w-full",
     wide: "aspect-[8/3] w-full max-w-64",
+    auto: "w-full h-auto min-h-[160px]",
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -138,7 +141,10 @@ export function ImageUpload({
                   src={displayUrl}
                   alt="Preview"
                   fill
-                  className="object-cover"
+                  className={cn(
+                    "transition-transform duration-500 group-hover:scale-105",
+                    objectFit === "cover" ? "object-cover" : "object-contain p-4"
+                  )}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200" />
@@ -185,7 +191,6 @@ export function ImageUpload({
         )}
         <div className="text-xs text-muted-foreground/70 font-medium text-center space-y-1">
           {recommendation && <div>{recommendation}</div>}
-          <div>PNG, JPG (Max 5MB)</div>
         </div>
       </div>
     </div>

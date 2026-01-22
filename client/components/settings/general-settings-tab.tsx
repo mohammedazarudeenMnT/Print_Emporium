@@ -205,7 +205,7 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden border-primary/10 shadow-xl bg-gradient-to-b from-primary/5 to-background mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building className="h-5 w-5" />
@@ -216,20 +216,61 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Company Logo & Favicon */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ImageUpload
-            value={settings.companyLogo}
-            onChange={(value) => handleSettingsChange("companyLogo", value)}
-            label="Company Logo"
-            aspectRatio="square"
-          />
-          <ImageUpload
-            value={settings.favicon}
-            onChange={(value) => handleSettingsChange("favicon", value)}
-            label="Favicon"
-            aspectRatio="square"
-          />
+        {/* Branding & Identity Section */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/5 via-background to-indigo-500/5 border border-primary/10 p-6 md:p-8 mb-8">
+          <div className="relative z-10 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/20">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold tracking-tight">Branding & Identity</h3>
+                <p className="text-sm text-muted-foreground">Manage your brand assets and how your business appears to customers</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Company Logo Card */}
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-semibold text-foreground/80">Company Logo</Label>
+                  <p className="text-xs text-muted-foreground">Appears on invoices, emails, and header</p>
+                </div>
+                <div className="bg-background/60 backdrop-blur-sm rounded-2xl border border-primary/10 p-4 shadow-inner">
+                  <ImageUpload
+                    value={settings.companyLogo}
+                    onChange={(value) => handleSettingsChange("companyLogo", value)}
+                    aspectRatio="auto"
+                    objectFit="contain"
+                    recommendation="Horizontal or Square (Transparent PNG recommended)"
+                    className="bg-white/50 dark:bg-black/20 rounded-xl overflow-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Favicon Card */}
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-semibold text-foreground/80">Browser Favicon</Label>
+                  <p className="text-xs text-muted-foreground">Icon displayed in browser tabs</p>
+                </div>
+                <div className="bg-background/60 backdrop-blur-sm rounded-2xl border border-primary/10 p-4 shadow-inner">
+                  <ImageUpload
+                    value={settings.favicon}
+                    onChange={(value) => handleSettingsChange("favicon", value)}
+                    aspectRatio="square"
+                    objectFit="contain"
+                    recommendation="Square (1:1), 32x32px or 64x64px"
+                    className="bg-white/50 dark:bg-black/20 rounded-xl overflow-hidden mx-auto max-w-[160px]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Subtle Background Decorations */}
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl" />
         </div>
 
         <Separator />
@@ -663,18 +704,18 @@ export function GeneralSettingsTab({ onMessage }: GeneralSettingsTabProps) {
 
         <Separator />
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-6 border-t border-primary/10">
           <Button
             onClick={saveSettings}
             disabled={isLoading}
-            className="flex items-center gap-2"
+            className="gap-2 px-10 py-6 text-lg font-bold shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all active:scale-95"
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Save className="h-4 w-4" />
+              <Save className="h-5 w-5" />
             )}
-            Save General Settings
+            {isLoading ? "Saving Settings..." : "Save General Settings"}
           </Button>
         </div>
       </CardContent>
