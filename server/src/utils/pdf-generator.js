@@ -1,33 +1,29 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 /**
  * Generate PDF from HTML string using Puppeteer
+ * Works in serverless environments (Vercel, AWS Lambda, etc.)
  */
 export const generatePDFFromHTML = async (html) => {
   let browser;
   
   try {
-    // Launch browser
+    // Launch browser with serverless-compatible Chrome
     browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--no-zygote',
-        '--font-render-hinting=none',
-      ],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
     
-    // Disable timeout for slow systems (0 means no timeout)
+    // Disable timeout for slow systems
     page.setDefaultNavigationTimeout(0);
     page.setDefaultTimeout(0);
     
-    // Set content - using networkidle2 is less strict than networkidle0
-    // and usually sufficient for invoices/emails.
+    // Set content
     await page.setContent(html, {
       waitUntil: 'networkidle2',
       timeout: 0,
