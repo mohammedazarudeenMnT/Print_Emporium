@@ -1,21 +1,39 @@
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 
 /**
  * Generate PDF from HTML string using Puppeteer
- * Works in serverless environments (Vercel, AWS Lambda, etc.)
+ * Works in both local development and serverless environments (Vercel, AWS Lambda)
  */
 export const generatePDFFromHTML = async (html) => {
   let browser;
   
   try {
-    // Launch browser with serverless-compatible Chrome
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    });
+    // Detect if we're in a serverless/production environment
+    const isProduction = process.env.NODE_ENV === "production"
+    
+    if (isProduction) {
+      // Use serverless Chrome for production (Vercel/AWS)
+      const chromium = await import('@sparticuz/chromium');
+      
+      browser = await puppeteerCore.launch({
+        args: chromium.default.args,
+        defaultViewport: chromium.default.defaultViewport,
+        executablePath: await chromium.default.executablePath(),
+        headless: chromium.default.headless,
+      });
+    } else {
+      // Use regular puppeteer for local development
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
+      });
+    }
 
     const page = await browser.newPage();
     

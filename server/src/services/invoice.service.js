@@ -87,8 +87,8 @@ export const generateInvoiceHTML = async (order) => {
         }
 
         .company-logo {
-          max-width: 150px;
-          max-height: 60px;
+          max-width: 200px;
+          max-height: 200px;
           margin-bottom: 12px;
           display: block;
         }
@@ -392,7 +392,7 @@ export const generateInvoiceHTML = async (order) => {
           <div class="company-info">
             ${
               companyLogo
-                ? `<img src="${companyLogo}" alt="${settings.companyName}" class="company-logo" />`
+                ? `<img src="${companyLogo}" alt="${settings.companyName}" class="company-logo"  />`
                 : `<h1>${settings.companyName}</h1>`
             }
             <p>
@@ -603,7 +603,7 @@ export const generateInvoiceHTML = async (order) => {
             ${
               order.pricing.discount > 0
                 ? `<div class="total-row line-item" style="color: #2e7d32; font-weight: 700;">
-                    <span>Discount (${order.pricing.couponCode || 'Coupon'}):</span>
+                    <span>Discount (${order.pricing.couponCode || "Coupon"}):</span>
                     <span>-₹${order.pricing.discount.toFixed(2)}</span>
                   </div>`
                 : ""
