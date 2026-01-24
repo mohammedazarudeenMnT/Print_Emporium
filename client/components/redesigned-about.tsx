@@ -17,6 +17,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface AboutPageProps {
   achievements?: Array<{ label: string; value: string }>;
@@ -29,31 +30,7 @@ const defaultAchievements = [
   { label: "Recognized Awards", value: "10+" },
 ];
 
-const teamMembers = [
-  {
-    name: "John Smith",
-    role: "CEO & Founder",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80",
-    bio: "Visionary leader with 15+ years transforming the print industry.",
-  },
-  {
-    name: "Alice Johnson",
-    role: "Creative Director",
-    image:
-      "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=400&h=400&fit=crop&q=80",
-    bio: "Award-winning designer passionate about color theory and typography.",
-  },
-  {
-    name: "Mike Davis",
-    role: "Operations Manager",
-    image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
-    bio: "Ensuring precision and efficiency in every single print run.",
-  },
-];
-
-export default function RedesignedAboutPage({
+export default function AboutPage({
   achievements = defaultAchievements,
 }: AboutPageProps) {
   const { settings, loading } = useCompanySettings();
@@ -99,20 +76,24 @@ export default function RedesignedAboutPage({
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button
-                  size="lg"
-                  className="h-14 px-8 rounded-2xl bg-primary-900 hover:bg-primary-800 text-white shadow-xl shadow-primary-900/10 text-lg"
-                >
-                  Explore Our Work
-                  <ArrowUpRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="h-14 px-8 rounded-2xl text-primary-900 hover:bg-primary-50 text-lg"
-                >
-                  Meet the Team
-                </Button>
+                <Link href="/services">
+                  <Button
+                    size="lg"
+                    className="h-14 px-8 rounded-2xl bg-primary-900 hover:bg-primary-800 text-white shadow-xl shadow-primary-900/10 text-lg"
+                  >
+                    Explore Our Work
+                    <ArrowUpRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="h-14 px-8 rounded-2xl text-primary-900 hover:bg-primary-50 text-lg"
+                  >
+                    Contact Us
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 
@@ -360,7 +341,11 @@ export default function RedesignedAboutPage({
         </div>
       </section>
 
-      <CTASection primaryButtonText="Get a Custom Quote" />
+      <CTASection
+        primaryButtonText="Get a Custom Quote"
+        primaryButtonHref="/contact"
+        secondaryButtonHref="/services"
+      />
     </div>
   );
 }

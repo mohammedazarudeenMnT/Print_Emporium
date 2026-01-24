@@ -1,36 +1,29 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import {
   MapPin,
-  Phone,
-  Mail,
-  Clock,
+ 
   Send,
-  HelpCircle,
   CheckCircle,
   ChevronDown,
   ArrowRight,
-  MessageCircle,
   ShieldCheck,
   Zap,
   Globe,
   Loader2,
   Headphones,
-  Settings,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCompanySettings } from "@/hooks/use-company-settings";
 import { createLead } from "@/lib/lead-api";
 import { toast } from "sonner";
 import ContactHero from "@/components/contact-hero";
 import CTASection from "@/components/cta-section";
-import { useSearchParams } from "next/navigation";
 
 interface FAQ {
   question: string;
@@ -42,33 +35,25 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="group relative"
+      transition={{ delay: index * 0.08 }}
+      className="group"
     >
-      <div
-        className={cn(
-          "absolute inset-0 bg-primary/10 blur-2xl rounded-3xl transition-opacity duration-500",
-          isOpen ? "opacity-100" : "opacity-0"
-        )}
-      />
-
-      <div className="relative border border-white/10 rounded-3xl overflow-hidden bg-slate-900/40 backdrop-blur-3xl hover:bg-slate-900/60 transition-all duration-500 shadow-2xl">
+      <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-white hover:bg-slate-50 transition-all duration-300 shadow-sm hover:shadow-md group-hover:border-primary/30">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full text-left p-8 flex items-center justify-between group"
+          className="w-full text-left p-6 flex items-center justify-between"
         >
-          <span className="font-bold text-slate-100 text-xl group-hover:text-primary transition-colors">
+          <span className="font-bold text-slate-900 text-base sm:text-lg group-hover:text-primary transition-colors">
             {faq.question}
           </span>
           <div
-            className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500 ${
-              isOpen
-                ? "bg-primary text-white rotate-180 scale-110 shadow-lg shadow-primary/40"
-                : "text-primary group-hover:bg-primary/10"
-            }`}
+            className={cn(
+              "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 ml-4 text-primary transition-all duration-300",
+              isOpen ? "bg-primary text-white rotate-180" : "",
+            )}
           >
             <ChevronDown className="w-5 h-5" />
           </div>
@@ -79,10 +64,10 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="overflow-hidden"
             >
-              <div className="px-8 pb-8 text-slate-400 text-lg leading-relaxed border-t border-white/5 pt-6">
+              <div className="px-6 pb-6 text-slate-600 text-sm sm:text-base leading-relaxed border-t border-slate-200 pt-6">
                 {faq.answer}
               </div>
             </motion.div>
@@ -95,7 +80,7 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
 
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
-export default function RedesignedContactPage() {
+function ContactPageContent() {
   const { settings, loading } = useCompanySettings();
   const searchParams = useSearchParams();
   const subjectParam = searchParams.get("subject");
@@ -142,7 +127,7 @@ export default function RedesignedContactPage() {
   ];
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -201,7 +186,7 @@ export default function RedesignedContactPage() {
     }
   };
 
-  const BentoCard = ({
+  const FeatureCard = ({
     icon,
     title,
     desc,
@@ -213,61 +198,47 @@ export default function RedesignedContactPage() {
     className?: string;
   }) => (
     <motion.div
-      whileHover={{ y: -5 }}
+      whileHover={{ y: -4 }}
       className={cn(
-        "p-8 rounded-[2.5rem] bg-white/90 backdrop-blur-3xl border border-slate-200 shadow-2xl group transition-all duration-500 hover:bg-white hover:border-primary/30",
-        className || ""
+        "p-8 rounded-2xl bg-slate-50 border border-slate-200 transition-all duration-300 hover:border-primary/40 hover:bg-white hover:shadow-lg",
+        className || "",
       )}
     >
-      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+      <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 mb-6 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
         {icon}
       </div>
-      <h4 className="text-xl font-bold text-slate-900 mb-2">{title}</h4>
+      <h4 className="text-xl font-bold text-slate-900 mb-3">{title}</h4>
       <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
     </motion.div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50 overflow-hidden selection:bg-primary/20 selection:text-primary">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-primary/8 rounded-full blur-[150px] animate-pulse" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-indigo-500/6 rounded-full blur-[150px] animate-pulse [animation-delay:2s]" />
-      </div>
+    <div className="min-h-screen bg-white overflow-hidden selection:bg-primary/20 selection:text-primary">
+      {/* Background Ambience Removed for Simple & Professional Theme */}
 
       <ContactHero />
 
-      {/* Main Split Content */}
-      <section className="container mx-auto px-6 py-32 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-20 items-stretch">
+      {/* Main Split Content Section */}
+      <section className="container mx-auto px-6 py-24 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
           {/* Form Side */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="flex flex-col"
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="lg:col-span-6"
           >
             <div className="mb-12">
-              <Badge
-                variant="outline"
-                className="mb-4 border-primary/30 text-primary-700 font-bold tracking-widest bg-primary/10 px-4 py-1.5 uppercase text-[10px] shadow-sm"
-              >
-                Initiate Project
-              </Badge>
-              <h2 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">
-                Bring Your <br />
-                <span className="text-primary italic">Ambition</span> to Life.
+              <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-6 leading-tight">
+                Send us a <span className="text-primary italic">direct message</span>
               </h2>
-              <p className="text-xl text-slate-600 max-w-lg leading-relaxed">
-                Fill out the secure form below. Our high-priority lead capture
-                system ensures an expert reviews your inquiry within 120
-                minutes.
+              <p className="text-lg text-slate-600 max-w-lg leading-relaxed">
+                Fill out the form below and our team will get back to you with a custom solution within 2 business hours.
               </p>
             </div>
 
-            <div className="flex-1 bg-white/90 backdrop-blur-3xl border border-slate-200 rounded-[3rem] p-10 md:p-14 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
+            <div className="flex-1 bg-white border border-slate-200 rounded-[2rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
 
               {isSubmitted ? (
                 <motion.div
@@ -296,7 +267,7 @@ export default function RedesignedContactPage() {
                   </p>
                   <Button
                     variant="outline"
-                    className="px-10 h-14 rounded-2xl border-slate-300 text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
+                    className="px-10 h-14 rounded-2xl border-slate-300 text-slate-900 hover:bg-slate-900 hover:text-white transition-all bg-transparent"
                     onClick={() => setIsSubmitted(false)}
                   >
                     New Inquiry
@@ -307,9 +278,9 @@ export default function RedesignedContactPage() {
                   onSubmit={handleSubmit}
                   className="space-y-10 relative z-10"
                 >
-                  <div className="grid md:grid-cols-2 gap-10">
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-2.5">
+                      <label className="text-xs uppercase tracking-widest font-bold text-slate-700">
                         Full Name
                       </label>
                       <Input
@@ -317,42 +288,43 @@ export default function RedesignedContactPage() {
                         value={formData.name}
                         onChange={handleInputChange}
                         className={cn(
-                          "h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all",
-                          errors.name ? "border-red-500/50 bg-red-50" : ""
+                          "h-14 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all",
+                          errors.name ? "border-red-500/50 bg-red-50" : "",
                         )}
-                        placeholder="Alexander Knight"
+                        placeholder="Your full name"
                       />
                       {errors.name && (
-                        <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">
+                        <p className="text-red-600 text-xs font-bold">
                           {errors.name}
                         </p>
                       )}
                     </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">
+                    <div className="space-y-2.5">
+                      <label className="text-xs uppercase tracking-widest font-bold text-slate-700">
                         Email Address
                       </label>
                       <Input
                         name="email"
+                        type="email"
                         value={formData.email}
                         onChange={handleInputChange}
                         className={cn(
-                          "h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all",
-                          errors.email ? "border-red-500/50 bg-red-50" : ""
+                          "h-14 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all",
+                          errors.email ? "border-red-500/50 bg-red-50" : "",
                         )}
-                        placeholder="alex@industry.com"
+                        placeholder="you@company.com"
                       />
                       {errors.email && (
-                        <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">
+                        <p className="text-red-600 text-xs font-bold">
                           {errors.email}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-10">
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-2.5">
+                      <label className="text-xs uppercase tracking-widest font-bold text-slate-700">
                         Project Subject
                       </label>
                       <Input
@@ -360,47 +332,48 @@ export default function RedesignedContactPage() {
                         value={formData.subject}
                         onChange={handleInputChange}
                         className={cn(
-                          "h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all",
-                          errors.subject ? "border-red-500/50 bg-red-50" : ""
+                          "h-14 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all",
+                          errors.subject ? "border-red-500/50 bg-red-50" : "",
                         )}
-                        placeholder="Large Format Campaign"
+                        placeholder="Business cards, banners, etc"
                       />
                       {errors.subject && (
-                        <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">
+                        <p className="text-red-600 text-xs font-bold">
                           {errors.subject}
                         </p>
                       )}
                     </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">
-                        Phone (Express Line)
+                    <div className="space-y-2.5">
+                      <label className="text-xs uppercase tracking-widest font-bold text-slate-700">
+                        Phone Number (Optional)
                       </label>
                       <Input
                         name="phone"
+                        type="tel"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="h-16 rounded-2xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all"
-                        placeholder="+91 0000 000 000"
+                        className="h-14 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                        placeholder="+91 9876 543 210"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-600 ml-2">
-                      Detailed Requirements
+                  <div className="space-y-2.5">
+                    <label className="text-xs uppercase tracking-widest font-bold text-slate-700">
+                      Project Details
                     </label>
                     <Textarea
                       name="message"
                       value={formData.message}
                       onChange={handleInputChange}
                       className={cn(
-                        "min-h-[200px] rounded-3xl bg-slate-50 border-slate-200 text-slate-900 text-lg focus:ring-primary/20 focus:border-primary/50 transition-all resize-none p-6",
-                        errors.message ? "border-red-500/50 bg-red-50" : ""
+                        "min-h-[180px] rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none p-4",
+                        errors.message ? "border-red-500/50 bg-red-50" : "",
                       )}
-                      placeholder="Tell us about dimensions, material preferences, and delivery timeline..."
+                      placeholder="Describe your printing project, materials, quantities, and timeline..."
                     />
                     {errors.message && (
-                      <p className="text-red-600 text-[10px] ml-2 font-bold uppercase tracking-widest">
+                      <p className="text-red-600 text-xs font-bold">
                         {errors.message}
                       </p>
                     )}
@@ -408,128 +381,162 @@ export default function RedesignedContactPage() {
 
                   <Button
                     disabled={isSubmitting}
-                    className="w-full h-20 rounded-3xl bg-primary hover:bg-primary/90 text-white text-2xl font-black tracking-tighter shadow-2xl shadow-primary/20 group transition-all hover:scale-[1.01] active:scale-[0.98]"
+                    className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-lg shadow-xl shadow-primary/10 group transition-all active:scale-[0.98] disabled:opacity-70"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       {isSubmitting ? (
-                        <Loader2 className="w-10 h-10 animate-spin" />
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Processing...</span>
+                        </>
                       ) : (
                         <>
-                          <span>Deploy Submission</span>
-                          <Send className="w-8 h-8 group-hover:rotate-12 group-hover:translate-x-2 transition-transform" />
+                          <span>Submit Request</span>
+                          <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         </>
                       )}
                     </div>
                   </Button>
-                  <p className="text-center text-slate-500 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3">
-                    <ShieldCheck className="w-4 h-4 text-primary" /> Encrypted &
-                    Secure Lead Processing
+                  <p className="text-center text-slate-500 text-xs font-medium flex items-center justify-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-primary/60" />
+                    Secure and private submission
                   </p>
                 </form>
               )}
             </div>
           </motion.div>
 
-          {/* Info Side - Bento Style */}
+          {/* Info Side - Features Grid */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="flex flex-col gap-8 justify-center"
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="lg:col-span-6 flex flex-col gap-10 justify-center h-full"
           >
-            <div className="grid sm:grid-cols-2 gap-8">
-              <BentoCard
-                icon={<Zap className="w-6 h-6" />}
-                title="Flash Turnaround"
-                desc="Need it yesterday? Our rapid-response unit handles extreme deadlines with Zero-Error precision."
-              />
-              <BentoCard
-                icon={<Globe className="w-6 h-6" />}
-                title="Pan-India Logistics"
-                desc="Advanced tracking and secure handling for all high-value print assets nationwide."
-              />
-              <BentoCard
-                icon={<ShieldCheck className="w-6 h-6" />}
-                title="Enterprise SLA"
-                desc="Guaranteed up-times and quality audits for corporate partners and bulk contracts."
-              />
-              <BentoCard
-                icon={<Headphones className="w-6 h-6" />}
-                title="Design War-Room"
-                desc="Collaborate directly with our master printers via visual consultation sessions."
-              />
+            <div>
+              <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">
+                Trusted standard of <br /><span className="text-primary">Excellence.</span>
+              </h3>
+              <p className="text-slate-600 text-lg leading-relaxed">
+                Join a community of thousands who rely on our expertise for their most critical printing needs.
+              </p>
             </div>
 
-            <div className="flex-1 rounded-[3rem] overflow-hidden border border-white/10 group relative h-[400px]">
-              <iframe
-                src={
-                  settings?.googleMapEmbed ||
-                  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"
-                }
-                className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-1000 border-none"
-                allowFullScreen
-                loading="lazy"
-                title="Office Location"
+            <div className="grid sm:grid-cols-2 gap-6">
+              <FeatureCard
+                icon={<Zap className="w-5 h-5" />}
+                title="Quick Turnaround"
+                desc="48-72 hour delivery on most projects with premium rush options available."
               />
-              <div className="absolute bottom-6 left-6 right-6 p-6 rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200 flex items-center justify-between shadow-xl">
-                <div>
-                  <h4 className="font-bold text-slate-900 mb-1">
-                    HQ Distribution Center
-                  </h4>
-                  <p className="text-slate-600 text-xs">
-                    {settings?.companyAddress || "Chennai, India"}
-                  </p>
-                </div>
-                <Button
-                  size="icon"
-                  className="rounded-full w-12 h-12 bg-primary hover:bg-primary/90"
-                  asChild
-                >
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      settings?.companyAddress || ""
-                    )}`}
-                    target="_blank"
-                  >
-                    <ArrowRight className="w-6 h-6" />
-                  </a>
-                </Button>
-              </div>
+              <FeatureCard
+                icon={<Globe className="w-5 h-5" />}
+                title="Pan-India Shipping"
+                desc="Reliable nationwide delivery with real-time tracking and secure packaging."
+              />
+              <FeatureCard
+                icon={<ShieldCheck className="w-5 h-5" />}
+                title="Quality Guarantee"
+                desc="100% satisfaction promise with rigorous quality control and certification."
+              />
+              <FeatureCard
+                icon={<Headphones className="w-5 h-5" />}
+                title="Expert Support"
+                desc="Dedicated account managers available for consultation and design guidance."
+              />
             </div>
           </motion.div>
         </div>
       </section>
 
+      {/* Lengthy and Big Map Section */}
+      <section className="relative z-10 w-full px-6 py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-[3rem] overflow-hidden border border-slate-200 group relative h-[700px] shadow-sm hover:shadow-xl transition-all duration-700">
+            <iframe
+              src={
+                settings?.googleMapEmbed ||
+                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.002446777647!2d80.2079089759247!3d13.098971987228222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526430b0555555%3A0x6b80585d8847050!2sAnna%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1710925761000!5m2!1sen!2sin"
+              }
+              className="w-full h-full grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 border-none"
+              allowFullScreen
+              loading="lazy"
+              title="Office Location"
+            />
+            <div className="absolute top-8 left-8 right-8 flex justify-center lg:justify-start">
+              <div className="p-8 rounded-[2rem] bg-white/95 backdrop-blur-xl border border-slate-200/50 flex flex-col md:flex-row items-center gap-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-1000 delay-500 max-w-2xl w-full md:w-auto">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary/20">
+                    <MapPin className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-lg mb-1">
+                      HQ Distribution Center
+                    </h4>
+                    <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px]">
+                      {settings?.companyAddress || "Chennai, India"}
+                    </p>
+                  </div>
+                </div>
+                <div className="w-px h-12 bg-slate-200 hidden md:block" />
+                <Button
+                  size="lg"
+                  variant="default"
+                  className="rounded-xl h-14 px-8 bg-primary hover:bg-primary/90 text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 whitespace-nowrap"
+                  asChild
+                >
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      settings?.companyAddress || "",
+                    )}`}
+                    target="_blank"
+                  >
+                    Directions
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Grid */}
-      <section className="container mx-auto px-6 py-32 relative z-10 border-t border-slate-200">
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="container mx-auto px-6 py-24 relative z-10 border-t border-slate-200"
+      >
         <div className="max-w-4xl mx-auto text-center mb-20">
-          <Badge className="bg-primary/10 text-primary-700 border-primary/20 mb-6 uppercase tracking-widest text-[10px] shadow-sm">
-            Information Hub
-          </Badge>
-          <h2 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">
-            Frequently Asked <span className="text-primary">Questions</span>
+          <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-6">
+            Frequently Asked Questions
           </h2>
-          <p className="text-xl text-slate-600">
-            Everything you need to know about our high-performance printing
-            cycle.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Everything you need to know about our high-tech printing workflows and delivery schedules.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {faqs.map((faq, index) => (
             <FAQItem key={index} faq={faq} index={index} />
           ))}
         </div>
-      </section>
+      </motion.section>
 
       <CTASection
         title="Ready to Elevate Your Global Brand Presence?"
         description={`Join our ecosystem of 2,800+ businesses who leverage ${
           settings?.companyName || "PrintEmporium"
         } for high-authority physical collateral.`}
-        primaryButtonText="Trigger Project Quote"
+        primaryButtonText="About Us"
+        primaryButtonHref="/about"
         secondaryButtonText="Explore Dynamic Services"
+        secondaryButtonHref="/services"
       />
     </div>
   );
+}
+
+export default function ContactPage() {
+  return <ContactPageContent />;
 }

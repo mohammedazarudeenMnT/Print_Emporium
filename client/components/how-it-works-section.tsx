@@ -1,8 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Upload, Settings2, CreditCard, Truck, ArrowRight, Zap } from "lucide-react";
+import {
+  Upload,
+  Settings2,
+  CreditCard,
+  Truck,
+  ArrowRight,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface Step {
   number: string;
@@ -17,7 +25,8 @@ const steps: Step[] = [
   {
     number: "01",
     title: "Upload Your File",
-    description: "Simply upload your document, image, or design file in any format.",
+    description:
+      "Simply upload your document, image, or design file in any format.",
     icon: <Upload className="w-8 h-8" />,
     color: "text-blue-600",
     bgColor: "bg-blue-500",
@@ -25,7 +34,8 @@ const steps: Step[] = [
   {
     number: "02",
     title: "Choose Options",
-    description: "Select paper size, type, color mode, binding, and number of copies.",
+    description:
+      "Select paper size, type, color mode, binding, and number of copies.",
     icon: <Settings2 className="w-8 h-8" />,
     color: "text-green-600",
     bgColor: "bg-green-500",
@@ -33,7 +43,8 @@ const steps: Step[] = [
   {
     number: "03",
     title: "Pay Securely",
-    description: "Quick checkout with multiple payment options including UPI & cards.",
+    description:
+      "Quick checkout with multiple payment options including UPI & cards.",
     icon: <CreditCard className="w-8 h-8" />,
     color: "text-yellow-600",
     bgColor: "bg-yellow-500",
@@ -41,7 +52,8 @@ const steps: Step[] = [
   {
     number: "04",
     title: "Get Delivered",
-    description: "Receive your prints at your doorstep or pick up from our store.",
+    description:
+      "Receive your prints at your doorstep or pick up from our store.",
     icon: <Truck className="w-8 h-8" />,
     color: "text-orange-600",
     bgColor: "bg-orange-500",
@@ -78,11 +90,13 @@ const StepCard = ({ step, index }: { step: Step; index: number }) => {
         </div>
 
         {/* Icon Container */}
-        <div className={cn(
-          "w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110",
-          step.bgColor,
-          "text-white shadow-lg"
-        )}>
+        <div
+          className={cn(
+            "w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110",
+            step.bgColor,
+            "text-white shadow-lg",
+          )}
+        >
           {step.icon}
         </div>
 
@@ -132,7 +146,8 @@ export default function HowItWorksSection() {
             4 Simple Steps to Perfect Prints
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Getting your prints has never been easier. Just follow these simple steps.
+            Getting your prints has never been easier. Just follow these simple
+            steps.
           </p>
         </motion.div>
 
@@ -154,13 +169,13 @@ export default function HowItWorksSection() {
           <p className="text-muted-foreground mb-4">
             Ready to get started with your printing project?
           </p>
-          <a
+          <Link
             href="/services"
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:scale-105"
           >
             Browse Services
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

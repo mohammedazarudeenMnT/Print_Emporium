@@ -1,226 +1,236 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, FileText, Maximize2, CheckCircle2, ArrowRight, Zap, Star } from "lucide-react";
+import { CheckCircle2, Upload, MessageSquare, Zap, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function ServicesHero() {
   return (
-    <section className="relative py-20 sm:py-32 overflow-hidden bg-background">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.1)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.1)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+    <section className="relative py-20 sm:py-32 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.15, 0.25, 0.15],
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-primary/20 rounded-full blur-[120px] mix-blend-multiply"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.1, 0.2, 0.1],
+            x: [0, -40, 0],
+            y: [0, 60, 0],
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[-20%] left-[-10%] w-[900px] h-[900px] bg-indigo-500/10 rounded-full blur-[150px] mix-blend-multiply"
+        />
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay" />
+      </div>
 
-      {/* Floating Elements */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 0.3, scale: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl"
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 0.2, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.3 }}
-        className="absolute bottom-20 right-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl"
-      />
-
-      <div className="container relative mx-auto px-6 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="container relative mx-auto px-6">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center lg:text-left"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="space-y-10"
           >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <Badge
-                variant="outline"
-                className="mb-6 gap-2 border-primary/20 text-primary px-4 py-2 font-semibold"
+            {/* Primary Heading */}
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm"
               >
-                <Star className="h-4 w-4 fill-primary" />
-                Premium Quality Printing
-                <ArrowRight className="h-3 w-3" />
-              </Badge>
-            </motion.div>
+                <Zap className="w-4 h-4 text-primary animate-pulse" />
+                <span className="text-xs font-black text-primary uppercase tracking-widest">
+                  Premium Quality
+                </span>
+              </motion.div>
 
-            {/* Main Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight"
-            >
-              <span className="block text-foreground">Professional</span>
-              <span className="block bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
-                Printing Services
-              </span>
-            </motion.h1>
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter"
+              >
+                Fast, Reliable & <br />
+                <span className="bg-gradient-to-r from-primary via-indigo-600 to-primary bg-clip-text text-transparent">
+                  Professional
+                </span>{" "}
+                Printing
+              </motion.h1>
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="max-w-xl text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed mx-auto lg:mx-0"
-            >
-              Transform your ideas into reality with our high-quality printing
-              solutions. From business documents to premium marketing
-              materials, we deliver excellence every time.
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="text-xl text-slate-600 max-w-xl leading-relaxed font-medium"
+              >
+                From business essentials to high-end marketing materials, we
+                bring your vision to life with surgical precision and doorstep
+                delivery.
+              </motion.p>
+            </div>
 
             {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center lg:items-start lg:justify-start justify-center gap-4 mb-8"
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="flex flex-wrap gap-4"
             >
               <Button
-                size="lg"
-                className="h-12 px-8 text-base font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-1 group"
                 asChild
+                size="lg"
+                className="h-16 px-10 text-lg font-black rounded-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <a href="#services">
-                  <Zap className="mr-2 h-4 w-4" />
-                  Browse Services
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <Upload className="w-5 h-5 mr-3" />
+                  Order Now
                 </a>
               </Button>
-              <Link href="/contact">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 px-8 text-base font-semibold rounded-xl border-2 hover:bg-primary/5 transition-all"
-                >
-                  Get Free Quote
-                </Button>
-              </Link>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-16 px-10 text-lg font-bold rounded-2xl border-2 border-slate-200 hover:border-primary/50 hover:bg-primary/5 transition-all"
+              >
+                <Link href="/contact">
+                  <MessageSquare className="w-5 h-5 mr-3" />
+                  Get a Quote
+                </Link>
+              </Button>
             </motion.div>
 
             {/* Trust Indicators */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.6 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.6 }}
+              className="flex flex-wrap gap-10 pt-4"
             >
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                <span>24/7 Support</span>
+              <div className="flex items-center gap-4 group">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
+                  <Zap className="w-7 h-7 text-primary" />
+                </div>
+                <div>
+                  <div className="font-black text-slate-900 text-sm uppercase tracking-wider">
+                    Fast Turnaround
+                  </div>
+                  <div className="text-xs text-slate-500 font-bold">
+                    24h Express Option
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                <span>Fast Delivery</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                <span>Quality Guaranteed</span>
+              <div className="flex items-center gap-4 group">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
+                  <Shield className="w-7 h-7 text-primary" />
+                </div>
+                <div>
+                  <div className="font-black text-slate-900 text-sm uppercase tracking-wider">
+                    Quality Assured
+                  </div>
+                  <div className="text-xs text-slate-500 font-bold">
+                    Military-Grade Accuracy
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Right Visual */}
+          {/* Right Visual Element - Glass How It Works Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
             className="relative"
           >
-            {/* Main Image Container */}
-            <div className="relative bg-accent/5 rounded-2xl p-8 border border-border/50 backdrop-blur-sm">
-              {/* Mockup Grid */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Large Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.7 }}
-                  className="bg-card rounded-xl aspect-[4/3] border border-border/50 shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-                >
-                  <div className="text-center">
-                    <Printer className="h-12 w-12 mx-auto mb-3 text-primary" />
-                    <p className="text-sm font-medium text-foreground">
-                      Digital Printing
-                    </p>
-                  </div>
-                </motion.div>
+            <div className="relative w-full max-w-xl">
+              {/* Glassmorphic Background Card */}
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-white/50 -rotate-2" />
 
-                {/* Tall Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                  className="bg-card rounded-xl row-span-2 border border-border/50 shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-                >
-                  <div className="text-center">
-                    <FileText className="h-16 w-16 mx-auto mb-4 text-accent" />
-                    <p className="text-sm font-medium text-foreground mb-2">
-                      Document
-                    </p>
-                    <p className="text-sm font-medium text-foreground">
-                      Binding
-                    </p>
-                  </div>
-                </motion.div>
+              {/* Main Content Card */}
+              <motion.div className="relative bg-white/80 backdrop-blur-md rounded-[3rem] border border-slate-200 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-10 md:p-14">
+                <div className="mb-12">
+                  <Badge className="bg-primary/10 text-primary-700 border-primary/20 mb-4 px-4 py-1.5 uppercase font-black tracking-[0.2em] text-[10px]">
+                    Workflow Cycle
+                  </Badge>
+                  <h3 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+                    How It <span className="text-primary italic">Operates</span>
+                  </h3>
+                </div>
 
-                {/* Small Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.9 }}
-                  className="bg-card rounded-xl aspect-[4/3] border border-border/50 shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-                >
-                  <div className="text-center">
-                    <Maximize2 className="h-12 w-12 mx-auto mb-3 text-secondary" />
-                    <p className="text-sm font-medium text-foreground">
-                      Large Format
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Floating Stats */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 1 }}
-                className="absolute -top-4 -right-4 bg-primary text-primary-foreground px-4 py-2 rounded-xl shadow-lg"
-              >
-                <div className="text-center">
-                  <div className="text-2xl font-bold">500+</div>
-                  <div className="text-xs opacity-90">Happy Clients</div>
+                {/* Steps List */}
+                <div className="space-y-10">
+                  {[
+                    {
+                      icon: <Upload />,
+                      title: "Upload Assets",
+                      desc: "Drag & drop your documents or browse. Secure cloud processing.",
+                    },
+                    {
+                      icon: <CheckCircle2 />,
+                      title: "Configure Print",
+                      desc: "Select paper, color, binding, and delivery preferences.",
+                    },
+                    {
+                      icon: <Shield />,
+                      title: "Secure Checkout",
+                      desc: "Review details and complete payment via encrypted gateways.",
+                    },
+                    {
+                      icon: <Zap />,
+                      title: "Precision Delivery",
+                      desc: "Professional quality check and fast doorstep delivery.",
+                    },
+                  ].map((step, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 + i * 0.1 }}
+                      className="flex gap-6 group"
+                    >
+                      <div className="relative shrink-0">
+                        <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:border-primary/30 group-hover:text-primary group-hover:scale-110 transition-all duration-500">
+                          <span className="w-6 h-6 flex items-center justify-center">
+                            {step.icon}
+                          </span>
+                        </div>
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center text-[10px] font-black text-slate-900">
+                          {i + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-black text-slate-900 mb-1 tracking-tight">
+                          {step.title}
+                        </h4>
+                        <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                          {step.desc}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 1.1 }}
-                className="absolute -bottom-4 -left-4 bg-accent text-accent-foreground px-4 py-2 rounded-xl shadow-lg"
-              >
-                <div className="text-center">
-                  <div className="text-2xl font-bold">24h</div>
-                  <div className="text-xs opacity-90">Quick Delivery</div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Glow Effect */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full">
-              <div className="absolute left-1/2 -translate-x-1/2 w-[60%] h-[256px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/.3)_10%,transparent_60%)] blur-3xl" />
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Modern Separator */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
     </section>
   );
 }

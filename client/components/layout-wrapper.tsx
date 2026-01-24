@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { AccessDeniedDisplay } from "@/components/ui/access-denied-display";
+import { FloatingWhatsAppButton } from "@/components/ui/whatsapp-floating";
+import { SignInPrompt } from "@/components/ui/sign-in-prompt";
+import { AuthModal } from "@/components/ui/auth-modal";
 
 export default function LayoutWrapper({
   children,
@@ -12,8 +15,16 @@ export default function LayoutWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+  const [authMode, setAuthMode] = React.useState<"login" | "signup">("login");
+
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const isDashboardPage = pathname.startsWith("/dashboard");
+
+  const openAuthModal = (mode: "login" | "signup" = "login") => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
 
   return (
     <>
@@ -23,6 +34,13 @@ export default function LayoutWrapper({
         {children}
       </main>
       {!isAuthPage && !isDashboardPage && <Footer />}
+      <FloatingWhatsAppButton />
+      <SignInPrompt onSignInClick={() => openAuthModal("login")} />
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialMode={authMode} 
+      />
     </>
   );
 }

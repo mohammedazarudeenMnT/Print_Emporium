@@ -18,8 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 // Force dynamic rendering to prevent caching issues
-export const dynamic = 'force-dynamic';
-
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return await constructMetadata("services");
@@ -132,8 +131,11 @@ export default async function ServicesPage() {
                   <div className="absolute top-4 right-4">
                     <div className="px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-xl">
                       <div className="flex items-center gap-1.5">
-                        {service.customQuotation && service.basePricePerPage === 0 ? (
-                          <span className="font-black text-sm text-primary uppercase tracking-widest px-1">Request Quote</span>
+                        {service.customQuotation &&
+                        service.basePricePerPage === 0 ? (
+                          <span className="font-black text-sm text-primary uppercase tracking-widest px-1">
+                            Request Quote
+                          </span>
                         ) : (
                           <>
                             <IndianRupee className="h-4 w-4 text-primary" />
@@ -166,163 +168,178 @@ export default async function ServicesPage() {
                     )}
                   </div>
                 </div>
-                
+
                 {service.customQuotation && (
-                   /* Custom Quote Banner */
-                   <div className="bg-primary/5 px-6 py-3 border-b border-primary/10 flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-primary" />
-                      <span className="text-xs font-bold text-primary uppercase tracking-wide">Custom Quote Service</span>
-                   </div>
+                  /* Custom Quote Banner */
+                  <div className="bg-primary/5 px-6 py-3 border-b border-primary/10 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                      Custom Quote Service
+                    </span>
+                  </div>
                 )}
 
-                  {/* Content Section */}
-                  <div className="p-6 flex-1 flex flex-col space-y-6">
-                    {/* Features Grid */}
-                    <div className="space-y-4 flex-1">
-                      {service.customQuotation ? (
-                        /* Service Highlights for Custom Quotations */
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 text-primary">
-                             <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Service Highlights</span>
-                          </div>
-                          <div className="grid grid-cols-1 gap-2">
-                             {[
-                                "Custom Design Consultation",
-                                "Specialized Printing Solutions",
-                                "Bulk Order Discounts",
-                                "Priority Expert Support"
-                             ].map((highlight, i) => (
-                                <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/10 group/item transition-all hover:bg-primary/10 hover:translate-x-1">
-                                   <CheckCircle2 className="h-4 w-4 text-primary" />
-                                   <span className="text-sm font-semibold text-foreground">{highlight}</span>
-                                </div>
-                             ))}
-                          </div>
+                {/* Content Section */}
+                <div className="p-6 flex-1 flex flex-col space-y-6">
+                  {/* Features Grid */}
+                  <div className="space-y-4 flex-1">
+                    {service.customQuotation ? (
+                      /* Service Highlights for Custom Quotations */
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-primary">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                            Service Highlights
+                          </span>
                         </div>
-                      ) : (
-                        <>
-                          {service.printTypes?.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                <Printer className="h-3.5 w-3.5 text-primary" />
-                                Print Options
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {service.printTypes.map((p) => {
-                                  const isPerCopy =
-                                    (p.pricePerCopy || 0) > 0 &&
-                                    (p.pricePerPage || 0) === 0;
-                                  const price = isPerCopy
-                                    ? p.pricePerCopy
-                                    : p.pricePerPage;
-                                  return (
-                                    <div
-                                      key={p.value}
-                                      className="px-3 py-1.5 rounded-xl bg-primary/5 border border-primary/10"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-semibold capitalize text-foreground">
-                                          {p.value.replace("-", " ")}
-                                        </span>
-                                        <span className="text-xs text-primary font-bold">
-                                          +₹{price}/{isPerCopy ? "copy" : "page"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {service.paperSizes?.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                <Maximize2 className="h-3.5 w-3.5 text-primary" />
-                                Paper Sizes
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {service.paperSizes.map((p) => {
-                                  const isPerCopy =
-                                    (p.pricePerCopy || 0) > 0 &&
-                                    (p.pricePerPage || 0) === 0;
-                                  const price = isPerCopy
-                                    ? p.pricePerCopy
-                                    : p.pricePerPage;
-                                  return (
-                                    <div
-                                      key={p.value}
-                                      className="px-3 py-1.5 rounded-xl bg-muted border border-border"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-semibold uppercase text-foreground">
-                                          {p.value}
-                                        </span>
-                                        {price > 0 && (
-                                          <span className="text-xs text-muted-foreground font-medium">
-                                            +₹{price}/{isPerCopy ? "copy" : "page"}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {service.paperTypes?.length > 0 && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                              <span>
-                                <span className="font-semibold text-foreground">
-                                  {service.paperTypes.length}
-                                </span>{" "}
-                                paper types available
+                        <div className="grid grid-cols-1 gap-2">
+                          {[
+                            "Custom Design Consultation",
+                            "Specialized Printing Solutions",
+                            "Bulk Order Discounts",
+                            "Priority Expert Support",
+                          ].map((highlight, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/10 group/item transition-all hover:bg-primary/10 hover:translate-x-1"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-semibold text-foreground">
+                                {highlight}
                               </span>
                             </div>
-                          )}
-
-                          {service.gsmOptions?.length > 0 && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                              <span>
-                                <span className="font-semibold text-foreground">
-                                  GSM:
-                                </span>{" "}
-                                {service.gsmOptions.map((g) => g.value).join(", ")}
-                              </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {service.printTypes?.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              <Printer className="h-3.5 w-3.5 text-primary" />
+                              Print Options
                             </div>
-                          )}
-
-                          {service.bindingOptions?.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                <FileText className="h-3.5 w-3.5 text-primary" />
-                                Binding Options
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {service.bindingOptions.map((opt) => (
-                                  <Badge
-                                    key={opt.value}
-                                    variant="outline"
-                                    className="text-xs font-semibold border-primary/20 text-primary bg-primary/5"
+                            <div className="flex flex-wrap gap-2">
+                              {service.printTypes.map((p) => {
+                                const isPerCopy =
+                                  (p.pricePerCopy || 0) > 0 &&
+                                  (p.pricePerPage || 0) === 0;
+                                const price = isPerCopy
+                                  ? p.pricePerCopy
+                                  : p.pricePerPage;
+                                return (
+                                  <div
+                                    key={p.value}
+                                    className="px-3 py-1.5 rounded-xl bg-primary/5 border border-primary/10"
                                   >
-                                    {opt.value.replace("-", " ")}
-                                  </Badge>
-                                ))}
-                              </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold capitalize text-foreground">
+                                        {p.value.replace("-", " ")}
+                                      </span>
+                                      <span className="text-xs text-primary font-bold">
+                                        +₹{price}/{isPerCopy ? "copy" : "page"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                          </div>
+                        )}
+
+                        {service.paperSizes?.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              <Maximize2 className="h-3.5 w-3.5 text-primary" />
+                              Paper Sizes
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {service.paperSizes.map((p) => {
+                                const isPerCopy =
+                                  (p.pricePerCopy || 0) > 0 &&
+                                  (p.pricePerPage || 0) === 0;
+                                const price = isPerCopy
+                                  ? p.pricePerCopy
+                                  : p.pricePerPage;
+                                return (
+                                  <div
+                                    key={p.value}
+                                    className="px-3 py-1.5 rounded-xl bg-muted border border-border"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold uppercase text-foreground">
+                                        {p.value}
+                                      </span>
+                                      {price > 0 && (
+                                        <span className="text-xs text-muted-foreground font-medium">
+                                          +₹{price}/
+                                          {isPerCopy ? "copy" : "page"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {service.paperTypes?.length > 0 && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                            <span>
+                              <span className="font-semibold text-foreground">
+                                {service.paperTypes.length}
+                              </span>{" "}
+                              paper types available
+                            </span>
+                          </div>
+                        )}
+
+                        {service.gsmOptions?.length > 0 && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                            <span>
+                              <span className="font-semibold text-foreground">
+                                GSM:
+                              </span>{" "}
+                              {service.gsmOptions
+                                .map((g) => g.value)
+                                .join(", ")}
+                            </span>
+                          </div>
+                        )}
+
+                        {service.bindingOptions?.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              <FileText className="h-3.5 w-3.5 text-primary" />
+                              Binding Options
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {service.bindingOptions.map((opt) => (
+                                <Badge
+                                  key={opt.value}
+                                  variant="outline"
+                                  className="text-xs font-semibold border-primary/20 text-primary bg-primary/5"
+                                >
+                                  {opt.value.replace("-", " ")}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
 
                   {/* Action Button */}
                   {service.customQuotation ? (
-                    <Link href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`} className="w-full">
-                       <Button className="w-full rounded-2xl h-14 text-base font-bold bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white hover:border-primary shadow-lg shadow-primary/5 transition-all group-hover:shadow-xl group-hover:shadow-primary/20">
+                    <Link
+                      href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`}
+                      className="w-full"
+                    >
+                      <Button className="w-full rounded-2xl h-14 text-base font-bold bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white hover:border-primary shadow-lg shadow-primary/5 transition-all group-hover:shadow-xl group-hover:shadow-primary/20">
                         <span className="flex items-center gap-2">
                           <MessageCircle className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
                           Request Quote
@@ -350,7 +367,9 @@ export default async function ServicesPage() {
         title="Ready to Print?"
         description="Contact us today for bulk orders and specialized requirements."
         primaryButtonText="Get in Touch"
+        primaryButtonHref="/contact"
         secondaryButtonText="View Pricing"
+        secondaryButtonHref="/about"
         badgeText="Quick Turnaround"
       />
     </div>

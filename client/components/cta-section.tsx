@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanySettings } from "@/hooks/use-company-settings";
+import Link from "next/link";
 
 interface CTASectionProps {
   title?: string;
   description?: string;
   primaryButtonText?: string;
+  primaryButtonHref?: string;
   secondaryButtonText?: string;
+  secondaryButtonHref?: string;
   backgroundImage?: string;
   badgeText?: string;
 }
@@ -18,7 +21,9 @@ export default function CTASection({
   title = "Ready to start your next masterpiece?",
   description,
   primaryButtonText = "Start Your Project",
+  primaryButtonHref = "/services",
   secondaryButtonText = "View Portfolio",
+  secondaryButtonHref = "/about",
   backgroundImage = "/assets/images/cta/cta-background.jpg",
   badgeText,
 }: CTASectionProps) {
@@ -83,20 +88,24 @@ export default function CTASection({
               transition={{ duration: 0.7, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <Button
-                size="lg"
-                className="bg-white text-primary-950 hover:bg-base-100 h-14 px-8 rounded-2xl text-lg font-semibold group"
-              >
-                {primaryButtonText}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/30 bg-white/5 text-white hover:bg-white/20 hover:border-white/50 h-14 px-8 rounded-2xl text-lg backdrop-blur-sm transition-all duration-300"
-              >
-                {secondaryButtonText}
-              </Button>
+              <Link href={primaryButtonHref}>
+                <Button
+                  size="lg"
+                  className="bg-white text-primary-950 hover:bg-base-100 h-14 px-8 rounded-2xl text-lg font-semibold group"
+                >
+                  {primaryButtonText}
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href={secondaryButtonHref}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 bg-white/5 text-white hover:bg-white/20 hover:border-white/50 h-14 px-8 rounded-2xl text-lg backdrop-blur-sm transition-all duration-300"
+                >
+                  {secondaryButtonText}
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </div>

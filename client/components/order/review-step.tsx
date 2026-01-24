@@ -23,7 +23,9 @@ import {
   ShieldCheck,
   Truck,
   Calendar,
+  AlertCircle,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -166,6 +168,7 @@ export function ReviewStep({
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewFile, setPreviewFile] = useState<OrderItem | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isApproved, setIsApproved] = useState(false);
   
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -893,11 +896,31 @@ export function ReviewStep({
                 </div>
               </div>
 
-              <div className="space-y-3 relative z-10">
+              <div className="space-y-4 relative z-10">
+                <div className={cn(
+                  "flex gap-3 p-4 rounded-xl border transition-all duration-300",
+                  isApproved ? "bg-primary/5 border-primary/20 shadow-inner" : "bg-muted/50 border-border"
+                )}>
+                  <div className="pt-0.5">
+                    <Checkbox 
+                      id="approval" 
+                      checked={isApproved} 
+                      onCheckedChange={(checked) => setIsApproved(checked as boolean)}
+                      className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    />
+                  </div>
+                  <Label 
+                    htmlFor="approval" 
+                    className="text-xs leading-relaxed text-muted-foreground cursor-pointer select-none font-medium"
+                  >
+                    I have reviewed and I approve the <strong className="text-foreground">uploaded files</strong>, <strong className="text-foreground">page count</strong>, and <strong className="text-foreground">print specifications</strong> for this order.
+                  </Label>
+                </div>
+
                 <Button
                   className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   onClick={handlePlaceOrder}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !isApproved}
                 >
                   {isProcessing ? (
                     <span className="flex items-center gap-2">
