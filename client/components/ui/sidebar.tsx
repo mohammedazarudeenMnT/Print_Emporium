@@ -129,8 +129,8 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 className="flex items-center gap-3"
               >
                 <CompanyLogo
-                  width={200}
-                  height={200}
+                  width={180}
+                  height={180}
                   className="rounded-lg"
                   showFallback={true}
                 />
