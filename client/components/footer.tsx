@@ -61,18 +61,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           <div className="group">
-            <div className="flex items-center mb-6">
+            <div className="flex items-center ">
               <CompanyLogo
-                width={130}
-                height={130}
-                className="rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-300"
+                width={200}
+                height={200}
+                className="rounded-xl  group-hover:scale-105 transition-transform duration-300"
                 showFallback={true}
               />
-              <span className="ml-3 text-xl font-bold tracking-tight">
-                {loading
-                  ? "Loading..."
-                  : settings?.companyName || "The Print Emporium"}
-              </span>
             </div>
             <p className="text-muted-foreground leading-relaxed mb-6 text-sm">
               {loading

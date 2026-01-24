@@ -69,7 +69,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         const response = await signup(
           formData.email,
           formData.password,
-          formData.name
+          formData.name,
         );
         if (response.success && response.data?.user) {
           // Update the auth context with the user data
@@ -80,7 +80,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Authentication failed"
+        error instanceof Error ? error.message : "Authentication failed",
       );
     } finally {
       setIsLoading(false);
@@ -95,15 +95,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-12 group">
             <CompanyLogo
-              width={80}
-              height={80}
-              className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+              width={250}
+              height={250}
+              className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 "
             />
-            <span className="text-xl font-bold tracking-tight text-foreground">
-              {loading
-                ? "Loading..."
-                : settings?.companyName || "PrintEmporium"}
-            </span>
           </Link>
 
           <AnimatePresence mode="wait">

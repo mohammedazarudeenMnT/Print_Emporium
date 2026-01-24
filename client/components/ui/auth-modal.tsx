@@ -25,14 +25,18 @@ interface AuthModalProps {
   initialMode?: "login" | "signup";
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
+export function AuthModal({
+  isOpen,
+  onClose,
+  initialMode = "login",
+}: AuthModalProps) {
   const { settings } = useCompanySettings();
   const { login: authLogin, refreshUser } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,8 +61,9 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
     setError(null);
 
     try {
-      const { login: apiLogin, signup: apiSignup } = await import("@/lib/auth-api");
-      
+      const { login: apiLogin, signup: apiSignup } =
+        await import("@/lib/auth-api");
+
       if (mode === "login") {
         const response = await apiLogin(formData.email, formData.password);
         if (response.success && response.data?.user) {
@@ -70,7 +75,11 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
         }
       } else {
         if (!formData.name.trim()) throw new Error("Name is required");
-        const response = await apiSignup(formData.email, formData.password, formData.name);
+        const response = await apiSignup(
+          formData.email,
+          formData.password,
+          formData.name,
+        );
         if (response.success && response.data?.user) {
           authLogin(response.data.user);
           toast.success("Account created successfully");
@@ -92,9 +101,9 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
         <div className="relative p-8 md:p-10">
           <div className="flex flex-col items-center text-center mb-8">
             <CompanyLogo
-              width={60}
-              height={60}
-              className="rounded-2xl mb-6 shadow-xl shadow-primary/10"
+              width={200}
+              height={200}
+              className="rounded-2xl mb-6 "
             />
             <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
               {mode === "login" ? "Welcome Back" : "Get Started"}

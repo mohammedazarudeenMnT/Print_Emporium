@@ -113,7 +113,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
           "fixed md:relative z-50 h-screen flex flex-col bg-white border-r border-border shadow-sm",
-          className
+          className,
         )}
         onMouseEnter={() => !isPinned && !isMobile && setIsExpanded(true)}
         onMouseLeave={() => !isPinned && !isMobile && setIsExpanded(false)}
@@ -129,8 +129,8 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 className="flex items-center gap-3"
               >
                 <CompanyLogo
-                  width={150}
-                  height={150}
+                  width={200}
+                  height={200}
                   className="rounded-lg"
                   showFallback={true}
                 />
@@ -143,8 +143,8 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 className="w-full flex justify-center"
               >
                 <CompanyLogo
-                  width={100}
-                  height={100}
+                  width={150}
+                  height={150}
                   className="rounded-lg"
                   showFallback={true}
                 />
@@ -191,7 +191,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 setExpandedMenus((prev) =>
                   prev.includes(link.label)
                     ? prev.filter((item) => item !== link.label)
-                    : [...prev, link.label]
+                    : [...prev, link.label],
                 );
               }
             };
@@ -218,7 +218,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                       ? isCollapsed
                         ? "bg-primary-50 text-primary-600 shadow-sm"
                         : "bg-primary-50 text-primary-600 font-semibold shadow-sm border border-primary-100"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {/* Icon */}
@@ -227,7 +227,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                       "flex-shrink-0 w-5 h-5 transition-transform group-hover:scale-110",
                       link.isActive
                         ? "text-primary-600"
-                        : "text-muted-foreground group-hover:text-foreground"
+                        : "text-muted-foreground group-hover:text-foreground",
                     )}
                   >
                     {link.icon}
@@ -287,7 +287,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                             "w-full flex items-center gap-3 px-4 py-2 text-sm rounded-lg transition-colors",
                             subLink.isActive
                               ? "text-primary-600 font-medium bg-primary-50/50"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                           )}
                         >
                           {subLink.label}
@@ -306,7 +306,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
           <div
             className={cn(
               "flex items-center gap-3",
-              !isExpanded && !isMobile && !isPinned ? "justify-center" : ""
+              !isExpanded && !isMobile && !isPinned ? "justify-center" : "",
             )}
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold shadow-md">

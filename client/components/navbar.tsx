@@ -80,7 +80,7 @@ export default function Navbar() {
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
             ? "bg-background/95 backdrop-blur-md shadow-md border-b border-border"
-            : "bg-background"
+            : "bg-background",
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,7 +90,7 @@ export default function Navbar() {
               href="/"
               className="flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
-              <CompanyLogo width={140} height={140} className="rounded-lg" />
+              <CompanyLogo width={200} height={200} className="rounded-lg" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -103,7 +103,7 @@ export default function Navbar() {
                     "text-sm font-medium transition-colors relative",
                     isActiveLink(item.href)
                       ? "text-foreground font-semibold"
-                      : "text-foreground/80 hover:text-foreground"
+                      : "text-foreground/80 hover:text-foreground",
                   )}
                 >
                   {item.label}
@@ -209,14 +209,14 @@ export default function Navbar() {
           "fixed inset-0 z-40 md:hidden transition-all duration-300",
           isMobileMenuOpen
             ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+            : "opacity-0 pointer-events-none",
         )}
       >
         {/* Backdrop */}
         <div
           className={cn(
             "absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
-            isMobileMenuOpen ? "opacity-100" : "opacity-0"
+            isMobileMenuOpen ? "opacity-100" : "opacity-0",
           )}
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -225,7 +225,7 @@ export default function Navbar() {
         <div
           className={cn(
             "absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg transition-transform duration-300",
-            isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
+            isMobileMenuOpen ? "translate-y-0" : "-translate-y-full",
           )}
         >
           <div className="px-4 py-6 space-y-4">
@@ -238,7 +238,7 @@ export default function Navbar() {
                   "block px-4 py-3 text-base font-medium rounded-lg transition-colors",
                   isActiveLink(item.href)
                     ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
+                    : "text-foreground/80 hover:text-foreground hover:bg-accent",
                 )}
               >
                 {item.label}

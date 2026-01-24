@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
       setIsSuccess(true);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send reset email"
+        error instanceof Error ? error.message : "Failed to send reset email",
       );
     } finally {
       setIsLoading(false);
@@ -48,15 +48,10 @@ export default function ForgotPasswordPage() {
             <div className="text-center mb-6">
               <Link href="/" className="inline-flex items-center gap-2 group">
                 <CompanyLogo
-                  width={80}
-                  height={80}
-                  className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+                  width={250}
+                  height={250}
+                  className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 "
                 />
-                <span className="text-xl font-bold tracking-tight text-foreground">
-                  {loading
-                    ? "Loading..."
-                    : settings?.companyName || "PrintEmporium"}
-                </span>
               </Link>
             </div>
 
@@ -108,15 +103,10 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-6">
             <Link href="/" className="inline-flex items-center gap-2 group">
               <CompanyLogo
-                width={80}
-                height={80}
-                className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 shadow-lg shadow-primary/20"
+                width={250}
+                height={250}
+                className="rounded-xl transform group-hover:rotate-6 transition-transform duration-300 "
               />
-              <span className="text-xl font-bold tracking-tight text-foreground">
-                {loading
-                  ? "Loading..."
-                  : settings?.companyName || "PrintEmporium"}
-              </span>
             </Link>
           </div>
 
