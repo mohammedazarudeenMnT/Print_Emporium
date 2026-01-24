@@ -90,7 +90,7 @@ export default function Navbar() {
               href="/"
               className="flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
-              <CompanyLogo width={200} height={200} className="rounded-lg" />
+              <CompanyLogo width={150} height={150} className="rounded-lg" />
             </Link>
 
             {/* Desktop Navigation */}
