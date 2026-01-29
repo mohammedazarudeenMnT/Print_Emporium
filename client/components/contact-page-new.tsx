@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import {
   MapPin,
- 
   Send,
   CheckCircle,
   ChevronDown,
@@ -231,15 +230,16 @@ function ContactPageContent() {
           >
             <div className="mb-12">
               <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-6 leading-tight">
-                Send us a <span className="text-primary italic">direct message</span>
+                Send us a{" "}
+                <span className="text-primary italic">direct message</span>
               </h2>
               <p className="text-lg text-slate-600 max-w-lg leading-relaxed">
-                Fill out the form below and our team will get back to you with a custom solution within 2 business hours.
+                Fill out the form below and our team will get back to you with a
+                custom solution within 2 business hours.
               </p>
             </div>
 
             <div className="flex-1 bg-white border border-slate-200 rounded-[2rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
-
               {isSubmitted ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -416,10 +416,12 @@ function ContactPageContent() {
           >
             <div>
               <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">
-                Trusted standard of <br /><span className="text-primary">Excellence.</span>
+                Trusted standard of <br />
+                <span className="text-primary">Excellence.</span>
               </h3>
               <p className="text-slate-600 text-lg leading-relaxed">
-                Join a community of thousands who rely on our expertise for their most critical printing needs.
+                Join a community of thousands who rely on our expertise for
+                their most critical printing needs.
               </p>
             </div>
 
@@ -471,7 +473,7 @@ function ContactPageContent() {
                   </div>
                   <div>
                     <h4 className="font-extrabold text-slate-900 text-lg mb-1">
-                      HQ Distribution Center
+                      {settings?.companyName || "The Print Emporium"}{" "}
                     </h4>
                     <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px]">
                       {settings?.companyAddress || "Chennai, India"}
@@ -513,7 +515,8 @@ function ContactPageContent() {
             Frequently Asked Questions
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Everything you need to know about our high-tech printing workflows and delivery schedules.
+            Everything you need to know about our high-tech printing workflows
+            and delivery schedules.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
