@@ -169,7 +169,7 @@ export function ReviewStep({
   const [previewFile, setPreviewFile] = useState<OrderItem | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isApproved, setIsApproved] = useState(false);
-  
+
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -193,10 +193,13 @@ export function ReviewStep({
 
   const componentRef = useRef<HTMLDivElement>(null);
 
-  const updateDeliveryInfo = (key: keyof DeliveryInfo, value: string) => {
+  const updateDeliveryInfo = (
+    key: keyof DeliveryInfo,
+    value: string | boolean,
+  ) => {
     onDeliveryInfoChange({ ...deliveryInfo, [key]: value });
     // Clear error when user types
-    if (errors[key]) {
+    if (errors[key as string]) {
       setErrors((prev) => ({ ...prev, [key]: "" }));
     }
   };
@@ -262,7 +265,9 @@ export function ReviewStep({
         setCouponError(response.message || "Invalid coupon code");
       }
     } catch (error: any) {
-      setCouponError(error.response?.data?.message || "Failed to validate coupon");
+      setCouponError(
+        error.response?.data?.message || "Failed to validate coupon",
+      );
     } finally {
       setIsApplyingCoupon(false);
     }
@@ -318,7 +323,7 @@ export function ReviewStep({
                 fileData,
                 pdfData,
                 fileName: item.file.name,
-              }
+              },
             );
 
             if (!uploadResponse.data.success) {
@@ -342,7 +347,7 @@ export function ReviewStep({
             console.error("File upload error:", error);
             throw new Error(`Failed to upload ${item.file.name}`);
           }
-        })
+        }),
       );
 
       // 2. Create the Order in Backend
@@ -371,7 +376,7 @@ export function ReviewStep({
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         toast.error(
-          "Failed to load payment gateway. Please check your internet connection."
+          "Failed to load payment gateway. Please check your internet connection.",
         );
         setIsProcessing(false);
         return;
@@ -416,7 +421,7 @@ export function ReviewStep({
               router.push(`/dashboard?tab=orders&order=${order.id}`);
             } else {
               toast.error(
-                "Payment verification failed. Please contact support."
+                "Payment verification failed. Please contact support.",
               );
             }
           } catch (error) {
@@ -695,9 +700,21 @@ export function ReviewStep({
                   id="scheduleDelivery"
                   checked={deliveryInfo.scheduleDelivery || false}
                   onCheckedChange={(checked) => {
-                    updateDeliveryInfo("scheduleDelivery", checked as any);
+                    const newInfo = {
+                      ...deliveryInfo,
+                      scheduleDelivery: checked,
+                    };
                     if (!checked) {
-                      updateDeliveryInfo("scheduledDate", "");
+                      newInfo.scheduledDate = "";
+                    }
+                    onDeliveryInfoChange(newInfo);
+
+                    // Clear errors
+                    if (errors.scheduleDelivery) {
+                      setErrors((prev) => ({ ...prev, scheduleDelivery: "" }));
+                    }
+                    if (!checked && errors.scheduledDate) {
+                      setErrors((prev) => ({ ...prev, scheduledDate: "" }));
                     }
                   }}
                 />
@@ -745,40 +762,64 @@ export function ReviewStep({
               <div className="space-y-4 mb-6 relative z-10">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatPrice(subtotal)}
+                  </span>
                 </div>
-                
+
                 {pricingSettings?.isDeliveryEnabled && (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-muted-foreground">Delivery Charge</span>
-                        {deliveryCharge === 0 && (
-                          <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded uppercase">Free</span>
-                        ) || (
-                          <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded uppercase">Standard</span>
+                        <span className="text-muted-foreground">
+                          Delivery Charge
+                        </span>
+                        {(deliveryCharge === 0 && (
+                          <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded uppercase">
+                            Free
+                          </span>
+                        )) || (
+                          <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded uppercase">
+                            Standard
+                          </span>
                         )}
                       </div>
-                      <span className={cn("font-medium", deliveryCharge === 0 ? "text-green-600" : "text-foreground")}>
-                        {deliveryCharge === 0 ? "Free" : formatPrice(deliveryCharge)}
+                      <span
+                        className={cn(
+                          "font-medium",
+                          deliveryCharge === 0
+                            ? "text-green-600"
+                            : "text-foreground",
+                        )}
+                      >
+                        {deliveryCharge === 0
+                          ? "Free"
+                          : formatPrice(deliveryCharge)}
                       </span>
                     </div>
-                    
+
                     {/* Delivery Progress Bar */}
                     {(() => {
-                      const freeThreshold = pricingSettings.deliveryThresholds?.find((t: any) => t.charge === 0)?.minAmount;
+                      const freeThreshold =
+                        pricingSettings.deliveryThresholds?.find(
+                          (t: any) => t.charge === 0,
+                        )?.minAmount;
                       if (freeThreshold && subtotal < freeThreshold) {
                         const progress = (subtotal / freeThreshold) * 100;
                         const remaining = freeThreshold - subtotal;
                         return (
                           <div className="pt-1">
                             <div className="flex justify-between items-center text-[10px] mb-1">
-                              <span className="text-muted-foreground">Add {formatPrice(remaining)} for free delivery</span>
-                              <span className="font-medium text-primary">{Math.round(progress)}%</span>
+                              <span className="text-muted-foreground">
+                                Add {formatPrice(remaining)} for free delivery
+                              </span>
+                              <span className="font-medium text-primary">
+                                {Math.round(progress)}%
+                              </span>
                             </div>
                             <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
-                              <div 
-                                className="h-full bg-primary transition-all duration-1000 ease-out" 
+                              <div
+                                className="h-full bg-primary transition-all duration-1000 ease-out"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
@@ -792,18 +833,25 @@ export function ReviewStep({
 
                 {pricingSettings?.isPackingEnabled && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Packing Charge</span>
-                    <span className="font-medium text-foreground">{formatPrice(packingCharge)}</span>
+                    <span className="text-muted-foreground">
+                      Packing Charge
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {formatPrice(packingCharge)}
+                    </span>
                   </div>
                 )}
-
-
 
                 <div className="pt-2">
                   {!appliedCoupon ? (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="coupon" className="text-xs font-semibold text-muted-foreground ml-1">Have a coupon?</Label>
+                        <Label
+                          htmlFor="coupon"
+                          className="text-xs font-semibold text-muted-foreground ml-1"
+                        >
+                          Have a coupon?
+                        </Label>
                         <div className="flex gap-2">
                           <div className="relative flex-1">
                             <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -812,20 +860,31 @@ export function ReviewStep({
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value)}
                               placeholder="Enter code"
-                              className={cn("pl-9 uppercase", couponError && "border-destructive")}
+                              className={cn(
+                                "pl-9 uppercase",
+                                couponError && "border-destructive",
+                              )}
                             />
                           </div>
-                          <Button 
+                          <Button
                             id="apply-coupon-btn"
-                            type="button" 
-                            variant="secondary" 
+                            type="button"
+                            variant="secondary"
                             onClick={handleApplyCoupon}
                             disabled={isApplyingCoupon || !couponCode}
                           >
-                            {isApplyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                            {isApplyingCoupon ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Apply"
+                            )}
                           </Button>
                         </div>
-                        {couponError && <p className="text-[10px] text-destructive ml-1">{couponError}</p>}
+                        {couponError && (
+                          <p className="text-[10px] text-destructive ml-1">
+                            {couponError}
+                          </p>
+                        )}
                       </div>
 
                       {/* Available Offers Discovery */}
@@ -833,7 +892,9 @@ export function ReviewStep({
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                           <div className="flex items-center gap-2 mb-3">
                             <Gift className="h-4 w-4 text-primary" />
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Available Offers</span>
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                              Available Offers
+                            </span>
                           </div>
                           <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                             {activeCoupons.map((coupon) => (
@@ -843,20 +904,28 @@ export function ReviewStep({
                                 onClick={() => {
                                   setCouponCode(coupon.code);
                                   setTimeout(() => {
-                                    document.getElementById('apply-coupon-btn')?.click();
+                                    document
+                                      .getElementById("apply-coupon-btn")
+                                      ?.click();
                                   }, 50);
                                 }}
                                 className="w-full text-left p-2.5 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all group flex items-center justify-between outline-none"
                               >
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] font-black text-primary font-mono lowercase">{coupon.code}</span>
+                                    <span className="text-[11px] font-black text-primary font-mono lowercase">
+                                      {coupon.code}
+                                    </span>
                                     <span className="text-[10px] font-bold py-0.5 px-1.5 bg-primary/10 text-primary rounded-md">
-                                      {coupon.type === 'percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`}
+                                      {coupon.type === "percentage"
+                                        ? `${coupon.value}% OFF`
+                                        : `₹${coupon.value} OFF`}
                                     </span>
                                   </div>
                                   {coupon.description && (
-                                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{coupon.description}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                                      {coupon.description}
+                                    </p>
                                   )}
                                 </div>
                                 <ChevronRight className="h-3 w-3 text-primary/40 group-hover:text-primary transition-colors shrink-0" />
@@ -873,11 +942,21 @@ export function ReviewStep({
                           <Ticket className="h-4 w-4 text-green-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-green-700 uppercase">{appliedCoupon.code}</p>
-                          <p className="text-[10px] text-green-600">-{formatPrice(appliedCoupon.discount)} discount applied</p>
+                          <p className="text-xs font-bold text-green-700 uppercase">
+                            {appliedCoupon.code}
+                          </p>
+                          <p className="text-[10px] text-green-600">
+                            -{formatPrice(appliedCoupon.discount)} discount
+                            applied
+                          </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={removeCoupon} className="h-8 w-8 text-green-700 hover:bg-green-500/10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={removeCoupon}
+                        className="h-8 w-8 text-green-700 hover:bg-green-500/10"
+                      >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
@@ -897,23 +976,35 @@ export function ReviewStep({
               </div>
 
               <div className="space-y-4 relative z-10">
-                <div className={cn(
-                  "flex gap-3 p-4 rounded-xl border transition-all duration-300",
-                  isApproved ? "bg-primary/5 border-primary/20 shadow-inner" : "bg-muted/50 border-border"
-                )}>
+                <div
+                  className={cn(
+                    "flex gap-3 p-4 rounded-xl border transition-all duration-300",
+                    isApproved
+                      ? "bg-primary/5 border-primary/20 shadow-inner"
+                      : "bg-muted/50 border-border",
+                  )}
+                >
                   <div className="pt-0.5">
-                    <Checkbox 
-                      id="approval" 
-                      checked={isApproved} 
-                      onCheckedChange={(checked) => setIsApproved(checked as boolean)}
+                    <Checkbox
+                      id="approval"
+                      checked={isApproved}
+                      onCheckedChange={(checked) =>
+                        setIsApproved(checked as boolean)
+                      }
                       className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                   </div>
-                  <Label 
-                    htmlFor="approval" 
+                  <Label
+                    htmlFor="approval"
                     className="text-xs leading-relaxed text-muted-foreground cursor-pointer select-none font-medium"
                   >
-                    I have reviewed and I approve the <strong className="text-foreground">uploaded files</strong>, <strong className="text-foreground">page count</strong>, and <strong className="text-foreground">print specifications</strong> for this order.
+                    I have reviewed and I approve the{" "}
+                    <strong className="text-foreground">uploaded files</strong>,{" "}
+                    <strong className="text-foreground">page count</strong>, and{" "}
+                    <strong className="text-foreground">
+                      print specifications
+                    </strong>{" "}
+                    for this order.
                   </Label>
                 </div>
 
