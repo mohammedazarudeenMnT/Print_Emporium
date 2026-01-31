@@ -191,7 +191,7 @@ function ContactPageContent() {
     desc,
     className,
   }: {
-    icon: unknown;
+    icon: any;
     title: string;
     desc: string;
     className?: string;
