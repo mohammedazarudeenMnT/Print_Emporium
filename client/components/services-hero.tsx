@@ -176,7 +176,7 @@ export default function ServicesHero() {
                   {[
                     {
                       icon: <Upload />,
-                      title: "Upload Assets",
+                      title: "Upload Document",
                       desc: "Drag & drop your documents or browse. Secure cloud processing.",
                     },
                     {

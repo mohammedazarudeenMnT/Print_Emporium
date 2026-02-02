@@ -1,28 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Search, 
-  User, 
-  Mail, 
-  Phone, 
-  Package, 
-  IndianRupee, 
+import {
+  Search,
+  User,
+  Mail,
+  Phone,
+  Package,
+  IndianRupee,
   Calendar,
   ExternalLink,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAllCustomers, Customer } from "@/lib/customer-api";
@@ -44,10 +44,10 @@ export function CustomersList() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const res = await getAllCustomers({ 
-        search, 
-        page, 
-        limit: 10 
+      const res = await getAllCustomers({
+        search,
+        page,
+        limit: 10,
       });
       if (res.success) {
         setCustomers(res.customers);
@@ -70,8 +70,12 @@ export function CustomersList() {
               <User className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{customers.length * totalPages}</p>
-              <p className="text-xs text-muted-foreground">Approx. Total Customers</p>
+              <p className="text-2xl font-bold">
+                {customers.length * totalPages}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Approx. Total Customers
+              </p>
             </div>
           </div>
         </Card>
@@ -84,7 +88,9 @@ export function CustomersList() {
               <p className="text-2xl font-bold">
                 {customers.reduce((sum, c) => sum + c.orderCount, 0)}
               </p>
-              <p className="text-xs text-muted-foreground">Orders (Current Page)</p>
+              <p className="text-xs text-muted-foreground">
+                Orders (Current Page)
+              </p>
             </div>
           </div>
         </Card>
@@ -95,9 +101,14 @@ export function CustomersList() {
             </div>
             <div>
               <p className="text-2xl font-bold">
-                ₹{customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
+                ₹
+                {customers
+                  .reduce((sum, c) => sum + c.totalSpent, 0)
+                  .toLocaleString()}
               </p>
-              <p className="text-xs text-muted-foreground">Revenue (Current Page)</p>
+              <p className="text-xs text-muted-foreground">
+                Revenue (Current Page)
+              </p>
             </div>
           </div>
         </Card>
@@ -106,9 +117,9 @@ export function CustomersList() {
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by name or email..." 
-            className="pl-10" 
+          <Input
+            placeholder="Search by name or email..."
+            className="pl-10"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -133,16 +144,30 @@ export function CustomersList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array(5).fill(0).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><div className="h-10 w-40 animate-pulse bg-muted rounded" /></TableCell>
-                    <TableCell><div className="h-6 w-10 animate-pulse bg-muted rounded" /></TableCell>
-                    <TableCell><div className="h-6 w-20 animate-pulse bg-muted rounded" /></TableCell>
-                    <TableCell><div className="h-6 w-24 animate-pulse bg-muted rounded" /></TableCell>
-                    <TableCell><div className="h-6 w-24 animate-pulse bg-muted rounded" /></TableCell>
-                    <TableCell><div className="h-8 w-8 animate-pulse bg-muted rounded ml-auto" /></TableCell>
-                  </TableRow>
-                ))
+                Array(5)
+                  .fill(0)
+                  .map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <div className="h-10 w-40 animate-pulse bg-muted rounded" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-6 w-10 animate-pulse bg-muted rounded" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-6 w-20 animate-pulse bg-muted rounded" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-6 w-24 animate-pulse bg-muted rounded" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-6 w-24 animate-pulse bg-muted rounded" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-8 w-8 animate-pulse bg-muted rounded ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))
               ) : customers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-64 text-center">
@@ -159,11 +184,15 @@ export function CustomersList() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <AvatarImage src={customer.image} />
-                          <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>
+                            {customer.name.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">{customer.name}</p>
-                          <p className="text-xs text-muted-foreground">{customer.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {customer.email}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
@@ -182,7 +211,10 @@ export function CustomersList() {
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <span className="text-sm">
-                          {format(new Date(customer.lastOrderDate), "MMM dd, yyyy")}
+                          {format(
+                            new Date(customer.lastOrderDate),
+                            "MMM dd, yyyy",
+                          )}
                         </span>
                         <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                           {format(new Date(customer.lastOrderDate), "hh:mm a")}
@@ -190,7 +222,7 @@ export function CustomersList() {
                       </div>
                     </TableCell>
                     <TableCell>
-                       <div className="flex items-center gap-2 text-muted-foreground">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         <span className="text-sm">
                           {format(new Date(customer.createdAt), "MMM yyyy")}
@@ -198,12 +230,12 @@ export function CustomersList() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                    <Link href={`/dashboard/customers/${customer.id}`}>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                        <span>Details</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </Link>
+                      <Link href={`/dashboard/customers/${customer.id}`}>
+                        <Button variant="ghost" size="sm" className="gap-2">
+                          <span>Details</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))
@@ -215,10 +247,10 @@ export function CustomersList() {
 
       {totalPages > 1 && (
         <div className="flex justify-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             Previous
@@ -226,10 +258,10 @@ export function CustomersList() {
           <div className="flex items-center px-4 text-sm font-medium">
             Page {page} of {totalPages}
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >
             Next

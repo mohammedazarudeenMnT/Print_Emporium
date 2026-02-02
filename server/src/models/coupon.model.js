@@ -11,12 +11,15 @@ const couponSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["percentage", "fixed"],
+      enum: ["percentage", "fixed", "free-delivery"],
       required: true,
     },
     value: {
       type: Number,
-      required: true,
+      required: function () {
+        return this.type !== "free-delivery";
+      },
+      default: 0,
     },
     minOrderAmount: {
       type: Number,
@@ -39,6 +42,10 @@ const couponSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    displayInCheckout: {
+      type: Boolean,
+      default: true,
+    },
     description: {
       type: String,
     },
@@ -49,7 +56,7 @@ const couponSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for faster lookups by code

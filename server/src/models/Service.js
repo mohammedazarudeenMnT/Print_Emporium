@@ -59,6 +59,8 @@ const serviceSchema = new mongoose.Schema(
         value: String,
         pricePerPage: { type: Number },
         pricePerCopy: { type: Number },
+        minPages: { type: Number },
+        fixedPrice: { type: Number },
       },
     ],
     status: {
@@ -74,22 +76,31 @@ const serviceSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Validation: Ensure only one pricing field is set for each option in arrays
-serviceSchema.pre('save', function(next) {
-  const optionArrays = ['printTypes', 'paperSizes', 'paperTypes', 'gsmOptions', 'printSides', 'bindingOptions'];
-  
+serviceSchema.pre("save", function (next) {
+  const optionArrays = [
+    "printTypes",
+    "paperSizes",
+    "paperTypes",
+    "gsmOptions",
+    "printSides",
+    "bindingOptions",
+  ];
+
   for (const arrayName of optionArrays) {
     const options = this[arrayName];
     if (options && Array.isArray(options)) {
       for (const option of options) {
         if (option.pricePerPage > 0 && option.pricePerCopy > 0) {
-          const error = new Error(`Cannot set both pricePerPage and pricePerCopy for ${arrayName}. Please choose only one pricing type per option.`);
+          const error = new Error(
+            `Cannot set both pricePerPage and pricePerCopy for ${arrayName}. Please choose only one pricing type per option.`,
+          );
           return next(error);
         }
-        
+
         // Remove the field that is 0 or undefined to keep only the selected pricing type
         if (!option.pricePerPage || option.pricePerPage === 0) {
           option.pricePerPage = undefined;
@@ -100,8 +111,8 @@ serviceSchema.pre('save', function(next) {
       }
     }
   }
-  
-  if (typeof next === 'function') {
+
+  if (typeof next === "function") {
     next();
   }
 });

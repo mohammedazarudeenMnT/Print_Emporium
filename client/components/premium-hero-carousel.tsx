@@ -68,7 +68,6 @@ export default function PremiumHeroCarousel() {
   const [isLoading, setIsLoading] = useState(true);
   const progressRef = useRef(0);
   const [progress, setProgress] = useState(0);
-
   // Fetch Slides
   useEffect(() => {
     const fetchSlides = async () => {
@@ -227,7 +226,7 @@ export default function PremiumHeroCarousel() {
                                   "inline-block mx-1 md:mr-4",
                                   i % 2 !== 0
                                     ? "text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70"
-                                    : ""
+                                    : "",
                                 )}
                               >
                                 {word}
@@ -343,7 +342,7 @@ export default function PremiumHeroCarousel() {
                         "absolute inset-0 bg-white/50",
                         currentSlide === i
                           ? "opacity-0"
-                          : "opacity-0 group-hover:opacity-100"
+                          : "opacity-0 group-hover:opacity-100",
                       )}
                     />
                   </button>

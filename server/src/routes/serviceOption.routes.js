@@ -8,7 +8,7 @@ import { requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// Public routes (though these are mainly for dropdowns in dashboard, 
+// Public routes (though these are mainly for dropdowns in dashboard,
 // they can be public for price calculators later)
 router.get("/", getAllServiceOptions);
 

@@ -56,7 +56,7 @@ app.use(
       "Expires",
     ],
     exposedHeaders: ["Set-Cookie"], // Important for cross-origin cookie handling
-  })
+  }),
 );
 
 // Request logging middleware
@@ -70,7 +70,7 @@ app.use((req, res, next) => {
       res.statusCode >= 500 ? "🔴" : res.statusCode >= 400 ? "🟡" : "🟢";
     const path = req.originalUrl || req.url;
     console.log(
-      `${statusColor} ${res.statusCode} ${req.method} ${path} - ${duration}ms`
+      `${statusColor} ${res.statusCode} ${req.method} ${path} - ${duration}ms`,
     );
   });
 
@@ -121,7 +121,7 @@ const startServer = async () => {
     app.use(
       "/api/service-options",
       requireAdminOrSignedRequest,
-      serviceOptionRoutes
+      serviceOptionRoutes,
     );
     app.use("/api/hero-slides", requireAdminOrSignedRequest, heroSlideRoutes);
     app.use("/api/file-conversion", fileConversionRoutes); // Public endpoint for file conversion

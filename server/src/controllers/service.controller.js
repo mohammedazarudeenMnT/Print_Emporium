@@ -6,118 +6,15 @@ import {
   getPublicIdFromUrl,
 } from "../utils/cloudinary-helper.js";
 
-// Seed default services if none exist
-const seedDefaultServices = async () => {
-  try {
-    const count = await Service.countDocuments();
-    if (count === 0) {
-      const defaultServices = [
-        {
-          name: "Standard Document Printing",
-          image: null,
-          basePricePerPage: 2,
-          printTypes: [
-            { value: "bw" },
-            { value: "color", pricePerPage: 5 }
-          ],
-          paperSizes: [
-            { value: "a4" },
-            { value: "a5" }
-          ],
-          paperTypes: [
-            { value: "bond" }
-          ],
-          gsmOptions: [
-            { value: "70" },
-            { value: "80", pricePerPage: 1 }
-          ],
-          printSides: [
-            { value: "single-side" },
-            { value: "double-side" }
-          ],
-          bindingOptions: [
-            { value: "no-binding" }
-          ],
-          status: "active",
-        },
-        {
-          name: "Premium Marketing Materials",
-          image: null,
-          basePricePerPage: 5,
-          printTypes: [
-            { value: "color", pricePerPage: 10 }
-          ],
-          paperSizes: [
-            { value: "a3", pricePerPage: 15 },
-            { value: "a4", pricePerPage: 5 }
-          ],
-          paperTypes: [
-            { value: "glossy", pricePerPage: 8 },
-            { value: "matte", pricePerPage: 6 }
-          ],
-          gsmOptions: [
-            { value: "200", pricePerPage: 10 },
-            { value: "300", pricePerPage: 20 }
-          ],
-          printSides: [
-            { value: "single-side" }
-          ],
-          bindingOptions: [
-            { value: "no-binding" },
-            { value: "spiral-binding", pricePerCopy: 50 }
-          ],
-          status: "active",
-        },
-        {
-          name: "Business Cards & Flyers",
-          image: null,
-          basePricePerPage: 0,
-          printTypes: [
-            { value: "color", pricePerCopy: 3 }
-          ],
-          paperSizes: [
-            { value: "3.5x2" },
-            { value: "a5" }
-          ],
-          paperTypes: [
-            { value: "art-card", pricePerCopy: 2 },
-            { value: "glossy", pricePerCopy: 1.5 }
-          ],
-          gsmOptions: [
-            { value: "250", pricePerCopy: 1 },
-            { value: "300", pricePerCopy: 2 }
-          ],
-          printSides: [
-            { value: "single-side" },
-            { value: "double-side", pricePerCopy: 1 }
-          ],
-          bindingOptions: [
-            { value: "no-binding" }
-          ],
-          status: "active",
-        }
-      ];
-
-      await Service.insertMany(defaultServices);
-      console.log("✅ Default services seeded successfully");
-    }
-  } catch (error) {
-    console.error("Error seeding default services:", error);
-  }
-};
-
 // Get all services
 export const getAllServices = async (req, res) => {
   try {
     // Set cache control headers to prevent caching
     res.set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     });
-
-    // Seed default services if database is empty
-    await seedDefaultServices();
 
     const { status } = req.query;
     const query = {};
@@ -153,9 +50,9 @@ export const getServiceById = async (req, res) => {
   try {
     // Set cache control headers to prevent caching
     res.set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     });
 
     const { id } = req.params;
@@ -212,17 +109,23 @@ export const upsertService = async (req, res) => {
 
     // Validate: Only one pricing type can be set for each option
     const optionArrays = [
-      { name: 'printTypes', data: printTypes },
-      { name: 'paperSizes', data: paperSizes },
-      { name: 'paperTypes', data: paperTypes },
-      { name: 'gsmOptions', data: gsmOptions },
-      { name: 'printSides', data: printSides },
-      { name: 'bindingOptions', data: bindingOptions }
+      { name: "printTypes", data: printTypes },
+      { name: "paperSizes", data: paperSizes },
+      { name: "paperTypes", data: paperTypes },
+      { name: "gsmOptions", data: gsmOptions },
+      { name: "printSides", data: printSides },
+      { name: "bindingOptions", data: bindingOptions },
     ];
 
     for (const { name: arrayName, data } of optionArrays) {
       if (data && Array.isArray(data)) {
         for (const option of data) {
+          // Binding options can have fixedPrice, so we skip the standard check if fixedPrice is present
+          const isBinding = arrayName === "bindingOptions";
+          if (isBinding && (option.fixedPrice || 0) > 0) {
+            continue;
+          }
+
           if (option.pricePerPage > 0 && option.pricePerCopy > 0) {
             return res.status(400).json({
               success: false,
@@ -256,7 +159,7 @@ export const upsertService = async (req, res) => {
       const uploadResult = await uploadToCloudinary(
         imageData,
         "printemporium/images/services",
-        customPublicId
+        customPublicId,
       );
       uploadedImageValue = uploadResult.public_id;
     } else if (typeof imageData === "string" && imageData.startsWith("http")) {

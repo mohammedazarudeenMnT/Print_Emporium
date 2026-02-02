@@ -15,6 +15,9 @@ import {
   User,
   AlertCircle,
   Pencil,
+  Copy,
+  Settings2,
+  Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,10 +52,12 @@ import {
   createCoupon,
   updateCoupon,
   deleteCoupon,
+  bulkCreateCoupons,
   Coupon,
 } from "@/lib/coupon-api";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface CouponSettingsTabProps {
   onMessage: (message: { type: "success" | "error"; text: string }) => void;
@@ -69,10 +74,24 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
     value: 0,
     minOrderAmount: 0,
     isActive: true,
+    displayInCheckout: true,
     description: "",
     maxDiscountAmount: 0,
     usageLimit: undefined,
   });
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [bulkData, setBulkData] = useState({
+    count: 10,
+    prefix: "FREE",
+    type: "free-delivery" as "percentage" | "fixed" | "free-delivery",
+    value: 0,
+    minOrderAmount: 0,
+    description: "Free Delivery Coupon",
+    usageLimit: 1,
+    displayInCheckout: true,
+  });
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
 
   const loadCoupons = useCallback(async () => {
     setIsLoading(true);
@@ -121,17 +140,42 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
     }
   };
 
-  const handleDeleteCoupon = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this coupon?")) return;
+  const handleDeleteCoupon = async () => {
+    if (!couponToDelete) return;
     setIsActionLoading(true);
     try {
-      const response = await deleteCoupon(id);
+      const response = await deleteCoupon(couponToDelete);
       if (response.success) {
         onMessage({ type: "success", text: "Coupon deleted successfully" });
         loadCoupons();
       }
     } catch (error) {
       onMessage({ type: "error", text: "Failed to delete coupon" });
+    } finally {
+      setIsActionLoading(false);
+      setIsConfirmOpen(false);
+      setCouponToDelete(null);
+    }
+  };
+
+  const handleBulkGenerate = async () => {
+    setIsActionLoading(true);
+    try {
+      const response = await bulkCreateCoupons(bulkData);
+      if (response.success) {
+        onMessage({
+          type: "success",
+          text: `Successfully generated ${response.count} coupons`,
+        });
+        loadCoupons();
+        setIsBulkDialogOpen(false);
+      }
+    } catch (error: any) {
+      onMessage({
+        type: "error",
+        text:
+          error.response?.data?.message || "Failed to generate bulk coupons",
+      });
     } finally {
       setIsActionLoading(false);
     }
@@ -144,6 +188,7 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
       value: 0,
       minOrderAmount: 0,
       isActive: true,
+      displayInCheckout: true,
       description: "",
       maxDiscountAmount: 0,
       usageLimit: undefined,
@@ -170,10 +215,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
   return (
     <div className="space-y-8 mx-auto pb-20 p-8 bg-muted/10 rounded-3xl border border-border/50 shadow-inner">
       {/* Header Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-indigo-500/10 border border-primary/10 p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary/10 via-background to-indigo-500/10 border border-primary/10 p-8 shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
               Coupon Management
             </h2>
             <p className="text-muted-foreground text-base max-w-2xl">
@@ -181,10 +226,20 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               reward customer loyalty.
             </p>
           </div>
-          <Button onClick={openAddDialog} className="gap-2 shadow-lg">
-            <Plus className="h-4 w-4" />
-            Create Coupon
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkDialogOpen(true)}
+              className="gap-2 shadow-sm"
+            >
+              <Copy className="h-4 w-4" />
+              Bulk Generate
+            </Button>
+            <Button onClick={openAddDialog} className="gap-2 shadow-lg">
+              <Plus className="h-4 w-4" />
+              Create Coupon
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -214,6 +269,11 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                             Inactive
                           </Badge>
                         )}
+                        {!coupon.displayInCheckout && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Hidden from Checkout
+                          </Badge>
+                        )}
                       </div>
                       <CardDescription className="text-xs">
                         {coupon.description || "No description"}
@@ -231,7 +291,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteCoupon(coupon._id)}
+                        onClick={() => {
+                          setCouponToDelete(coupon._id);
+                          setIsConfirmOpen(true);
+                        }}
                         className="h-8 w-8 hover:bg-destructive/10 text-destructive"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -251,11 +314,16 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                             {coupon.value}
                             <Percent className="h-4 w-4 text-indigo-500" />
                           </>
-                        ) : (
+                        ) : coupon.type === "fixed" ? (
                           <>
                             <IndianRupee className="h-4 w-4 text-green-500" />
                             {coupon.value}
                           </>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-blue-600">
+                            <Truck className="h-5 w-5" />
+                            <span className="text-sm">Free Delivery</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -316,8 +384,8 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
 
       {/* Coupon Modal */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-3xl border-primary/20 shadow-2xl overflow-hidden p-0">
-          <div className="bg-gradient-to-br from-primary/10 to-indigo-500/10 p-6 border-b border-primary/10">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] rounded-3xl border-primary/20 shadow-2xl overflow-hidden p-0 flex flex-col">
+          <div className="bg-linear-to-br from-primary/10 to-indigo-500/10 p-6 border-b border-primary/10 flex-shrink-0">
             <DialogTitle className="text-2xl font-bold">
               {currentCoupon._id ? "Edit Coupon" : "Create New Coupon"}
             </DialogTitle>
@@ -325,10 +393,13 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               Configure your discount code settings below.
             </DialogDescription>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 overflow-y-auto flex-1">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 col-span-2">
-                <Label htmlFor="code" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="code"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Coupon Code
                 </Label>
                 <div className="relative">
@@ -349,7 +420,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="type"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Discount Type
                 </Label>
                 <Select
@@ -358,45 +432,57 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                     setCurrentCoupon({ ...currentCoupon, type: value })
                   }
                 >
-                  <SelectTrigger id="type" className="h-12 bg-muted/30 border-primary/10">
+                  <SelectTrigger
+                    id="type"
+                    className="h-12 bg-muted/30 border-primary/10"
+                  >
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="percentage">Percentage (%)</SelectItem>
                     <SelectItem value="fixed">Fixed Amount (₹)</SelectItem>
+                    <SelectItem value="free-delivery">Free Delivery</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="value" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                  Discount Value
-                </Label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {currentCoupon.type === "percentage" ? (
-                      <Percent className="h-4 w-4" />
-                    ) : (
-                      <IndianRupee className="h-4 w-4" />
-                    )}
+              {currentCoupon.type !== "free-delivery" && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="value"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                  >
+                    Discount Value
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      {currentCoupon.type === "percentage" ? (
+                        <Percent className="h-4 w-4" />
+                      ) : (
+                        <IndianRupee className="h-4 w-4" />
+                      )}
+                    </div>
+                    <Input
+                      id="value"
+                      type="number"
+                      value={currentCoupon.value ?? 0}
+                      onChange={(e) =>
+                        setCurrentCoupon({
+                          ...currentCoupon,
+                          value: Number(e.target.value),
+                        })
+                      }
+                      className="pl-9 h-12 bg-muted/30 border-primary/10"
+                    />
                   </div>
-                  <Input
-                    id="value"
-                    type="number"
-                    value={currentCoupon.value ?? 0}
-                    onChange={(e) =>
-                      setCurrentCoupon({
-                        ...currentCoupon,
-                        value: Number(e.target.value),
-                      })
-                    }
-                    className="pl-9 h-12 bg-muted/30 border-primary/10"
-                  />
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2">
-                <Label htmlFor="minOrder" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="minOrder"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Min Order Amount (₹)
                 </Label>
                 <div className="relative">
@@ -417,7 +503,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="usageLimit" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="usageLimit"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Usage Limit
                 </Label>
                 <div className="relative">
@@ -430,7 +519,9 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                     onChange={(e) =>
                       setCurrentCoupon({
                         ...currentCoupon,
-                        usageLimit: e.target.value ? Number(e.target.value) : undefined,
+                        usageLimit: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
                       })
                     }
                     className="pl-9 h-12 bg-muted/30 border-primary/10"
@@ -440,7 +531,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
 
               {currentCoupon.type === "percentage" && (
                 <div className="space-y-2 col-span-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <Label htmlFor="maxDiscount" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  <Label
+                    htmlFor="maxDiscount"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                  >
                     Max Discount Amount (₹)
                   </Label>
                   <div className="relative">
@@ -453,7 +547,9 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                       onChange={(e) =>
                         setCurrentCoupon({
                           ...currentCoupon,
-                          maxDiscountAmount: e.target.value ? Number(e.target.value) : undefined,
+                          maxDiscountAmount: e.target.value
+                            ? Number(e.target.value)
+                            : undefined,
                         })
                       }
                       className="pl-9 h-12 bg-muted/30 border-primary/10"
@@ -463,7 +559,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               )}
 
               <div className="space-y-2 col-span-2">
-                <Label htmlFor="expiry" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="expiry"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Expiry Date
                 </Label>
                 <Input
@@ -487,7 +586,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
               </div>
 
               <div className="space-y-2 col-span-2">
-                <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                <Label
+                  htmlFor="description"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                >
                   Description
                 </Label>
                 <Input
@@ -518,9 +620,28 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                   }
                 />
               </div>
+
+              <div className="flex items-center justify-between col-span-2 p-3 bg-muted/20 rounded-xl border border-primary/5">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold">Show in Checkout</Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Whether this coupon should be visible in the checkout
+                    "Available Offers" list.
+                  </p>
+                </div>
+                <Switch
+                  checked={currentCoupon.displayInCheckout}
+                  onCheckedChange={(checked) =>
+                    setCurrentCoupon({
+                      ...currentCoupon,
+                      displayInCheckout: checked,
+                    })
+                  }
+                />
+              </div>
             </div>
           </div>
-          <DialogFooter className="bg-muted/10 p-6 border-t border-primary/5">
+          <DialogFooter className="bg-muted/10 p-6 border-t border-primary/5 flex-shrink-0">
             <Button
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
@@ -543,6 +664,182 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Generate Dialog */}
+      <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-3xl border-primary/20 shadow-2xl overflow-hidden p-0">
+          <div className="bg-linear-to-br from-primary/10 to-indigo-500/10 p-6 border-b border-primary/10">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Settings2 className="h-6 w-6 text-primary" />
+              Bulk Create Coupons
+            </DialogTitle>
+            <DialogDescription>
+              Generate multiple unique coupon codes at once.
+            </DialogDescription>
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  Coupon Count
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={bulkData.count}
+                  onChange={(e) =>
+                    setBulkData({ ...bulkData, count: Number(e.target.value) })
+                  }
+                  className="h-12 bg-muted/30 border-primary/10"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  Code Prefix
+                </Label>
+                <Input
+                  placeholder="E.g. FREE, BDAY"
+                  value={bulkData.prefix}
+                  onChange={(e) =>
+                    setBulkData({
+                      ...bulkData,
+                      prefix: e.target.value.toUpperCase(),
+                    })
+                  }
+                  className="h-12 uppercase font-mono bg-muted/30 border-primary/10"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  Coupon Type
+                </Label>
+                <Select
+                  value={bulkData.type}
+                  onValueChange={(value: any) =>
+                    setBulkData({ ...bulkData, type: value })
+                  }
+                >
+                  <SelectTrigger className="h-12 bg-muted/30 border-primary/10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free-delivery">Free Delivery</SelectItem>
+                    <SelectItem value="percentage">Percentage (%)</SelectItem>
+                    <SelectItem value="fixed">Fixed Amount (₹)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {bulkData.type !== "free-delivery" && (
+                <div className="space-y-2 col-span-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                    Value
+                  </Label>
+                  <Input
+                    type="number"
+                    value={bulkData.value}
+                    onChange={(e) =>
+                      setBulkData({
+                        ...bulkData,
+                        value: Number(e.target.value),
+                      })
+                    }
+                    className="h-12 bg-muted/30 border-primary/10"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2 col-span-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  Min Order Amount (₹)
+                </Label>
+                <Input
+                  type="number"
+                  value={bulkData.minOrderAmount}
+                  onChange={(e) =>
+                    setBulkData({
+                      ...bulkData,
+                      minOrderAmount: Number(e.target.value),
+                    })
+                  }
+                  className="h-12 bg-muted/30 border-primary/10"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  Usage Limit (Per Coupon)
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={bulkData.usageLimit}
+                  onChange={(e) =>
+                    setBulkData({
+                      ...bulkData,
+                      usageLimit: Number(e.target.value),
+                    })
+                  }
+                  className="h-12 bg-muted/30 border-primary/10"
+                />
+              </div>
+
+              <div className="flex items-center justify-between col-span-2 p-3 bg-muted/20 rounded-xl border border-primary/5">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold">Show in Checkout</Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Whether these coupons should be visible in the "Available
+                    Offers" list.
+                  </p>
+                </div>
+                <Switch
+                  checked={bulkData.displayInCheckout}
+                  onCheckedChange={(checked) =>
+                    setBulkData({ ...bulkData, displayInCheckout: checked })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="bg-muted/10 p-6 border-t border-primary/5">
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkDialogOpen(false)}
+              className="rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBulkGenerate}
+              disabled={isActionLoading}
+              className="rounded-xl shadow-lg shadow-primary/20 px-8"
+            >
+              {isActionLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Copy className="h-4 w-4 mr-2" />
+              )}
+              Generate Coupons
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationModal
+        isOpen={isConfirmOpen}
+        onClose={() => {
+          setIsConfirmOpen(false);
+          setCouponToDelete(null);
+        }}
+        onConfirm={handleDeleteCoupon}
+        title="Delete Coupon"
+        description="Are you sure you want to delete this coupon? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }

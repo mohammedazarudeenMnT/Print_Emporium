@@ -2,10 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  User, 
-  Mail, 
-  Shield, 
+import {
+  User,
+  Mail,
+  Shield,
   Calendar,
   CheckCircle2,
   TrendingUp,
@@ -18,7 +18,7 @@ import {
   FileText,
   Zap,
   Lock,
-  Activity
+  Activity,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,7 +30,8 @@ interface ProfileTabProps {
 export function ProfileTab({ user }: ProfileTabProps) {
   // Calculate days since account creation
   const daysSinceCreation = Math.floor(
-    (new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    (new Date().getTime() - new Date(user.createdAt).getTime()) /
+      (1000 * 60 * 60 * 24),
   );
 
   return (
@@ -40,7 +41,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
         {/* Animated Background Orbs */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/30 rounded-full blur-3xl animate-blob" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-300/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-start gap-6">
             {/* User Avatar */}
@@ -75,13 +76,19 @@ export function ProfileTab({ user }: ProfileTabProps) {
                 <h1 className="text-3xl md:text-4xl font-bold text-white">
                   Welcome back, {user.name}!
                 </h1>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border-2 ${
-                  user.role === "admin"
-                    ? "bg-yellow-500/20 text-yellow-100 border-yellow-400/30"
-                    : "bg-white/10 text-white border-white/20"
-                }`}>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border-2 ${
+                    user.role === "admin"
+                      ? "bg-yellow-500/20 text-yellow-100 border-yellow-400/30"
+                      : "bg-white/10 text-white border-white/20"
+                  }`}
+                >
                   <Award className="h-3 w-3" />
-                  {user.role === "admin" ? "Admin" : user.role === "employee" ? "Employee" : "User"}
+                  {user.role === "admin"
+                    ? "Admin"
+                    : user.role === "employee"
+                      ? "Employee"
+                      : "User"}
                 </span>
               </div>
               <p className="text-primary-100 text-lg flex items-center gap-2">
@@ -91,7 +98,11 @@ export function ProfileTab({ user }: ProfileTabProps) {
               <div className="flex items-center gap-4 text-sm text-primary-50">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
-                  Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  Joined{" "}
+                  {new Date(user.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Activity className="h-3.5 w-3.5" />
@@ -100,8 +111,6 @@ export function ProfileTab({ user }: ProfileTabProps) {
               </div>
             </div>
           </div>
-
-         
         </div>
       </div>
 
@@ -120,8 +129,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
               </span>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground font-medium">Account Status</p>
-              <p className="text-2xl font-bold text-foreground mt-1">Protected</p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Account Status
+              </p>
+              <p className="text-2xl font-bold text-foreground mt-1">
+                Protected
+              </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Lock className="h-3 w-3" />
@@ -145,13 +158,19 @@ export function ProfileTab({ user }: ProfileTabProps) {
               )}
             </div>
             <div>
-              <p className="text-sm text-muted-foreground font-medium">Email Status</p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Email Status
+              </p>
               <p className="text-2xl font-bold text-foreground mt-1">
                 {user.emailVerified ? "Verified" : "Pending"}
               </p>
             </div>
             {!user.emailVerified && (
-              <Button variant="link" size="sm" className="p-0 h-auto text-primary-600 hover:text-primary-700">
+              <Button
+                variant="link"
+                size="sm"
+                className="p-0 h-auto text-primary-600 hover:text-primary-700"
+              >
                 Verify Now →
               </Button>
             )}
@@ -169,18 +188,20 @@ export function ProfileTab({ user }: ProfileTabProps) {
               <TrendingUp className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground font-medium">Total Orders</p>
-              <p className="text-2xl font-bold text-foreground mt-1">View All</p>
+              <p className="text-sm text-muted-foreground font-medium">
+                Total Orders
+              </p>
+              <p className="text-2xl font-bold text-foreground mt-1">
+                View All
+              </p>
             </div>
-            <Button 
-              variant="link" 
-              size="sm" 
+            <Button
+              variant="link"
+              size="sm"
               className="p-0 h-auto text-blue-600 hover:text-blue-700"
               asChild
             >
-              <Link href="/dashboard/orders">
-                Browse Orders →
-              </Link>
+              <Link href="/dashboard/orders">Browse Orders →</Link>
             </Button>
           </div>
         </Card>
@@ -196,9 +217,14 @@ export function ProfileTab({ user }: ProfileTabProps) {
               <Calendar className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground font-medium">User Since</p>
+              <p className="text-sm text-muted-foreground font-medium">
+                User Since
+              </p>
               <p className="text-2xl font-bold text-foreground mt-1">
-                {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {new Date(user.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })}
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -216,8 +242,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-primary-50 hover:border-primary-300 transition-all group"
             asChild
           >
@@ -227,15 +253,19 @@ export function ProfileTab({ user }: ProfileTabProps) {
                   <FileText className="h-5 w-5 text-primary-700" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-semibold text-foreground">Browse Services</p>
-                  <p className="text-sm text-muted-foreground">Explore our offerings</p>
+                  <p className="font-semibold text-foreground">
+                    Browse Services
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Explore our offerings
+                  </p>
                 </div>
               </div>
             </Link>
           </Button>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-blue-50 hover:border-blue-300 transition-all group"
             asChild
           >
@@ -246,14 +276,16 @@ export function ProfileTab({ user }: ProfileTabProps) {
                 </div>
                 <div className="text-left flex-1">
                   <p className="font-semibold text-foreground">Request Quote</p>
-                  <p className="text-sm text-muted-foreground">Get instant pricing</p>
+                  <p className="text-sm text-muted-foreground">
+                    Get instant pricing
+                  </p>
                 </div>
               </div>
             </Link>
           </Button>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto p-6 flex flex-col items-start gap-3 hover:bg-purple-50 hover:border-purple-300 transition-all group"
             asChild
           >
@@ -263,8 +295,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
                   <Bell className="h-5 w-5 text-purple-700" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-semibold text-foreground">Contact Support</p>
-                  <p className="text-sm text-muted-foreground">We're here to help</p>
+                  <p className="font-semibold text-foreground">
+                    Contact Support
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    We're here to help
+                  </p>
                 </div>
               </div>
             </Link>
@@ -283,19 +319,26 @@ export function ProfileTab({ user }: ProfileTabProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Full Name</p>
-                <p className="text-base font-semibold text-foreground mt-1">{user.name}</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Full Name
+                </p>
+                <p className="text-base font-semibold text-foreground mt-1">
+                  {user.name}
+                </p>
               </div>
               <User className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Email Address</p>
-                <p className="text-base font-semibold text-foreground mt-1">{user.email}</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Email Address
+                </p>
+                <p className="text-base font-semibold text-foreground mt-1">
+                  {user.email}
+                </p>
               </div>
               <Mail className="h-5 w-5 text-muted-foreground" />
             </div>
-            
           </div>
         </Card>
 
@@ -331,8 +374,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Google OAuth</p>
-                      <p className="text-xs text-muted-foreground">Secure sign-in</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Google OAuth
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Secure sign-in
+                      </p>
                     </div>
                   </>
                 ) : (
@@ -341,8 +388,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
                       <Mail className="h-5 w-5 text-primary-700" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Email & Password</p>
-                      <p className="text-xs text-muted-foreground">Traditional login</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Email & Password
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Traditional login
+                      </p>
                     </div>
                   </>
                 )}
@@ -351,12 +402,14 @@ export function ProfileTab({ user }: ProfileTabProps) {
             </div>
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Last Updated</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Last Updated
+                </p>
                 <p className="text-base font-semibold text-foreground mt-1">
-                  {new Date(user.updatedAt).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
+                  {new Date(user.updatedAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
                   })}
                 </p>
               </div>
@@ -365,8 +418,6 @@ export function ProfileTab({ user }: ProfileTabProps) {
           </div>
         </Card>
       </div>
-
-    
     </div>
   );
 }

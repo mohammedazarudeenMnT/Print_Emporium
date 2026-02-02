@@ -278,7 +278,12 @@ export function ReviewStep({
     setCouponCode("");
   };
 
-  const currentDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const isFreeDeliveryApplied = appliedCoupon?.type === "free-delivery";
+  const currentDiscount = appliedCoupon
+    ? isFreeDeliveryApplied
+      ? deliveryCharge
+      : appliedCoupon.discount
+    : 0;
   const finalTotal = Math.max(0, total - currentDiscount);
 
   const handlePlaceOrder = async () => {
@@ -774,11 +779,12 @@ export function ReviewStep({
                         <span className="text-muted-foreground">
                           Delivery Charge
                         </span>
-                        {(deliveryCharge === 0 && (
+                        {(deliveryCharge === 0 || isFreeDeliveryApplied) && (
                           <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded uppercase">
                             Free
                           </span>
-                        )) || (
+                        )}
+                        {!isFreeDeliveryApplied && deliveryCharge > 0 && (
                           <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded uppercase">
                             Standard
                           </span>
@@ -787,12 +793,12 @@ export function ReviewStep({
                       <span
                         className={cn(
                           "font-medium",
-                          deliveryCharge === 0
+                          deliveryCharge === 0 || isFreeDeliveryApplied
                             ? "text-green-600"
                             : "text-foreground",
                         )}
                       >
-                        {deliveryCharge === 0
+                        {deliveryCharge === 0 || isFreeDeliveryApplied
                           ? "Free"
                           : formatPrice(deliveryCharge)}
                       </span>
@@ -946,8 +952,9 @@ export function ReviewStep({
                             {appliedCoupon.code}
                           </p>
                           <p className="text-[10px] text-green-600">
-                            -{formatPrice(appliedCoupon.discount)} discount
-                            applied
+                            {isFreeDeliveryApplied
+                              ? "Delivery charge waived"
+                              : `-${formatPrice(appliedCoupon.discount)} discount applied`}
                           </p>
                         </div>
                       </div>

@@ -278,7 +278,7 @@ export function AdminAnalytics() {
     try {
       setRefreshing(true);
       const response = await axiosInstance.get(
-        `/api/orders/admin/stats?period=${period}`
+        `/api/orders/admin/stats?period=${period}`,
       );
       if (response.data.success) {
         setStats(response.data.stats);
@@ -347,10 +347,9 @@ export function AdminAnalytics() {
               )}
             </div>
             <p className="text-slate-600 mt-1">
-              {demoMode 
-                ? "Showcasing dashboard design with sample data" 
-                : "Overview of your business performance"
-              }
+              {demoMode
+                ? "Showcasing dashboard design with sample data"
+                : "Overview of your business performance"}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -358,7 +357,11 @@ export function AdminAnalytics() {
               variant={demoMode ? "default" : "outline"}
               size="sm"
               onClick={() => setDemoMode(!demoMode)}
-              className={demoMode ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" : ""}
+              className={
+                demoMode
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+                  : ""
+              }
             >
               {demoMode ? "Live Data" : "Demo"}
             </Button>
@@ -421,14 +424,17 @@ export function AdminAnalytics() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
           {/* Revenue Chart */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg">Revenue Trend</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-75">
+            <CardContent className="min-w-0">
+              <ChartContainer
+                config={chartConfig}
+                className="aspect-auto h-[300px] w-full"
+              >
                 <AreaChart data={stats.charts.monthlyRevenue}>
                   <defs>
                     <linearGradient
@@ -499,14 +505,17 @@ export function AdminAnalytics() {
           </Card>
 
           {/* Daily Orders Chart */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg">
                 Daily Orders (Last 30 Days)
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-75">
+            <CardContent className="min-w-0">
+              <ChartContainer
+                config={chartConfig}
+                className="aspect-auto h-[300px] w-full"
+              >
                 <BarChart data={stats.charts.dailyOrders.slice(-14)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
@@ -532,9 +541,9 @@ export function AdminAnalytics() {
         </div>
 
         {/* Status and Services Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
           {/* Order Status Breakdown */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg">Order Status</CardTitle>
             </CardHeader>
@@ -580,7 +589,7 @@ export function AdminAnalytics() {
           </Card>
 
           {/* Top Services */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg">Top Services</CardTitle>
             </CardHeader>
@@ -619,7 +628,7 @@ export function AdminAnalytics() {
           </Card>
 
           {/* Payment Methods */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg">Payment Methods</CardTitle>
             </CardHeader>
@@ -658,9 +667,9 @@ export function AdminAnalytics() {
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
           {/* Top Customers */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -705,7 +714,7 @@ export function AdminAnalytics() {
           </Card>
 
           {/* Recent Orders */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg min-w-0">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5" />
