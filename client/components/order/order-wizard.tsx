@@ -11,11 +11,11 @@ import {
   DEFAULT_CONFIGURATION,
   DEFAULT_DELIVERY_INFO,
 } from "@/lib/order-types";
-import { 
-  calculateItemPricing, 
-  getDeliveryCharge, 
-  getPackingCharge, 
-  calculateOrderTotals 
+import {
+  calculateItemPricing,
+  getDeliveryCharge,
+  getPackingCharge,
+  calculateOrderTotals,
 } from "@/lib/pricing-utils";
 import { axiosInstance } from "@/lib/axios";
 import { generateId } from "@/lib/file-utils";
@@ -36,9 +36,12 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<OrderStep>("upload");
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>(DEFAULT_DELIVERY_INFO);
+  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>(
+    DEFAULT_DELIVERY_INFO,
+  );
   const [activeItemIndex, setActiveItemIndex] = useState(0);
-  const [selectedServiceForUpload, setSelectedServiceForUpload] = useState<Service>(service);
+  const [selectedServiceForUpload, setSelectedServiceForUpload] =
+    useState<Service>(service);
   const [allServices, setAllServices] = useState<Service[]>([service]);
   const [pricingSettings, setPricingSettings] = useState<any>(null);
 
@@ -66,27 +69,16 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
   }, [onLoadAllServices, allServices.length]);
 
   // Handle file upload completion
-  const handleFileUploaded = useCallback((file: UploadedFile, selectedService?: Service) => {
-    const serviceToUse = selectedService || selectedServiceForUpload;
-    const newItem: OrderItem = {
-      id: generateId(),
-      serviceId: serviceToUse._id || "",
-      serviceName: serviceToUse.name,
-      service: serviceToUse,
-      file,
-      configuration: {
-        ...DEFAULT_CONFIGURATION,
-        printType: serviceToUse.printTypes[0]?.value || "",
-        paperSize: serviceToUse.paperSizes[0]?.value || "",
-        paperType: serviceToUse.paperTypes[0]?.value || "",
-        gsm: serviceToUse.gsmOptions[0]?.value || "",
-        printSide: serviceToUse.printSides[0]?.value || "",
-        bindingOption: serviceToUse.bindingOptions[0]?.value || "",
-        copies: 1,
-      },
-      pricing: calculateItemPricing(
-        serviceToUse,
-        {
+  const handleFileUploaded = useCallback(
+    (file: UploadedFile, selectedService?: Service) => {
+      const serviceToUse = selectedService || selectedServiceForUpload;
+      const newItem: OrderItem = {
+        id: generateId(),
+        serviceId: serviceToUse._id || "",
+        serviceName: serviceToUse.name,
+        service: serviceToUse,
+        file,
+        configuration: {
           ...DEFAULT_CONFIGURATION,
           printType: serviceToUse.printTypes[0]?.value || "",
           paperSize: serviceToUse.paperSizes[0]?.value || "",
@@ -96,12 +88,26 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
           bindingOption: serviceToUse.bindingOptions[0]?.value || "",
           copies: 1,
         },
-        file.pageCount
-      ),
-    };
+        pricing: calculateItemPricing(
+          serviceToUse,
+          {
+            ...DEFAULT_CONFIGURATION,
+            printType: serviceToUse.printTypes[0]?.value || "",
+            paperSize: serviceToUse.paperSizes[0]?.value || "",
+            paperType: serviceToUse.paperTypes[0]?.value || "",
+            gsm: serviceToUse.gsmOptions[0]?.value || "",
+            printSide: serviceToUse.printSides[0]?.value || "",
+            bindingOption: serviceToUse.bindingOptions[0]?.value || "",
+            copies: 1,
+          },
+          file.pageCount,
+        ),
+      };
 
-    setOrderItems((prev) => [...prev, newItem]);
-  }, [selectedServiceForUpload]);
+      setOrderItems((prev) => [...prev, newItem]);
+    },
+    [selectedServiceForUpload],
+  );
 
   // Handle file removal
   const handleFileRemoved = useCallback((fileId: string) => {
@@ -114,14 +120,18 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
       setOrderItems((prev) =>
         prev.map((item) => {
           if (item.id === itemId) {
-            const newPricing = calculateItemPricing(item.service, config, item.file.pageCount);
+            const newPricing = calculateItemPricing(
+              item.service,
+              config,
+              item.file.pageCount,
+            );
             return { ...item, configuration: config, pricing: newPricing };
           }
           return item;
-        })
+        }),
       );
     },
-    []
+    [],
   );
 
   // Handle delivery info change
@@ -130,26 +140,34 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
   }, []);
 
   // Calculate order totals
-  const subtotal = orderItems.reduce((sum, item) => sum + item.pricing.subtotal, 0);
-  const deliveryCharge = getDeliveryCharge(subtotal, deliveryInfo.state, pricingSettings);
+  const subtotal = orderItems.reduce(
+    (sum, item) => sum + item.pricing.subtotal,
+    0,
+  );
+  const deliveryCharge = getDeliveryCharge(
+    subtotal,
+    deliveryInfo.state,
+    pricingSettings,
+  );
   const packingCharge = getPackingCharge(subtotal, pricingSettings);
   const { total } = calculateOrderTotals(
-    orderItems.map(item => item.pricing.subtotal),
+    orderItems.map((item) => item.pricing.subtotal),
     deliveryCharge,
-    packingCharge
+    packingCharge,
   );
 
   // Navigation handlers
   const goToStep = (step: OrderStep) => setCurrentStep(step);
 
-  const canProceedToConfig = orderItems.length > 0 && 
+  const canProceedToConfig =
+    orderItems.length > 0 &&
     orderItems.every((item) => item.file.status === "ready");
 
   const canProceedToReview = orderItems.every(
     (item) =>
       item.configuration.printType &&
       item.configuration.paperSize &&
-      item.configuration.copies > 0
+      item.configuration.copies > 0,
   );
 
   return (
@@ -169,11 +187,11 @@ export function OrderWizard({ service, onLoadAllServices }: OrderWizardProps) {
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground">Place Order</h1>
               <p className="text-sm text-muted-foreground">
-                {orderItems.length === 0 
+                {orderItems.length === 0
                   ? service.name
                   : orderItems.length === 1
-                  ? orderItems[0].serviceName
-                  : `${orderItems.length} services selected`}
+                    ? orderItems[0].serviceName
+                    : `${orderItems.length} services selected`}
               </p>
             </div>
           </div>

@@ -22,6 +22,7 @@ export interface ServiceOption {
 
 export interface OptionPricing {
   value: string;
+  label?: string;
   pricePerPage: number;
   pricePerCopy: number;
   minPages?: number;

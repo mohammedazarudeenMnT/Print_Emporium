@@ -26,11 +26,25 @@ import { getOrderByIdAdmin, Order } from "@/lib/order-api";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from "@/components/ui/dropdown-menu";
+import { Download, ChevronDown, Printer } from "lucide-react";
+import { downloadOrderSlip } from "@/lib/pdf-service";
+import { MarkAsShippedDialog } from "@/components/admin/mark-as-shipped-dialog";
+
 export default function OrderDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isShippedDialogOpen, setIsShippedDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -54,6 +68,15 @@ export default function OrderDetailsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownloadSlip = async (size: string) => {
+    if (!order) return;
+    toast.promise(downloadOrderSlip(order._id, size), {
+      loading: `Generating ${size} Order Slip...`,
+      success: "Download started",
+      error: "Failed to download",
+    });
   };
 
   if (loading) {
@@ -98,17 +121,65 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="p-8 mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Order Details</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Order #{order.orderNumber}
-          </p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Order Details</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Order #{order.orderNumber}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Printer className="h-4 w-4" />
+                Download PDF
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Order Slip</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => handleDownloadSlip("A4")}>
+                    A4 Size
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDownloadSlip("A3")}>
+                    A3 Size
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadSlip("Letter")}
+                  >
+                    Letter Size
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              {/* Add more download options here if needed, e.g. Invoice */}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {(order.status === "processing" ||
+            order.status === "printing" ||
+            order.status === "confirmed") && (
+            <Button onClick={() => setIsShippedDialogOpen(true)}>
+              Mark as Shipped
+            </Button>
+          )}
         </div>
       </div>
+
+      <MarkAsShippedDialog
+        open={isShippedDialogOpen}
+        onOpenChange={setIsShippedDialogOpen}
+        orderId={order._id}
+        onSuccess={fetchOrderDetails}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Order Summary */}

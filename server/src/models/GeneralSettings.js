@@ -104,6 +104,22 @@ const generalSettingsSchema = new mongoose.Schema(
       default: "https://www.delhivery.com/",
     },
 
+    // Shipping Label Configuration
+    shippingLabelSizes: {
+      type: [
+        {
+          name: { type: String, required: true }, // e.g. "4x6", "4x4"
+          width: { type: String, required: true }, // e.g. "4in"
+          height: { type: String, required: true }, // e.g. "6in"
+        },
+      ],
+      default: [
+        { name: "4x6", width: "4in", height: "6in" },
+        { name: "4x4", width: "4in", height: "4in" },
+        { name: "4x2", width: "4in", height: "2in" },
+      ],
+    },
+
     // Email verification fields
     pendingEmailChange: {
       type: String,
@@ -133,7 +149,7 @@ const generalSettingsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Ensure only one settings document exists

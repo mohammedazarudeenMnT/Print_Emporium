@@ -29,12 +29,22 @@ import {
   Calendar,
   RotateCcw,
   CreditCard as CreditCardIcon,
+  Printer,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 import { TrackingModal } from "./tracking-modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { MarkAsShippedDialog } from "@/components/admin/mark-as-shipped-dialog";
+import { downloadOrderSlip, downloadShippingLabel } from "@/lib/pdf-service";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   loadRazorpayScript,
   createPaymentOrder as createRazorpayOrder,
@@ -105,6 +115,37 @@ export function OrdersTab({ user }: OrdersTabProps) {
   const [isReordering, setIsReordering] = useState<string | null>(null);
   const [reorderConfirmOpen, setReorderConfirmOpen] = useState(false);
   const [reorderId, setReorderId] = useState<string | null>(null);
+
+  // PDF & Shipping State
+  const [markAsShippedOpen, setMarkAsShippedOpen] = useState(false);
+
+  const handleDownloadOrderSlip = async (orderId: string, size: string) => {
+    toast.info(`Generating ${size} Order Slip...`);
+    const result = await downloadOrderSlip(orderId, size);
+    if (result.success) {
+      toast.success("Order Slip downloaded");
+    } else {
+      toast.error("Failed to download Order Slip");
+    }
+  };
+
+  const handleReprintLabel = async (order: any) => {
+    if (!order.trackingNumber) {
+      toast.error("No tracking number available");
+      return;
+    }
+    toast.info("Generating Shipping Label...");
+    const result = await downloadShippingLabel(order._id, {
+      awb: order.trackingNumber,
+      courier: "",
+      size: "4x6",
+    });
+    if (result.success) {
+      toast.success("Label downloaded");
+    } else {
+      toast.error("Failed to download Label");
+    }
+  };
 
   const isAdminOrEmployee = user.role === "admin" || user.role === "employee";
 
@@ -763,6 +804,74 @@ export function OrdersTab({ user }: OrdersTabProps) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* Admin PDF Actions */}
+                  {isAdminOrEmployee && (
+                    <>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <FileText className="h-4 w-4" />
+                            Order Slip
+                            <ChevronDown className="h-3 w-3 opacity-50" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDownloadOrderSlip(selectedOrder._id, "A4")
+                            }
+                          >
+                            Download A4
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDownloadOrderSlip(selectedOrder._id, "A3")
+                            }
+                          >
+                            Download A3
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDownloadOrderSlip(
+                                selectedOrder._id,
+                                "Letter",
+                              )
+                            }
+                          >
+                            Download Letter
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      {(selectedOrder.status === "processing" ||
+                        selectedOrder.status === "printing" ||
+                        selectedOrder.status === "confirmed") && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 gap-2"
+                          onClick={() => setMarkAsShippedOpen(true)}
+                        >
+                          <Truck className="h-4 w-4" />
+                          Mark Shipped
+                        </Button>
+                      )}
+
+                      {selectedOrder.status === "shipped" &&
+                        selectedOrder.trackingNumber && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => handleReprintLabel(selectedOrder)}
+                          >
+                            <Printer className="h-4 w-4" />
+                            Label
+                          </Button>
+                        )}
+                    </>
+                  )}
+
                   {selectedOrder.paymentStatus === "paid" && (
                     <Button
                       variant="outline"
@@ -1194,6 +1303,21 @@ export function OrdersTab({ user }: OrdersTabProps) {
             </div>
           </Card>
         </div>
+      )}
+
+      {selectedOrder && (
+        <MarkAsShippedDialog
+          open={markAsShippedOpen}
+          onOpenChange={setMarkAsShippedOpen}
+          orderId={selectedOrder._id}
+          onSuccess={() => {
+            fetchOrders();
+            setSelectedOrder({
+              ...selectedOrder,
+              status: "shipped",
+            });
+          }}
+        />
       )}
 
       <TrackingModal

@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  Settings,
+  ChevronDown,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,8 +35,9 @@ export default function Navbar() {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "About", href: "/about" },
-
     { label: "Services", href: "/services" },
+
+    { label: "Pricing Calculator", href: "/pricing" },
     { label: "Contact", href: "/contact" },
   ];
 
@@ -146,6 +155,12 @@ export default function Navbar() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    {/* <DropdownMenuItem asChild>
+                      <Link href="/orders" className="flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        My Orders
+                      </Link>
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem asChild>
                       <Link
                         href="/dashboard"
@@ -269,6 +284,14 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
+                  {/* <Link
+                    href="/orders"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-colors"
+                  >
+                    <Truck className="h-5 w-5" />
+                    My Orders
+                  </Link> */}
                   <Link
                     href="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}

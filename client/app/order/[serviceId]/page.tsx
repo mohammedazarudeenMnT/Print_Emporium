@@ -43,10 +43,10 @@ export default function OrderPage() {
   useEffect(() => {
     const fetchService = async () => {
       if (!serviceId) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Fetch only the selected service
         const serviceResponse = await getServiceById(serviceId);
         if (serviceResponse.success && serviceResponse.data) {
@@ -70,7 +70,9 @@ export default function OrderPage() {
   // Handle redirection for custom quotation services
   useEffect(() => {
     if (service && service.customQuotation) {
-      router.replace(`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`);
+      router.replace(
+        `/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`,
+      );
     }
   }, [service, router]);
 
@@ -107,7 +109,8 @@ export default function OrderPage() {
             {error || "Service Not Found"}
           </h1>
           <p className="text-muted-foreground mb-6">
-            The service you&apos;re looking for doesn&apos;t exist or has been removed.
+            The service you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <button
             onClick={() => router.push("/services")}
