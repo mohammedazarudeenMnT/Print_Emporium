@@ -54,8 +54,8 @@ const getOrderSlipTemplate = (order, company) => {
   });
 
   const logoHtml = company.logoUrl
-    ? `<img src="${company.logoUrl}" alt="${company.name}" style="max-height: 60px; display: block;" />`
-    : `<div class="logo">${company.name}</div>`;
+    ? `<img src="${company.logoUrl}" alt="${company.name}" style="max-height: 150px; max-width: 250px; width: auto; object-fit: contain; display: block; margin: 0 auto;" />`
+    : `<div class="logo" style="font-size: 20px; font-weight: bold; text-transform: uppercase; color: #000; text-align: center;">${company.name}</div>`;
 
   const itemsHtml = order.items
     .map(
@@ -97,10 +97,11 @@ const getOrderSlipTemplate = (order, company) => {
     <head>
       <style>
         body { font-family: 'Helvetica', sans-serif; padding: 30px; color: #000; line-height: 1.3; font-size: 14px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 3px solid #000; padding: 15px 0; gap: 30px; }
+        .logo-container { flex: 0 1 200px; text-align: center; display: flex; align-items: center; justify-content: center; }
         .logo { font-size: 24px; font-weight: bold; text-transform: uppercase; }
-        .order-title { font-size: 20px; font-weight: bold; text-transform: uppercase; text-align: center; flex-grow: 1; }
-        .order-meta { text-align: right; font-size: 12px; }
+        .order-title { font-size: 24px; font-weight: bold; text-transform: uppercase; text-align: center; flex: 1; letter-spacing: 2px; }
+        .order-meta { text-align: right; font-size: 12px; flex: 0 1 150px; }
         
         .section { margin-bottom: 20px; border: 1px solid #000; padding: 10px; }
         .section-header { font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; font-size: 12px; }
@@ -135,9 +136,9 @@ const getOrderSlipTemplate = (order, company) => {
     </head>
     <body>
       <div class="header">
-        <div style="flex: 1;">${logoHtml}</div>
+        <div class="logo-container">${logoHtml}</div>
         <div class="order-title">Job Sheet</div>
-        <div class="order-meta" style="flex: 1;">
+        <div class="order-meta" style="flex: 0 0 auto;">
           <div style="font-size: 16px; font-weight: bold;">#${order.orderNumber}</div>
           <div>${date}</div>
         </div>
