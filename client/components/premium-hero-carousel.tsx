@@ -169,7 +169,7 @@ export default function PremiumHeroCarousel() {
                 : Printer;
               return (
                 <CarouselItem key={slide._id || index} className="w-full">
-                  <div className="relative w-full h-[550px] sm:h-[650px] md:h-[calc(100vh-120px)] min-h-[500px] rounded-2xl md:rounded-3xl overflow-hidden group shadow-2xl shadow-primary/10 border border-border/50">
+                  <div className="relative w-full h-screen sm:h-[700px] md:h-[calc(100vh-120px)] min-h-[600px] rounded-2xl md:rounded-3xl overflow-hidden group shadow-2xl shadow-primary/10 border border-border/50">
                     {/* --- Background Image --- */}
                     <div className="absolute inset-0">
                       <Image
@@ -185,13 +185,13 @@ export default function PremiumHeroCarousel() {
                       />
                       {/* Cinematic Gradient Overlays */}
                       <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+                      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
                     </div>
 
                     {/* --- Content --- */}
-                    <div className="absolute inset-0 z-20 flex items-center justify-center md:justify-start">
+                    <div className="absolute inset-0 z-20 flex items-start md:items-center justify-center md:justify-start pt-12 md:pt-0">
                       <div className="container mx-auto px-4 md:px-12 lg:px-20 text-center md:text-left">
-                        <div className="max-w-3xl pt-0 md:pt-0 flex flex-col items-center md:items-start">
+                        <div className="w-full md:max-w-5xl flex flex-col items-center md:items-start">
                           {/* Badge/Icon */}
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -217,21 +217,9 @@ export default function PremiumHeroCarousel() {
                               y: index === currentSlide ? 0 : 30,
                             }}
                             transition={{ duration: 0.6, delay: 0.3 }}
-                            className="text-3xl sm:text-4xl md:text-7xl lg:text-8xl font-black text-white leading-[1.2] md:leading-[0.9] tracking-tight mb-6 md:mb-8 drop-shadow-lg"
+                            className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight md:leading-tight tracking-tight mb-4 md:mb-6 drop-shadow-lg w-full max-w-full"
                           >
-                            {slide.title.split(" ").map((word, i) => (
-                              <span
-                                key={i}
-                                className={cn(
-                                  "inline-block mx-1 md:mr-4",
-                                  i % 2 !== 0
-                                    ? "text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70"
-                                    : "",
-                                )}
-                              >
-                                {word}
-                              </span>
-                            ))}
+                            {slide.title}
                           </motion.h1>
 
                           {/* Subtitle */}

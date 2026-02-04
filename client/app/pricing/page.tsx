@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -44,6 +45,7 @@ const formatPrice = (price: number) => {
 };
 
 export default function PricingPage() {
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
@@ -385,121 +387,9 @@ export default function PricingPage() {
                     </div>
 
                     <Card className="border border-border/50 bg-white shadow-xl shadow-slate-100/50 rounded-3xl overflow-hidden">
-                      <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        {[
-                          {
-                            id: "printType",
-                            label: "Print Type",
-                            icon: <Printer className="h-3.5 w-3.5" />,
-                            options: selectedService.printTypes,
-                          },
-                          {
-                            id: "paperSize",
-                            label: "Dimensions",
-                            icon: <Maximize2 className="h-3.5 w-3.5" />,
-                            options: selectedService.paperSizes,
-                          },
-                          {
-                            id: "paperType",
-                            label: "Paper Finish",
-                            icon: <FileText className="h-3.5 w-3.5" />,
-                            options: selectedService.paperTypes,
-                          },
-                          {
-                            id: "gsm",
-                            label: "Paper Weight",
-                            icon: <Layers className="h-3.5 w-3.5" />,
-                            options: selectedService.gsmOptions,
-                          },
-                          {
-                            id: "printSide",
-                            label: "Print Sides",
-                            icon: <Maximize2 className="h-3.5 w-3.5" />,
-                            options: selectedService.printSides,
-                          },
-                          {
-                            id: "bindingOption",
-                            label: "Binding",
-                            icon: <CopyIcon className="h-3.5 w-3.5" />,
-                            options: availableBindingOptions,
-                          },
-                        ].map((cat) =>
-                          cat.options && cat.options.length > 0 ? (
-                            <div key={cat.id} className="space-y-2">
-                              <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1">
-                                {cat.icon}
-                                {cat.label}
-                              </Label>
-                              <Select
-                                value={config[cat.id]}
-                                onValueChange={(val) =>
-                                  setConfig({ ...config, [cat.id]: val })
-                                }
-                              >
-                                <SelectTrigger className="h-12 bg-muted/30 border-transparent rounded-xl hover:bg-muted/50 transition-all focus:ring-1 focus:ring-primary/10 font-medium text-foreground">
-                                  <SelectValue placeholder="Select one..." />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-border bg-white shadow-lg p-1">
-                                  {cat.options.map((opt) => (
-                                    <SelectItem
-                                      key={opt.value}
-                                      value={opt.value}
-                                      className="rounded-md py-2.5 focus:bg-primary/5 focus:text-primary font-medium transition-all"
-                                    >
-                                      <div className="flex items-center justify-between w-full">
-                                        <span className="text-sm">
-                                          {opt.label || opt.value}
-                                        </span>
-                                        <div className="flex gap-1 ml-4">
-                                          {opt.pricePerPage ? (
-                                            <span className="text-[9px] text-primary/70 font-bold">
-                                              +{formatPrice(opt.pricePerPage)}
-                                              /pg
-                                            </span>
-                                          ) : null}
-                                          {opt.fixedPrice ||
-                                          opt.pricePerCopy ? (
-                                            <span className="text-[9px] text-emerald-600 font-bold">
-                                              +
-                                              {formatPrice(
-                                                opt.fixedPrice ||
-                                                  opt.pricePerCopy ||
-                                                  0,
-                                              )}
-                                            </span>
-                                          ) : null}
-                                        </div>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          ) : (
-                            cat.id === "bindingOption" &&
-                            selectedService.bindingOptions &&
-                            selectedService.bindingOptions.length > 0 && (
-                              <div
-                                key={cat.id}
-                                className="space-y-2 p-3 rounded-xl bg-amber-50 border border-amber-100/30"
-                              >
-                                <div className="flex items-center gap-2 text-amber-700">
-                                  <AlertCircle className="h-3.5 w-3.5" />
-                                  <span className="text-[10px] font-bold uppercase tracking-wider">
-                                    Binding Unavailable
-                                  </span>
-                                </div>
-                                <p className="text-[10px] text-amber-600/80 font-medium leading-tight">
-                                  {pageCount} pages minimum required for current
-                                  options.
-                                </p>
-                              </div>
-                            )
-                          ),
-                        )}
-
+                      <CardContent className="p-8 space-y-8">
                         {/* Quantity Block */}
-                        <div className="md:col-span-2 pt-6 border-t border-border/40 space-y-6">
+                        <div className="space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Pages */}
                             <div className="space-y-3">
@@ -583,6 +473,121 @@ export default function PricingPage() {
                               </div>
                             </div>
                           </div>
+                          <div className="border-b border-border/40" />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                          {[
+                            {
+                              id: "printType",
+                              label: "Print Type",
+                              icon: <Printer className="h-3.5 w-3.5" />,
+                              options: selectedService.printTypes,
+                            },
+                            {
+                              id: "paperSize",
+                              label: "Dimensions",
+                              icon: <Maximize2 className="h-3.5 w-3.5" />,
+                              options: selectedService.paperSizes,
+                            },
+                            {
+                              id: "paperType",
+                              label: "Paper Finish",
+                              icon: <FileText className="h-3.5 w-3.5" />,
+                              options: selectedService.paperTypes,
+                            },
+                            {
+                              id: "gsm",
+                              label: "Paper Weight",
+                              icon: <Layers className="h-3.5 w-3.5" />,
+                              options: selectedService.gsmOptions,
+                            },
+                            {
+                              id: "printSide",
+                              label: "Print Sides",
+                              icon: <Maximize2 className="h-3.5 w-3.5" />,
+                              options: selectedService.printSides,
+                            },
+                            {
+                              id: "bindingOption",
+                              label: "Binding",
+                              icon: <CopyIcon className="h-3.5 w-3.5" />,
+                              options: availableBindingOptions,
+                            },
+                          ].map((cat) =>
+                            cat.options && cat.options.length > 0 ? (
+                              <div key={cat.id} className="space-y-2">
+                                <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1">
+                                  {cat.icon}
+                                  {cat.label}
+                                </Label>
+                                <Select
+                                  value={config[cat.id]}
+                                  onValueChange={(val) =>
+                                    setConfig({ ...config, [cat.id]: val })
+                                  }
+                                >
+                                  <SelectTrigger className="h-12 bg-muted/30 border-transparent rounded-xl hover:bg-muted/50 transition-all focus:ring-1 focus:ring-primary/10 font-medium text-foreground">
+                                    <SelectValue placeholder="Select one..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="rounded-xl border-border bg-white shadow-lg p-1">
+                                    {cat.options.map((opt) => (
+                                      <SelectItem
+                                        key={opt.value}
+                                        value={opt.value}
+                                        className="rounded-md py-2.5 focus:bg-primary/5 focus:text-primary font-medium transition-all"
+                                      >
+                                        <div className="flex items-center justify-between w-full">
+                                          <span className="text-sm">
+                                            {opt.label || opt.value}
+                                          </span>
+                                          <div className="flex gap-1 ml-4">
+                                            {opt.pricePerPage ? (
+                                              <span className="text-[9px] text-primary/70 font-bold">
+                                                +{formatPrice(opt.pricePerPage)}
+                                                /pg
+                                              </span>
+                                            ) : null}
+                                            {opt.fixedPrice ||
+                                            opt.pricePerCopy ? (
+                                              <span className="text-[9px] text-emerald-600 font-bold">
+                                                +
+                                                {formatPrice(
+                                                  opt.fixedPrice ||
+                                                    opt.pricePerCopy ||
+                                                    0,
+                                                )}
+                                              </span>
+                                            ) : null}
+                                          </div>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : (
+                              cat.id === "bindingOption" &&
+                              selectedService.bindingOptions &&
+                              selectedService.bindingOptions.length > 0 && (
+                                <div
+                                  key={cat.id}
+                                  className="space-y-2 p-3 rounded-xl bg-amber-50 border border-amber-100/30"
+                                >
+                                  <div className="flex items-center gap-2 text-amber-700">
+                                    <AlertCircle className="h-3.5 w-3.5" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                                      Binding Unavailable
+                                    </span>
+                                  </div>
+                                  <p className="text-[10px] text-amber-600/80 font-medium leading-tight">
+                                    {pageCount} pages minimum required for
+                                    current options.
+                                  </p>
+                                </div>
+                              )
+                            ),
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -604,7 +609,7 @@ export default function PricingPage() {
 
               <div className="relative group">
                 {/* Decorative glow background */}
-                <div className="absolute -inset-1 rounded-[40px] " />
+                <div className="absolute -inset-1 rounded-[40px] pointer-events-none" />
 
                 <Card className="border border-border/50 bg-white shadow-xl rounded-3xl overflow-hidden">
                   <div className=" p-8 border-b border-border/40">
@@ -670,13 +675,13 @@ export default function PricingPage() {
 
                     <div className="space-y-4">
                       <Button
+                        onClick={() => {
+                          router.push(`/order/${selectedServiceId}`);
+                        }}
                         className="w-full h-12 rounded-xl text-sm cursor-pointer font-bold shadow-md shadow-primary/10 transition-all hover:translate-y-[-2px] active:scale-95 group bg-primary hover:bg-primary/90 text-primary-foreground border-0"
-                        asChild
                       >
-                        <Link href={`/order/${selectedServiceId}`}>
-                          Place Your Order
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
+                        Place Your Order
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
 
                       <div className="flex items-center justify-center gap-6">
