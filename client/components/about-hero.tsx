@@ -140,6 +140,9 @@ export function AboutHero() {
                 alt="printing team collaboration"
                 width="2700"
                 height="1440"
+                preload={true}
+                loading="eager"
+                sizes="(max-width: 1152px) 100vw, 1152px"
               />
             </div>
           </div>

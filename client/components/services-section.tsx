@@ -1,6 +1,14 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, IndianRupee, Layers, Upload, CheckCircle2, MessageSquare } from "lucide-react";
+import {
+  ArrowRight,
+  Star,
+  IndianRupee,
+  Layers,
+  Upload,
+  CheckCircle2,
+  MessageSquare,
+} from "lucide-react";
 import { Service } from "@/lib/service-api";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,7 +34,7 @@ const ServiceCard = ({
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-2xl bg-card backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:-translate-y-2",
         "border border-border/50 hover:border-primary/50",
-        "animate-fade-in-up"
+        "animate-fade-in-up",
       )}
       style={{
         animationDelay: `${index * 0.1}s`,
@@ -34,7 +42,7 @@ const ServiceCard = ({
       }}
     >
       {/* Gradient Overlay Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       {/* Image Container */}
       <div className="relative h-56 w-full overflow-hidden">
@@ -44,21 +52,24 @@ const ServiceCard = ({
             alt={service.name}
             fill
             className="object-cover transition-all duration-700 group-hover:scale-125 group-hover:rotate-2"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center">
+          <div className="h-full w-full bg-linear-to-br from-primary/5 to-primary/10 flex items-center justify-center">
             <Layers className="h-20 w-20 text-primary/20" />
           </div>
         )}
 
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
         {/* Price Badge */}
         <div className="absolute top-4 right-4 px-3 py-2 rounded-xl bg-background/95 backdrop-blur-md shadow-lg border border-primary/10">
           <div className="flex items-center gap-1">
             {service.customQuotation && service.basePricePerPage === 0 ? (
-              <span className="font-bold text-sm text-primary uppercase tracking-wider px-1">Quote</span>
+              <span className="font-bold text-sm text-primary uppercase tracking-wider px-1">
+                Quote
+              </span>
             ) : (
               <>
                 <IndianRupee className="h-4 w-4 text-primary" />
@@ -87,7 +98,9 @@ const ServiceCard = ({
           </h3>
           {service.customQuotation && (
             <div className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20">
-              <span className="text-[10px] font-black text-primary uppercase tracking-tighter">Quote</span>
+              <span className="text-[10px] font-black text-primary uppercase tracking-tighter">
+                Quote
+              </span>
             </div>
           )}
         </div>
@@ -98,16 +111,21 @@ const ServiceCard = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-primary">
                 <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wider opacity-70">Service Highlights</span>
+                <span className="text-xs font-bold uppercase tracking-wider opacity-70">
+                  Service Highlights
+                </span>
               </div>
               <ul className="space-y-1.5">
                 {[
                   "Custom Design Consultation",
                   "Specialized Printing Solutions",
                   "Bulk Order Discounts",
-                  "Priority Expert Support"
+                  "Priority Expert Support",
                 ].map((highlight, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground group/item">
+                  <li
+                    key={i}
+                    className="flex items-center gap-2 text-sm text-muted-foreground group/item"
+                  >
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary opacity-50 group-hover/item:opacity-100 transition-opacity" />
                     <span>{highlight}</span>
                   </li>
@@ -150,7 +168,10 @@ const ServiceCard = ({
 
         {/* CTA Button */}
         {service.customQuotation ? (
-          <Link href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`} className="w-full">
+          <Link
+            href={`/contact?subject=Inquiry for ${encodeURIComponent(service.name)}`}
+            className="w-full"
+          >
             <Button
               className="w-full group/btn relative overflow-hidden rounded-xl font-bold bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300"
               variant="outline"
@@ -171,14 +192,14 @@ const ServiceCard = ({
                 Upload & Print{" "}
                 <Upload className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
             </Button>
           </Link>
         )}
       </div>
 
       {/* Animated Border */}
-      <div className="absolute left-0 bottom-0 h-1 w-0 bg-gradient-to-r from-primary to-primary/50 transition-all duration-500 group-hover:w-full" />
+      <div className="absolute left-0 bottom-0 h-1 w-0 bg-linear-to-r from-primary to-primary/50 transition-all duration-500 group-hover:w-full" />
 
       {/* Corner Accent */}
       <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full transform scale-0 group-hover:scale-100 transition-transform duration-500" />
@@ -196,7 +217,7 @@ export default function ServicesSection({ services }: ServicesSectionProps) {
             <Layers className="w-4 h-4" />
             Our Services
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-linear-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
             Professional Printing Solutions
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -237,7 +258,7 @@ export default function ServicesSection({ services }: ServicesSectionProps) {
         )}
 
         {/* Bottom CTA */}
-        <div className="mt-16 text-center p-8 rounded-3xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm">
+        <div className="mt-16 text-center p-8 rounded-3xl bg-linear-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm">
           <p className="text-lg text-muted-foreground mb-6 font-medium">
             Need a custom solution? We&apos;re here to help with specialized
             printing services.

@@ -62,7 +62,7 @@ export default function AboutPage({
 
               <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-primary-950 leading-[1.1]">
                 Crafting Excellence <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-violet-600">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-600 to-violet-600">
                   In Every Detail.
                 </span>
               </h1>
@@ -103,13 +103,14 @@ export default function AboutPage({
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-900/10">
+              <div className="relative aspect-4/3 rounded-[2rem] overflow-hidden shadow-2xl shadow-primary-900/10">
                 <Image
                   src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&q=80"
                   alt="Premium Printing Process"
                   fill
                   className="object-cover"
-                  priority
+                  preload={true}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
 
                 {/* Floating Glass Card */}
@@ -131,8 +132,8 @@ export default function AboutPage({
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute -top-12 -right-12 w-64 h-64 bg-gradient-to-br from-primary-300 to-violet-300 rounded-full blur-[64px] opacity-40 -z-10" />
-              <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-gradient-to-br from-indigo-300 to-primary-300 rounded-full blur-[64px] opacity-40 -z-10" />
+              <div className="absolute -top-12 -right-12 w-64 h-64 bg-linear-to-br from-primary-300 to-violet-300 rounded-full blur-3xl opacity-40 -z-10" />
+              <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-linear-to-br from-indigo-300 to-primary-300 rounded-full blur-3xl opacity-40 -z-10" />
             </motion.div>
           </div>
         </div>
@@ -151,7 +152,7 @@ export default function AboutPage({
                 transition={{ delay: idx * 0.1 }}
                 className="text-center p-8 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-shadow"
               >
-                <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-primary-200 mb-2 font-mono tracking-tighter">
+                <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-primary-200 mb-2 font-mono tracking-tighter">
                   {item.value}
                 </div>
                 <div className="text-primary-200/80 font-medium uppercase tracking-wider text-sm">
@@ -199,7 +200,7 @@ export default function AboutPage({
                 whileHover={{ y: -8 }}
                 className="group relative p-8 rounded-[2rem] bg-white border border-base-200 shadow-xl shadow-base-200/50 overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-br from-primary-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">

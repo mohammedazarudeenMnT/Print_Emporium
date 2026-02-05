@@ -63,7 +63,7 @@ export function FileUploadStep({
       setShowServiceSelector(false);
       return;
     }
-    
+
     // If services not loaded yet, fetch them
     if (availableServices.length <= 1 && onLoadAllServices) {
       setIsLoadingServices(true);
@@ -101,7 +101,7 @@ export function FileUploadStep({
       // Process page count (with conversion if needed)
       try {
         const { pageCount, pdfFile } = await getFilePageCount(file);
-        
+
         // Update with page count
         uploadedFile.pageCount = pageCount;
         uploadedFile.status = "ready";
@@ -113,24 +113,25 @@ export function FileUploadStep({
           if (uploadedFile.previewUrl) {
             URL.revokeObjectURL(uploadedFile.previewUrl);
           }
-          
+
           uploadedFile.originalFile = file; // Save original docx/image
           uploadedFile.file = pdfFile;
           uploadedFile.previewUrl = URL.createObjectURL(pdfFile);
           uploadedFile.type = pdfFile.type;
         }
-        
+
         // Force re-render by removing and re-adding with selected service
         onFileRemoved(id);
         onFileUploaded({ ...uploadedFile }, selectedService);
       } catch (error) {
         uploadedFile.status = "error";
-        uploadedFile.error = error instanceof Error ? error.message : "Failed to process file";
+        uploadedFile.error =
+          error instanceof Error ? error.message : "Failed to process file";
         onFileRemoved(id);
         onFileUploaded({ ...uploadedFile }, selectedService);
       }
     },
-    [onFileUploaded, onFileRemoved, selectedService]
+    [onFileUploaded, onFileRemoved, selectedService],
   );
 
   const handleDrop = useCallback(
@@ -141,20 +142,20 @@ export function FileUploadStep({
       const files = Array.from(e.dataTransfer.files);
       files.forEach(processFile);
     },
-    [processFile]
+    [processFile],
   );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
       files.forEach(processFile);
-      
+
       // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     },
-    [processFile]
+    [processFile],
   );
 
   const handleRemoveFile = useCallback(
@@ -162,7 +163,7 @@ export function FileUploadStep({
       revokeFilePreviewUrl(file.previewUrl);
       onFileRemoved(file.id);
     },
-    [onFileRemoved]
+    [onFileRemoved],
   );
 
   const getFileIcon = (type: string) => {
@@ -173,9 +174,13 @@ export function FileUploadStep({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Upload Your Files</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">
+          Upload Your Files
+        </h2>
         <p className="text-muted-foreground">
-          Upload the files you want to print. Word documents, images and text files will be automatically converted to PDF for accurate page counting.
+          Upload the files you want to print. Word documents, images and text
+          files will be automatically converted to PDF for accurate page
+          counting.
         </p>
       </div>
 
@@ -187,10 +192,12 @@ export function FileUploadStep({
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Current Service</div>
-            <div className="font-semibold text-foreground">{selectedService.name}</div>
+            <div className="font-semibold text-foreground">
+              {selectedService.name}
+            </div>
           </div>
         </div>
-        
+
         {/* Show "Add Different Service" button only if files uploaded */}
         {orderItems.length > 0 && (
           <Button
@@ -208,7 +215,9 @@ export function FileUploadStep({
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                {showServiceSelector ? "Hide Services" : "Add Different Service"}
+                {showServiceSelector
+                  ? "Hide Services"
+                  : "Add Different Service"}
               </>
             )}
           </Button>
@@ -220,8 +229,12 @@ export function FileUploadStep({
         <div className="mb-6 bg-card rounded-xl border border-primary/50 p-6 animate-in slide-in-from-top-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold text-foreground">Select Different Service</h3>
-              <p className="text-sm text-muted-foreground">Choose a service for your next file upload</p>
+              <h3 className="font-semibold text-foreground">
+                Select Different Service
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Choose a service for your next file upload
+              </p>
             </div>
             <Button
               variant="ghost"
@@ -244,10 +257,12 @@ export function FileUploadStep({
                   "p-4 rounded-lg border-2 transition-all text-left",
                   selectedService._id === service._id
                     ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50 bg-card"
+                    : "border-border hover:border-primary/50 bg-card",
                 )}
               >
-                <div className="font-semibold text-foreground mb-1">{service.name}</div>
+                <div className="font-semibold text-foreground mb-1">
+                  {service.name}
+                </div>
                 <div className="text-xs text-muted-foreground line-clamp-2">
                   {service.description || "Professional printing service"}
                 </div>
@@ -266,7 +281,7 @@ export function FileUploadStep({
           "relative border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-colors cursor-pointer",
           isDragging
             ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50 hover:bg-muted/50"
+            : "border-border hover:border-primary/50 hover:bg-muted/50",
         )}
         onDragOver={(e) => {
           e.preventDefault();
@@ -296,7 +311,8 @@ export function FileUploadStep({
             or click to browse from your device
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported: PDF, JPG, PNG, TXT, DOC, DOCX (Word docs & images auto-converted to PDF • Max 50MB per file)
+            Supported: PDF, JPG, PNG, TXT, DOC, DOCX (Word docs & images
+            auto-converted to PDF • Max 50MB per file)
           </p>
         </div>
       </div>
@@ -332,20 +348,20 @@ export function FileUploadStep({
                   className={cn(
                     "flex items-center gap-4 p-4 rounded-xl border bg-card transition-colors",
                     hasError && "border-destructive/50 bg-destructive/5",
-                    isReady && "border-border"
+                    isReady && "border-border",
                   )}
                 >
                   {/* File Icon */}
                   <div
                     className={cn(
                       "w-12 h-12 rounded-lg flex items-center justify-center shrink-0",
-                      hasError ? "bg-destructive/10" : "bg-primary/10"
+                      hasError ? "bg-destructive/10" : "bg-primary/10",
                     )}
                   >
                     <FileIcon
                       className={cn(
                         "h-6 w-6",
-                        hasError ? "text-destructive" : "text-primary"
+                        hasError ? "text-destructive" : "text-primary",
                       )}
                     />
                   </div>
@@ -372,7 +388,8 @@ export function FileUploadStep({
                         <div className="flex items-center gap-2">
                           <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-green-500/10 text-green-600 font-black text-xs border border-green-200">
                             <CheckCircle2 className="h-3 w-3" />
-                            {item.file.pageCount} PAGE{item.file.pageCount !== 1 ? "S" : ""} DETECTED
+                            {item.file.pageCount} PAGE
+                            {item.file.pageCount !== 1 ? "S" : ""} DETECTED
                           </span>
                         </div>
                       )}
@@ -387,20 +404,22 @@ export function FileUploadStep({
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
-                    {isReady && (item.file.type.startsWith("image/") || item.file.type === "application/pdf") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewFile(item.file);
-                        }}
-                        className="h-9 gap-2 bg-card hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">Preview</span>
-                      </Button>
-                    )}
+                    {isReady &&
+                      (item.file.type.startsWith("image/") ||
+                        item.file.type === "application/pdf") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewFile(item.file);
+                          }}
+                          className="h-9 gap-2 bg-card hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="hidden sm:inline">Preview</span>
+                        </Button>
+                      )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -444,7 +463,9 @@ export function FileUploadStep({
               <div className="p-4 border-b border-border flex justify-between items-center bg-card">
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-primary" />
-                  <span className="font-semibold">{previewFile.name} preview</span>
+                  <span className="font-semibold">
+                    {previewFile.name} preview
+                  </span>
                 </div>
                 <Button
                   variant="ghost"
@@ -467,6 +488,7 @@ export function FileUploadStep({
                       width={800}
                       height={600}
                       className="max-w-full max-h-[70vh] object-contain mx-auto rounded-md shadow-sm"
+                      sizes="(max-width: 800px) 100vw, 800px"
                     />
                   </div>
                 ) : (

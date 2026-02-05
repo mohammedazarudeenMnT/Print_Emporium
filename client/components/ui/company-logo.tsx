@@ -12,17 +12,17 @@ interface CompanyLogoProps {
   showFallback?: boolean;
 }
 
-export function CompanyLogo({ 
-  className = "", 
-  width = 120, 
+export function CompanyLogo({
+  className = "",
+  width = 120,
   height = 40,
-  showFallback = true
+  showFallback = true,
 }: CompanyLogoProps) {
   const { logo, isLoading } = useCompanyLogo();
 
   if (isLoading) {
     return (
-      <div 
+      <div
         className={cn("animate-pulse bg-muted rounded", className)}
         style={{ width, height }}
       />
@@ -31,7 +31,7 @@ export function CompanyLogo({
 
   if (logo) {
     return (
-      <div 
+      <div
         className={cn("relative overflow-hidden", className)}
         style={{ width, height }}
       >
@@ -40,7 +40,7 @@ export function CompanyLogo({
           alt="Company Logo"
           fill
           className="object-contain"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes={`${width}px`}
         />
       </div>
     );
@@ -49,8 +49,11 @@ export function CompanyLogo({
   // Fallback to icon if no logo and showFallback is true
   if (showFallback) {
     return (
-      <div 
-        className={cn("flex items-center justify-center bg-primary text-primary-foreground rounded", className)}
+      <div
+        className={cn(
+          "flex items-center justify-center bg-primary text-primary-foreground rounded",
+          className,
+        )}
         style={{ width, height }}
       >
         <Printer size={Math.min(width, height) * 0.6} strokeWidth={2} />

@@ -82,7 +82,7 @@ export function ImageUpload({
         handleFileChange(fakeEvent);
       }
     },
-    [handleFileChange]
+    [handleFileChange],
   );
 
   const displayUrl =
@@ -113,13 +113,13 @@ export function ImageUpload({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={cn(
-                `${aspectClasses[aspectRatio]} cursor-pointer flex flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-muted-foreground/20 bg-muted/5 transition-all duration-300 hover:bg-primary/[0.03] hover:border-primary/40 active:scale-95 group min-h-[120px]`,
+                `${aspectClasses[aspectRatio]} cursor-pointer flex flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-muted-foreground/20 bg-muted/5 transition-all duration-300 hover:bg-primary/3 hover:border-primary/40 active:scale-95 group min-h-[120px]`,
                 isDragging &&
-                  "border-primary bg-primary/5 scale-105 shadow-xl shadow-primary/10"
+                  "border-primary bg-primary/5 scale-105 shadow-xl shadow-primary/10",
               )}
             >
               <div className="flex flex-col items-center gap-3 p-4 transition-transform group-hover:scale-110">
-                <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 p-3 shadow-inner border border-primary/10 group-hover:from-primary/20 group-hover:to-primary/10 transition-colors">
+                <div className="rounded-2xl bg-linear-to-br from-primary/10 to-primary/5 p-3 shadow-inner border border-primary/10 group-hover:from-primary/20 group-hover:to-primary/10 transition-colors">
                   <ImagePlus className="h-6 w-6 text-primary" />
                 </div>
                 <div className="text-center">
@@ -143,9 +143,11 @@ export function ImageUpload({
                   fill
                   className={cn(
                     "transition-transform duration-500 group-hover:scale-105",
-                    objectFit === "cover" ? "object-cover" : "object-contain p-4"
+                    objectFit === "cover"
+                      ? "object-cover"
+                      : "object-contain p-4",
                   )}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 512px, 320px"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200" />
                 <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -172,14 +174,15 @@ export function ImageUpload({
             </div>
           )}
         </div>
-
       </div>
-      
+
       {/* File Info & Guidelines */}
       <div className="flex flex-col gap-2 px-1">
         {fileName && (
           <div className="flex items-center gap-2 py-2 px-3 bg-primary/5 rounded-xl border border-primary/10 w-full">
-            <span className="text-xs font-bold text-primary truncate flex-1">{fileName}</span>
+            <span className="text-xs font-bold text-primary truncate flex-1">
+              {fileName}
+            </span>
             <button
               type="button"
               onClick={handleRemove}

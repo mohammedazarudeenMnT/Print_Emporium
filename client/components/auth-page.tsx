@@ -333,6 +333,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                     alt="User"
                     width={40}
                     height={40}
+                    sizes="40px"
                   />
                 </div>
               ))}

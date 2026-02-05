@@ -181,7 +181,8 @@ export default function PremiumHeroCarousel() {
                         alt={slide.title}
                         fill
                         className="object-cover object-center transition-transform duration-[10000ms] ease-linear scale-100 group-hover:scale-110"
-                        priority={index === 0}
+                        preload={index === 0}
+                        sizes="100vw"
                       />
                       {/* Cinematic Gradient Overlays */}
                       <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10" />

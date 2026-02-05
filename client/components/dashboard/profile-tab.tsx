@@ -54,6 +54,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
                     alt={user.name || "User"}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 768px) 80px, 96px"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full w-full bg-gradient-to-br from-white/20 to-white/10">

@@ -58,6 +58,7 @@ export default function Dashboard() {
                     width={32}
                     height={32}
                     className="rounded-full"
+                    sizes="32px"
                   />
                 ) : (
                   <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full rounded-full">
