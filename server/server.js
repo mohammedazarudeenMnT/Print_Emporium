@@ -102,9 +102,9 @@ const startServer = async () => {
     // Seed admin user
     await seedAdmin();
 
-    // Seed default data
-    const { seedData } = await import("./src/utils/seedData.js");
-    await seedData();
+    // // Seed default data
+    // const { seedData } = await import("./src/utils/seedData.js");
+    // await seedData();
 
     // // Seed example orders for dashboard if needed
     // await seedOrders(20);
