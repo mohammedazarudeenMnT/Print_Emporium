@@ -18,7 +18,9 @@ import {
   Copy,
   Settings2,
   Truck,
+  Share2,
 } from "lucide-react";
+import { ShareCouponDialog } from "./share-coupon-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +94,10 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
   });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
+
+  // Sharing State
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [couponToShare, setCouponToShare] = useState<Coupon | null>(null);
 
   const loadCoupons = useCallback(async () => {
     setIsLoading(true);
@@ -280,6 +286,18 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setCouponToShare(coupon);
+                          setIsShareDialogOpen(true);
+                        }}
+                        className="h-8 w-8 hover:bg-indigo-50 text-indigo-500"
+                        title="Share Coupon"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -840,6 +858,18 @@ export function CouponSettingsTab({ onMessage }: CouponSettingsTabProps) {
         confirmLabel="Delete"
         variant="destructive"
       />
+
+      {/* Share Coupon Dialog */}
+      {couponToShare && (
+        <ShareCouponDialog
+          isOpen={isShareDialogOpen}
+          onClose={() => setIsShareDialogOpen(false)}
+          couponCode={couponToShare.code}
+          description={couponToShare.description}
+          discountType={couponToShare.type}
+          discountValue={couponToShare.value}
+        />
+      )}
     </div>
   );
 }

@@ -38,6 +38,7 @@ export const upsertServiceOption = async (req, res) => {
       pricePerCopy,
       minPages,
       fixedPrice,
+      priceRanges,
       id,
     } = req.body;
     if (!category || !label || !value) {
@@ -47,7 +48,7 @@ export const upsertServiceOption = async (req, res) => {
       });
     }
 
-    // Validate: Only one pricing type can be set (skip for bindingOption if fixedPrice is used)
+    // Validate: Only one pricing type can be set (skip for bindingOption if fixedPrice or priceRanges is used)
     if (category !== "bindingOption" && pricePerPage > 0 && pricePerCopy > 0) {
       return res.status(400).json({
         success: false,
@@ -69,6 +70,7 @@ export const upsertServiceOption = async (req, res) => {
           pricePerCopy,
           minPages,
           fixedPrice,
+          priceRanges,
         },
         { new: true, runValidators: true },
       );
@@ -90,6 +92,7 @@ export const upsertServiceOption = async (req, res) => {
         pricePerCopy,
         minPages,
         fixedPrice,
+        priceRanges,
       });
       await option.save();
     }

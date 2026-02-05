@@ -18,6 +18,7 @@ export interface ServiceOption {
   pricePerCopy?: number;
   minPages?: number;
   fixedPrice?: number;
+  priceRanges?: { min: number; max: number; price: number }[];
 }
 
 export interface OptionPricing {
@@ -27,6 +28,7 @@ export interface OptionPricing {
   pricePerCopy: number;
   minPages?: number;
   fixedPrice?: number;
+  priceRanges?: { min: number; max: number; price: number }[];
 }
 
 export const getAllServiceOptions = async (

@@ -46,6 +46,12 @@ export function calculateItemPricing(
     configuration.bindingOption,
   );
 
+  // Calculate total pages based on print side (Sheet Count)
+  let totalPages = pageCount;
+  if (configuration.printSide === "double-side") {
+    totalPages = Math.ceil(pageCount / 2);
+  }
+
   // Determine pricing type for each option (use whichever is > 0)
   const printTypePrice =
     printTypeOpt?.pricePerPage || printTypeOpt?.pricePerCopy || 0;
@@ -75,21 +81,38 @@ export function calculateItemPricing(
     (printSideOpt?.pricePerCopy || 0) > 0 &&
     (printSideOpt?.pricePerPage || 0) === 0;
 
-  const bindingPrice =
-    bindingOpt?.fixedPrice ||
-    bindingOpt?.pricePerCopy ||
-    bindingOpt?.pricePerPage ||
-    0;
+  // Calculate Binding Price with Page Ranges support
+  let bindingPrice = 0;
+
+  if (bindingOpt?.priceRanges && bindingOpt.priceRanges.length > 0) {
+    // Find matching range based on sheet count (totalPages)
+    const range = bindingOpt.priceRanges.find(
+      (r) => totalPages >= r.min && totalPages <= r.max,
+    );
+    if (range) {
+      bindingPrice = range.price;
+    } else {
+      // Fallback if no range matches (optional: assume max range or base fixed)
+      // For now, fall back to standard fixed/per-copy/per-page
+      bindingPrice =
+        bindingOpt?.fixedPrice ||
+        bindingOpt?.pricePerCopy ||
+        bindingOpt?.pricePerPage ||
+        0;
+    }
+  } else {
+    bindingPrice =
+      bindingOpt?.fixedPrice ||
+      bindingOpt?.pricePerCopy ||
+      bindingOpt?.pricePerPage ||
+      0;
+  }
+
   const bindingIsPerCopy =
+    bindingPrice > 0 || // If resolved from range/fixed, it's per copy
     (bindingOpt?.fixedPrice || 0) > 0 ||
     (bindingOpt?.pricePerCopy || 0) > 0 ||
     (bindingOpt?.pricePerPage || 0) === 0;
-
-  // Calculate total pages based on print side
-  let totalPages = pageCount;
-  if (configuration.printSide === "double-side") {
-    totalPages = Math.ceil(pageCount / 2);
-  }
 
   // Calculate price per page (sum of all per-page prices)
   const pricePerPage =

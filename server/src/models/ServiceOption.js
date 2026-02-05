@@ -41,6 +41,13 @@ const serviceOptionSchema = new mongoose.Schema(
     fixedPrice: {
       type: Number,
     },
+    priceRanges: [
+      {
+        min: { type: Number },
+        max: { type: Number },
+        price: { type: Number },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -52,16 +59,18 @@ const serviceOptionSchema = new mongoose.Schema(
 // Or better, standard validation for print options vs binding options.
 serviceOptionSchema.pre("save", function (next) {
   // If bindingOption, we expect fixedPrice.
+  // If bindingOption, we allow fixedPrice or priceRanges
   if (this.category === "bindingOption") {
-    if (this.fixedPrice !== undefined && this.fixedPrice >= 0) {
+    const hasFixed = this.fixedPrice !== undefined && this.fixedPrice >= 0;
+    const hasRanges = this.priceRanges && this.priceRanges.length > 0;
+
+    if (hasFixed || hasRanges) {
       // Valid for binding
       // We might want to clear others to avoid confusion
       this.pricePerPage = undefined;
       this.pricePerCopy = undefined;
     }
-    // If fixedPrice is not set, maybe they are using old schema?
-    // Let's not strictly enforce removing the others unless we are sure.
-    // But per requirements, binding should be fixed price.
+    // If neither, effectively it's free or invalid? Mongoose doesn't enforce required here except category/label/value
   } else {
     // Standard validation for other types
     if (this.pricePerPage > 0 && this.pricePerCopy > 0) {

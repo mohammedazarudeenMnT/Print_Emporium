@@ -61,6 +61,13 @@ const serviceSchema = new mongoose.Schema(
         pricePerCopy: { type: Number },
         minPages: { type: Number },
         fixedPrice: { type: Number },
+        priceRanges: [
+          {
+            min: { type: Number },
+            max: { type: Number },
+            price: { type: Number },
+          },
+        ],
       },
     ],
     status: {

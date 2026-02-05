@@ -329,11 +329,19 @@ export function ConfigureStep({
                       <SelectItem value="none">No Binding</SelectItem>
                       {service.bindingOptions
                         .filter((opt) => {
+                          // New Logic: Check priceRanges first
+                          if (opt.priceRanges && opt.priceRanges.length > 0) {
+                            // Optionally filter if page count is strictly outside all ranges?
+                            // For now, we'll allow it and let it fall back to fixedPrice (or show 0)
+                            return true;
+                          }
+
+                          // Legacy Logic: Filter based on minPages for multi-option ranges
                           const pageCount = activeItem.file.pageCount;
                           const min = opt.minPages || 0;
 
-                          // Smart Range Logic:
-                          // 1. Get all distinct start pages (minPages) sorted ascending
+                          // If we have ranged options defined as separate entries, use smart filtering
+                          // Get all distinct start pages (minPages) sorted ascending
                           const startPages = Array.from(
                             new Set(
                               service.bindingOptions.map(
@@ -342,13 +350,11 @@ export function ConfigureStep({
                             ),
                           ).sort((a, b) => a - b);
 
-                          // 2. Find the next start page cutoff
+                          // Find the next start page cutoff
                           const currentIdx = startPages.indexOf(min);
                           const nextStartPage = startPages[currentIdx + 1];
 
-                          // 3. Determine max for this option
-                          // If there's a next tier, this option ends just before it.
-                          // Otherwise, it goes to infinity.
+                          // Determine max for this option
                           const derivedMax =
                             nextStartPage !== undefined
                               ? nextStartPage - 1
@@ -356,26 +362,44 @@ export function ConfigureStep({
 
                           return pageCount >= min && pageCount <= derivedMax;
                         })
-
                         .map((opt) => {
-                          const isFixed = (opt.fixedPrice || 0) > 0;
-                          const price = isFixed
-                            ? opt.fixedPrice
-                            : Math.max(
-                                opt.pricePerCopy || 0,
-                                opt.pricePerPage || 0,
-                              );
-                          const isPerCopy =
-                            isFixed ||
-                            (opt.pricePerCopy || 0) > 0 ||
-                            (opt.pricePerPage || 0) === 0;
+                          // Calculate dynamic price
+                          const pageCount = activeItem.file.pageCount;
+                          const printSide = activeItem.configuration.printSide;
+                          const totalSheets =
+                            printSide === "double-side"
+                              ? Math.ceil(pageCount / 2)
+                              : pageCount;
+
+                          let price = opt.fixedPrice || 0;
+
+                          if (opt.priceRanges && opt.priceRanges.length > 0) {
+                            const match = opt.priceRanges.find(
+                              (r) =>
+                                totalSheets >= r.min && totalSheets <= r.max,
+                            );
+                            if (match) {
+                              price = match.price;
+                            }
+                          } else {
+                            // Legacy fallback
+                            price =
+                              (opt.fixedPrice || 0) > 0
+                                ? opt.fixedPrice || 0
+                                : Math.max(
+                                    opt.pricePerCopy || 0,
+                                    opt.pricePerPage || 0,
+                                  );
+                          }
+
+                          const isPerCopy = true; // Binding is generally per copy
 
                           return (
                             <SelectItem key={opt.value} value={opt.value}>
                               <span className="capitalize">
                                 {opt.value.replace("-", " ")}
                               </span>
-                              {price && price > 0 && (
+                              {price > 0 && (
                                 <span className="text-muted-foreground ml-2">
                                   (+₹{price}/{isPerCopy ? "copy" : "page"})
                                 </span>

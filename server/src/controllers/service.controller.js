@@ -120,9 +120,13 @@ export const upsertService = async (req, res) => {
     for (const { name: arrayName, data } of optionArrays) {
       if (data && Array.isArray(data)) {
         for (const option of data) {
-          // Binding options can have fixedPrice, so we skip the standard check if fixedPrice is present
+          // Binding options can have fixedPrice OR priceRanges, so we skip the standard check
           const isBinding = arrayName === "bindingOptions";
-          if (isBinding && (option.fixedPrice || 0) > 0) {
+          if (
+            isBinding &&
+            ((option.fixedPrice || 0) > 0 ||
+              (option.priceRanges && option.priceRanges.length > 0))
+          ) {
             continue;
           }
 

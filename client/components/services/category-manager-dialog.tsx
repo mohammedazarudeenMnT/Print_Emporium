@@ -21,6 +21,7 @@ import {
   deleteServiceOption,
 } from "@/lib/service-api";
 import { cn } from "@/lib/utils";
+import { BindingRangeEditor } from "./binding-range-editor";
 
 interface CategoryManagerDialogProps {
   category: string;
@@ -47,6 +48,7 @@ export function CategoryManagerDialog({
     pricePerCopy: 0,
     minPages: 0,
     fixedPrice: 0,
+    priceRanges: [] as { min: number; max: number; price: number }[],
   });
   const [isAdding, setIsAdding] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -89,18 +91,6 @@ export function CategoryManagerDialog({
         newErrors.minPages = "Start page cannot be negative";
       if (formData.fixedPrice < 0)
         newErrors.fixedPrice = "Price cannot be negative";
-
-      // Check for duplicate minPages (Start Page)
-      const duplicateStartPage = options.find((opt) => {
-        // Skip current option if editing
-        if (editingId && opt._id === editingId) return false;
-        return (opt.minPages || 0) == formData.minPages;
-      });
-
-      if (duplicateStartPage) {
-        newErrors.minPages =
-          "Starting page count must be unique and cannot match another binding option.";
-      }
     }
 
     setValidationErrors(newErrors);
@@ -137,6 +127,7 @@ export function CategoryManagerDialog({
       if (isBindingCategory) {
         payload.minPages = formData.minPages;
         payload.fixedPrice = formData.fixedPrice;
+        payload.priceRanges = formData.priceRanges;
         // Ensure others are 0 or undefined
         payload.pricePerPage = 0;
         payload.pricePerCopy = 0;
@@ -159,6 +150,7 @@ export function CategoryManagerDialog({
           pricePerCopy: 0,
           minPages: 0,
           fixedPrice: 0,
+          priceRanges: [],
         });
         setPricingType("perPage");
         setValidationErrors({});
@@ -226,55 +218,55 @@ export function CategoryManagerDialog({
       </div>
 
       {isBindingCategory ? (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label>Start Page Count (From)</Label>
-              <Input
-                type="number"
-                min="0"
-                placeholder="e.g. 0"
-                value={formData.minPages}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    minPages: parseInt(e.target.value) || 0,
-                  })
-                }
-              />
-              {validationErrors.minPages && (
-                <span className="text-xs text-red-500">
-                  {validationErrors.minPages}
-                </span>
-              )}
-              <p className="text-[10px] text-muted-foreground">
-                This price applies from this page count until the next option's
-                start page.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Fixed Price (₹)</Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="e.g. 100"
-                value={formData.fixedPrice}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    fixedPrice: parseFloat(e.target.value) || 0,
-                  })
-                }
-              />
-              {validationErrors.fixedPrice && (
-                <span className="text-xs text-red-500">
-                  {validationErrors.fixedPrice}
-                </span>
-              )}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <Label>Base Pricing (Fallback)</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Start Page
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={formData.minPages}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      minPages: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Base Price (₹)
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={formData.fixedPrice}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      fixedPrice: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
             </div>
           </div>
-        </>
+
+          <div className="space-y-2">
+            <Label>Price Ranges</Label>
+            <BindingRangeEditor
+              ranges={formData.priceRanges}
+              onChange={(ranges) =>
+                setFormData({ ...formData, priceRanges: ranges })
+              }
+            />
+          </div>
+        </div>
       ) : (
         <>
           <div className="space-y-2">
@@ -457,6 +449,7 @@ export function CategoryManagerDialog({
                           pricePerCopy: option.pricePerCopy || 0,
                           minPages: option.minPages || 0,
                           fixedPrice: option.fixedPrice || 0,
+                          priceRanges: option.priceRanges || [],
                         });
                       }}
                       aria-label={`Edit ${option.label}`}
@@ -495,6 +488,7 @@ export function CategoryManagerDialog({
                       pricePerCopy: 0,
                       minPages: 0,
                       fixedPrice: 0,
+                      priceRanges: [],
                     });
                     setValidationErrors({});
                   }}
@@ -541,6 +535,7 @@ export function CategoryManagerDialog({
                   pricePerCopy: 0,
                   minPages: defaultMinPages,
                   fixedPrice: 0,
+                  priceRanges: [],
                 });
                 setPricingType("perPage");
                 setValidationErrors({});

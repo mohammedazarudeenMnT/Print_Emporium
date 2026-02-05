@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Save, IndianRupee, Settings } from "lucide-react";
+import { X, Save, IndianRupee, Settings, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import {
 } from "@/lib/service-api";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { CategoryManagerDialog } from "./category-manager-dialog";
+import { BindingRangeEditor } from "./binding-range-editor";
 import { cn } from "@/lib/utils";
 
 interface ServiceFormModalProps {
@@ -47,6 +48,11 @@ interface CategorySectionProps {
   setManagerConfig: (
     config: { category: string; label: string } | null,
   ) => void;
+  updateOptionRanges?: (
+    category: keyof Service,
+    value: string,
+    ranges: { min: number; max: number; price: number }[],
+  ) => void;
 }
 
 function CategorySection({
@@ -58,6 +64,7 @@ function CategorySection({
   toggleOption,
   updateOptionPrice,
   setManagerConfig,
+  updateOptionRanges,
 }: CategorySectionProps) {
   const selectedOptions = (formData[id] as OptionPricing[]) || [];
   const availableOptions = categoryOptions?.filter(
@@ -117,11 +124,40 @@ function CategorySection({
               >
                 <span className="text-sm flex-1">
                   {category === "bindingOption" ? (
-                    <div className="flex flex-col">
-                      <span>{selected.value}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        Start Page: {selected.minPages} • ₹{selected.fixedPrice}
-                      </span>
+                    <div className="flex flex-col w-full">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{selected.value}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground mr-1">
+                            Base:
+                          </span>
+                          <div className="relative w-16">
+                            <IndianRupee className="absolute left-1 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              className="h-6 pl-4 text-xs"
+                              value={selected.fixedPrice || 0}
+                              onChange={(e) =>
+                                updateOptionPrice(
+                                  id,
+                                  selected.value,
+                                  "perCopy",
+                                  Number(e.target.value),
+                                )
+                              }
+                              placeholder="Fixed"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      {updateOptionRanges && (
+                        <BindingRangeEditor
+                          ranges={selected.priceRanges || []}
+                          onChange={(ranges) =>
+                            updateOptionRanges(id, selected.value, ranges)
+                          }
+                        />
+                      )}
                     </div>
                   ) : (
                     selected.value
@@ -316,6 +352,7 @@ export function ServiceFormModal({
             pricePerCopy: option.pricePerCopy || 0,
             minPages: option.minPages || 0,
             fixedPrice: option.fixedPrice || 0,
+            priceRanges: option.priceRanges || [],
           },
         ],
       });
@@ -334,6 +371,21 @@ export function ServiceFormModal({
         return pricingType === "perPage"
           ? { ...item, pricePerPage: amount, pricePerCopy: 0 }
           : { ...item, pricePerCopy: amount, pricePerPage: 0 };
+      }
+      return item;
+    });
+    setFormData({ ...formData, [category]: updated });
+  };
+
+  const updateOptionRanges = (
+    category: keyof Service,
+    value: string,
+    ranges: { min: number; max: number; price: number }[],
+  ) => {
+    const currentList = (formData[category] as OptionPricing[]) || [];
+    const updated = currentList.map((item) => {
+      if (item.value === value) {
+        return { ...item, priceRanges: ranges };
       }
       return item;
     });
@@ -528,6 +580,7 @@ export function ServiceFormModal({
                   toggleOption={toggleOption}
                   updateOptionPrice={updateOptionPrice}
                   setManagerConfig={setManagerConfig}
+                  updateOptionRanges={updateOptionRanges}
                 />
               </div>
             </div>
