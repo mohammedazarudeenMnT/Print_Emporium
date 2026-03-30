@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Mail,
   Phone,
@@ -8,25 +8,40 @@ import {
   Linkedin,
   Instagram,
 } from "lucide-react";
+import Link from "next/link";
 import { CompanyLogo } from "@/components/ui/company-logo";
 import { useCompanySettings } from "@/hooks/use-company-settings";
+import { getAllServices, Service } from "@/lib/service-api";
 
 export default function Footer() {
   const { settings, loading } = useCompanySettings();
-  const services = [
-    { name: "Document Printing", href: "#document-printing" },
-    { name: "Business Cards", href: "#business-cards" },
-    { name: "Banners & Posters", href: "#banners" },
-    { name: "Photo Printing", href: "#photo-printing" },
-    { name: "Binding Services", href: "#binding" },
-  ];
+  const [services, setServices] = useState<{ name: string; href: string }[]>([]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await getAllServices("active");
+        if (res.success && res.data) {
+          setServices(
+            res.data.slice(0, 5).map((s: Service) => ({
+              name: s.name,
+              href: `/services`,
+            }))
+          );
+        }
+      } catch {
+        // Fallback to empty — services section won't render
+      }
+    };
+    fetchServices();
+  }, []);
 
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "Services", href: "/services" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
-    { name: "FAQ", href: "#faq" },
+    { name: "FAQ", href: "/faq" },
   ];
 
   const socialLinks = [
@@ -99,13 +114,13 @@ export default function Footer() {
             <ul className="space-y-3">
               {services.map((service) => (
                 <li key={service.name}>
-                  <a
+                  <Link
                     href={service.href}
                     className="text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center group text-sm"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                     {service.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -118,13 +133,13 @@ export default function Footer() {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-muted-foreground hover:text-foreground transition-colors duration-300 flex items-center group text-sm"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -186,18 +201,18 @@ export default function Footer() {
               . All rights reserved.
             </p>
             <div className="flex gap-6 text-xs">
-              <a
-                href="#privacy"
+              <Link
+                href="/privacy"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Privacy Policy
-              </a>
-              <a
-                href="#terms"
+              </Link>
+              <Link
+                href="/terms"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </div>
         </div>
