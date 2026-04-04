@@ -42,8 +42,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/30 rounded-full blur-3xl animate-blob" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-300/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-start gap-6">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+          <div className="flex flex-col sm:flex-row items-start gap-6 w-full">
             {/* User Avatar */}
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
@@ -73,8 +73,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 
             {/* Welcome Text */}
             <div className="space-y-2">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-3xl md:text-4xl font-bold text-white">
+              <div className="flex items-center gap-3 flex-wrap min-w-0">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight break-words">
                   Welcome back, {user.name}!
                 </h1>
                 <span
@@ -92,9 +92,9 @@ export function ProfileTab({ user }: ProfileTabProps) {
                       : "User"}
                 </span>
               </div>
-              <p className="text-primary-100 text-lg flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                {user.email}
+              <p className="text-primary-100 text-base sm:text-lg flex items-center gap-2 truncate max-w-full">
+                <Mail className="h-4 w-4 shrink-0" />
+                <span className="truncate">{user.email}</span>
               </p>
               <div className="flex items-center gap-4 text-sm text-primary-50">
                 <span className="flex items-center gap-1.5">

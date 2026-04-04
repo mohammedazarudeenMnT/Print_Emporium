@@ -185,14 +185,14 @@ export function FileUploadStep({
       </div>
 
       {/* Current Service Info */}
-      <div className="mb-4 flex items-center justify-between bg-card rounded-xl border border-border p-4">
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between bg-card rounded-xl border border-border p-4 gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Package className="h-5 w-5 text-primary" />
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Current Service</div>
-            <div className="font-semibold text-foreground">
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground">Current Service</div>
+            <div className="font-semibold text-foreground truncate">
               {selectedService.name}
             </div>
           </div>
@@ -205,7 +205,7 @@ export function FileUploadStep({
             size="sm"
             onClick={handleAddDifferentService}
             disabled={isLoadingServices}
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto justify-center"
           >
             {isLoadingServices ? (
               <>
@@ -346,11 +346,12 @@ export function FileUploadStep({
                 <div
                   key={item.file.id}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-xl border bg-card transition-colors",
+                    "flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border bg-card transition-colors relative",
                     hasError && "border-destructive/50 bg-destructive/5",
                     isReady && "border-border",
                   )}
                 >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                   {/* File Icon */}
                   <div
                     className={cn(
@@ -376,48 +377,48 @@ export function FileUploadStep({
                         {item.serviceName}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span>{formatFileSize(item.file.size)}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
+                      <span className="text-xs font-medium">{formatFileSize(item.file.size)}</span>
                       {isProcessing && (
-                        <span className="flex items-center gap-1 text-primary">
+                        <span className="flex items-center gap-1.5 text-primary text-xs bg-primary/5 py-1 px-2 rounded-md border border-primary/20">
                           <Loader2 className="h-3 w-3 animate-spin" />
-                          Converting & counting pages...
+                          Processing...
                         </span>
                       )}
                       {isReady && (
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-green-500/10 text-green-600 font-black text-xs border border-green-200">
-                            <CheckCircle2 className="h-3 w-3" />
-                            {item.file.pageCount} PAGE
-                            {item.file.pageCount !== 1 ? "S" : ""} DETECTED
+                          <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-500/10 text-green-600 font-bold text-[10px] sm:text-xs border border-green-200 uppercase tracking-tight">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {item.file.pageCount} {item.file.pageCount !== 1 ? "Pages" : "Page"} Detected
                           </span>
                         </div>
                       )}
                       {hasError && (
-                        <span className="flex items-center gap-1 text-destructive">
+                        <span className="flex items-center gap-1.5 text-destructive text-xs bg-destructive/5 py-1 px-2 rounded-md border border-destructive/20">
                           <AlertCircle className="h-3 w-3" />
                           {item.file.error}
                         </span>
                       )}
                     </div>
                   </div>
+                </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 sm:self-center self-end mt-2 sm:mt-0">
                     {isReady &&
                       (item.file.type.startsWith("image/") ||
                         item.file.type === "application/pdf") && (
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             setPreviewFile(item.file);
                           }}
-                          className="h-9 gap-2 bg-card hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
+                          className="h-8 gap-2 bg-primary/5 text-primary hover:bg-primary/10 border-transparent shadow-none"
                         >
                           <Eye className="h-4 w-4" />
-                          <span className="hidden sm:inline">Preview</span>
+                          <span className="sm:inline">Preview</span>
                         </Button>
                       )}
                     <Button
@@ -427,7 +428,7 @@ export function FileUploadStep({
                         e.stopPropagation();
                         handleRemoveFile(item.file);
                       }}
-                      className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                     >
                       <X className="h-4 w-4" />
                     </Button>

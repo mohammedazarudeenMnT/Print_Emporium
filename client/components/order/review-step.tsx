@@ -494,10 +494,10 @@ export function ReviewStep({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-foreground truncate">
+                          <p className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
                             {item.file.name}
                           </p>
                           <span className="px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary uppercase tracking-wider shrink-0">
@@ -510,12 +510,12 @@ export function ReviewStep({
                         </p>
                       </div>
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
                         onClick={() => setPreviewFile(item)}
-                        className="shrink-0"
+                        className="h-8 text-xs shrink-0 self-start sm:self-auto"
                       >
-                        <Eye className="h-4 w-4 mr-1" />
+                        <Eye className="h-3.5 w-3.5 mr-1.5" />
                         Preview
                       </Button>
                     </div>
@@ -542,12 +542,13 @@ export function ReviewStep({
                       </span>
                     </div>
 
-                    <div className="mt-3 flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="mt-4 pt-3 border-t border-border/50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                      <span className="text-xs sm:text-sm text-muted-foreground">
                         {item.pricing.totalPages} pages × {item.pricing.copies}{" "}
-                        copies × ₹{item.pricing.pricePerPage}/page
+                        {item.pricing.copies > 1 ? "copies" : "copy"} × ₹
+                        {item.pricing.pricePerPage}/page
                       </span>
-                      <span className="font-semibold text-foreground">
+                      <span className="font-bold text-foreground text-base sm:text-lg">
                         {formatPrice(item.pricing.subtotal)}
                       </span>
                     </div>

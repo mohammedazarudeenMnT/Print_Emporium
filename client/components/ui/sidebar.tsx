@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronLeft, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronLeft, ChevronDown, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CompanyLogo } from "@/components/ui/company-logo";
@@ -29,9 +29,10 @@ export interface SidebarProps {
   user?: SidebarUser;
   className?: string;
   onLinkClick?: (href: string) => void;
+  onLogout?: () => void;
 }
 
-export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
+export function Sidebar({ links, user, className, onLinkClick, onLogout }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Default to open
   const [isPinned, setIsPinned] = useState(true); // Track if sidebar is pinned open
   const [isMobile, setIsMobile] = useState(false); // Default to false for SSR
@@ -81,7 +82,11 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <aside className="hidden md:flex flex-col w-[280px] h-screen bg-white border-r border-border" />
+    );
+  }
 
   return (
     <>
@@ -112,7 +117,11 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed md:relative z-50 h-screen flex flex-col bg-white border-r border-border shadow-sm",
+          "fixed top-0 left-0 md:relative z-50 h-screen flex flex-col bg-white border-r border-border shadow-sm",
+          !isMobile && !isExpanded && "w-20",
+          !isMobile && isExpanded && "w-[280px]",
+          isMobile && !isMobileOpen && "w-0 border-none pointer-events-none",
+          isMobile && isMobileOpen && "w-[280px]",
           className,
         )}
         onMouseEnter={() => !isPinned && !isMobile && setIsExpanded(true)}
@@ -180,7 +189,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
           </motion.button>
         )}
 
-        {/* Navigation Links */}
         <nav className="relative flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
           {links.map((link, index) => {
             const isCollapsed = !isMobile && !isPinned && !isExpanded;
@@ -221,7 +229,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
-                  {/* Icon */}
                   <span
                     className={cn(
                       "flex-shrink-0 w-5 h-5 transition-transform group-hover:scale-110",
@@ -233,7 +240,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                     {link.icon}
                   </span>
 
-                  {/* Label */}
                   <AnimatePresence>
                     {!isCollapsed && (
                       <motion.span
@@ -247,7 +253,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* Dropdown Arrow */}
                   {!isCollapsed && link.hasDropdown && (
                     <motion.div
                       animate={{ rotate: isMenuExpanded ? 180 : 0 }}
@@ -257,7 +262,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                     </motion.div>
                   )}
 
-                  {/* Active Indicator (Collapsed) */}
                   {isCollapsed && link.isActive && (
                     <motion.div
                       layoutId="activeIndicator"
@@ -266,7 +270,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                   )}
                 </motion.button>
 
-                {/* Submenu */}
                 <AnimatePresence>
                   {!isCollapsed && link.hasDropdown && isMenuExpanded && (
                     <motion.div
@@ -301,7 +304,6 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
           })}
         </nav>
 
-        {/* User Profile Footer */}
         <div className="p-4 border-t border-border bg-muted/30">
           <div
             className={cn(
@@ -313,7 +315,7 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
               {user?.avatar ? (
                 <Image
                   src={user.avatar}
-                  alt={user.name}
+                  alt={user.name || "User"}
                   width={40}
                   height={40}
                   className="rounded-full"
@@ -340,7 +342,38 @@ export function Sidebar({ links, user, className, onLinkClick }: SidebarProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Logout Button */}
+            {onLogout && (
+              <AnimatePresence>
+                {(isExpanded || (isMobile && isMobileOpen)) && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={onLogout}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            )}
           </div>
+
+          {/* Logout Button (Collapsed State) */}
+          {onLogout && !isExpanded && !isMobile && !isPinned && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={onLogout}
+              className="mt-2 w-full flex justify-center p-2 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </motion.button>
+          )}
         </div>
       </motion.aside>
     </>

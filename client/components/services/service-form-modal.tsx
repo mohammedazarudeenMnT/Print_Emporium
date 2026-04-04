@@ -299,9 +299,78 @@ export function ServiceFormModal({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name?.trim()) newErrors.name = "Service name is required";
-    if ((formData.basePricePerPage || 0) < 0)
+
+    // Service name validation
+    const name = formData.name?.trim() || "";
+    if (!name) {
+      newErrors.name = "Service name is required";
+    } else if (name.length < 2) {
+      newErrors.name = "Service name must be at least 2 characters";
+    } else if (name.length > 100) {
+      newErrors.name = "Service name must be less than 100 characters";
+    }
+
+    // Base price validation
+    const basePrice = formData.basePricePerPage ?? 0;
+    if (basePrice < 0) {
       newErrors.basePricePerPage = "Price cannot be negative";
+    } else if (!formData.customQuotation && basePrice === 0) {
+      newErrors.basePricePerPage = "Base price is required for non-quotation services";
+    }
+
+    // Option validations (only for non-custom-quotation services)
+    if (!formData.customQuotation) {
+      const printTypes = (formData.printTypes as OptionPricing[]) || [];
+      const paperSizes = (formData.paperSizes as OptionPricing[]) || [];
+
+      if (printTypes.length === 0) {
+        newErrors.printTypes = "At least one print type is required";
+      }
+      if (paperSizes.length === 0) {
+        newErrors.paperSizes = "At least one paper size is required";
+      }
+
+      // Validate option prices
+      const optionCategories = [
+        { key: "printTypes", label: "Print Types", data: printTypes },
+        { key: "paperSizes", label: "Paper Sizes", data: paperSizes },
+        { key: "paperTypes", label: "Paper Types", data: (formData.paperTypes as OptionPricing[]) || [] },
+        { key: "gsmOptions", label: "GSM Options", data: (formData.gsmOptions as OptionPricing[]) || [] },
+        { key: "printSides", label: "Print Sides", data: (formData.printSides as OptionPricing[]) || [] },
+      ];
+
+      for (const { key, label, data } of optionCategories) {
+        for (const opt of data) {
+          const price = (opt.pricePerPage || 0) + (opt.pricePerCopy || 0);
+          if (price < 0) {
+            newErrors[key] = `${label} cannot have negative prices`;
+            break;
+          }
+        }
+      }
+
+      // Validate binding options
+      const bindingOpts = (formData.bindingOptions as OptionPricing[]) || [];
+      for (const opt of bindingOpts) {
+        if ((opt.fixedPrice || 0) < 0) {
+          newErrors.bindingOptions = "Binding options cannot have negative prices";
+          break;
+        }
+        if (opt.priceRanges) {
+          for (const range of opt.priceRanges) {
+            if (range.min < 0 || range.max < 0 || range.price < 0) {
+              newErrors.bindingOptions = "Binding price ranges cannot have negative values";
+              break;
+            }
+            if (range.min >= range.max) {
+              newErrors.bindingOptions = "Binding range min must be less than max";
+              break;
+            }
+          }
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -521,26 +590,36 @@ export function ServiceFormModal({
             <div className="border-t border-border/50 pt-5">
               <h3 className="text-sm font-semibold mb-4">Service Options</h3>
               <div className="space-y-5">
-                <CategorySection
-                  id="printTypes"
-                  label="Print Types"
-                  category="printType"
-                  options={options.printType || []}
-                  formData={formData}
-                  toggleOption={toggleOption}
-                  updateOptionPrice={updateOptionPrice}
-                  setManagerConfig={setManagerConfig}
-                />
-                <CategorySection
-                  id="paperSizes"
-                  label="Paper Sizes"
-                  category="paperSize"
-                  options={options.paperSize || []}
-                  formData={formData}
-                  toggleOption={toggleOption}
-                  updateOptionPrice={updateOptionPrice}
-                  setManagerConfig={setManagerConfig}
-                />
+                <div>
+                  <CategorySection
+                    id="printTypes"
+                    label="Print Types"
+                    category="printType"
+                    options={options.printType || []}
+                    formData={formData}
+                    toggleOption={toggleOption}
+                    updateOptionPrice={updateOptionPrice}
+                    setManagerConfig={setManagerConfig}
+                  />
+                  {errors.printTypes && (
+                    <p className="text-xs text-red-500 mt-1">{errors.printTypes}</p>
+                  )}
+                </div>
+                <div>
+                  <CategorySection
+                    id="paperSizes"
+                    label="Paper Sizes"
+                    category="paperSize"
+                    options={options.paperSize || []}
+                    formData={formData}
+                    toggleOption={toggleOption}
+                    updateOptionPrice={updateOptionPrice}
+                    setManagerConfig={setManagerConfig}
+                  />
+                  {errors.paperSizes && (
+                    <p className="text-xs text-red-500 mt-1">{errors.paperSizes}</p>
+                  )}
+                </div>
                 <CategorySection
                   id="paperTypes"
                   label="Paper Types"
@@ -571,17 +650,22 @@ export function ServiceFormModal({
                   updateOptionPrice={updateOptionPrice}
                   setManagerConfig={setManagerConfig}
                 />
-                <CategorySection
-                  id="bindingOptions"
-                  label="Binding Options"
-                  category="bindingOption"
-                  options={options.bindingOption || []}
-                  formData={formData}
-                  toggleOption={toggleOption}
-                  updateOptionPrice={updateOptionPrice}
-                  setManagerConfig={setManagerConfig}
-                  updateOptionRanges={updateOptionRanges}
-                />
+                <div>
+                  <CategorySection
+                    id="bindingOptions"
+                    label="Binding Options"
+                    category="bindingOption"
+                    options={options.bindingOption || []}
+                    formData={formData}
+                    toggleOption={toggleOption}
+                    updateOptionPrice={updateOptionPrice}
+                    setManagerConfig={setManagerConfig}
+                    updateOptionRanges={updateOptionRanges}
+                  />
+                  {errors.bindingOptions && (
+                    <p className="text-xs text-red-500 mt-1">{errors.bindingOptions}</p>
+                  )}
+                </div>
               </div>
             </div>
           )}

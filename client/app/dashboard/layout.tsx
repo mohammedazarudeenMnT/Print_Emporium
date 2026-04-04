@@ -19,7 +19,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -118,6 +118,7 @@ export default function DashboardLayout({
         links={sidebarLinks}
         user={sidebarUser}
         onLinkClick={handleLinkClick}
+        onLogout={logout}
       />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>

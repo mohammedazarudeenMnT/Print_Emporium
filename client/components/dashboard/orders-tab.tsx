@@ -540,7 +540,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
                       {isAdminOrEmployee &&
                         order.status !== "delivered" &&
                         order.status !== "cancelled" && (
@@ -550,7 +550,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
                               updateOrderStatus(order._id, value)
                             }
                           >
-                            <SelectTrigger className="w-[140px]">
+                            <SelectTrigger className="w-full sm:w-[140px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -576,6 +576,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedOrder(order)}
+                        className="flex-1 sm:flex-initial"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Details
@@ -586,7 +587,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
                           size="sm"
                           onClick={() => handleReorder(order._id)}
                           disabled={isReordering === order._id}
-                          className="bg-primary/10 text-primary hover:bg-primary/20"
+                          className="flex-1 sm:flex-initial bg-primary/10 text-primary hover:bg-primary/20"
                         >
                           {isReordering === order._id ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -603,7 +604,7 @@ export function OrdersTab({ user }: OrdersTabProps) {
                             variant="default"
                             size="sm"
                             onClick={() => handleInitPayment(order)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white"
                           >
                             <CreditCardIcon className="h-4 w-4 mr-2" />
                             Pay Now
@@ -664,34 +665,40 @@ export function OrdersTab({ user }: OrdersTabProps) {
                     {order.items?.slice(0, 2).map((item: any, idx: number) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between text-sm p-3 bg-muted/40 rounded-lg border border-border/50 gap-3"
                       >
-                        <div className="flex-1">
-                          <p className="font-medium">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground truncate">
                             {item.serviceName || "N/A"}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.fileName || "N/A"} • {item.pageCount || 0}{" "}
-                            pages • {item.configuration?.copies || 1}{" "}
-                            {item.configuration?.copies > 1 ? "copies" : "copy"}
+                          <p className="text-xs text-muted-foreground truncate">
+                            {item.fileName || "N/A"}
                           </p>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="text-[10px] bg-background border border-border px-1.5 py-0.5 rounded text-muted-foreground">
+                              {item.pageCount || 0} pages
+                            </span>
+                            <span className="text-[10px] bg-background border border-border px-1.5 py-0.5 rounded text-muted-foreground">
+                              {item.configuration?.copies || 1} copies
+                            </span>
+                          </div>
                           {isAdminOrEmployee && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <p className="text-xs text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <p className="text-[10px] text-muted-foreground/80 font-medium uppercase">
                                 {item.configuration?.printType} •{" "}
                                 {item.configuration?.paperSize} •{" "}
                                 {item.configuration?.paperType}
                               </p>
                               <div className="flex gap-1">
                                 {item.fileUrl && (
-                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary">
-                                    <Download className="h-2.5 w-2.5" />
-                                    Original
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold bg-primary/10 text-primary">
+                                    <Download className="h-2 w-2" />
+                                    ORIGINAL
                                   </span>
                                 )}
                                 {item.pdfUrl && (
-                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary">
-                                    <FileText className="h-2.5 w-2.5" />
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold bg-primary/10 text-primary">
+                                    <FileText className="h-2 w-2" />
                                     PDF
                                   </span>
                                 )}
@@ -699,9 +706,12 @@ export function OrdersTab({ user }: OrdersTabProps) {
                             </div>
                           )}
                         </div>
-                        <p className="font-semibold">
-                          ₹{item.pricing?.subtotal?.toFixed(2) || "0.00"}
-                        </p>
+                        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-2 sm:pt-0">
+                          <span className="text-[10px] text-muted-foreground sm:hidden">Item Total</span>
+                          <p className="font-bold text-primary">
+                            ₹{item.pricing?.subtotal?.toFixed(2) || "0.00"}
+                          </p>
+                        </div>
                       </div>
                     )) || (
                       <p className="text-sm text-muted-foreground">No items</p>
@@ -784,26 +794,26 @@ export function OrdersTab({ user }: OrdersTabProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border">
+                <div className="min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-xl sm:text-2xl font-bold truncate">
                       Order #{selectedOrder.orderNumber}
                     </h2>
                     {selectedOrder.deliveryInfo?.scheduleDelivery &&
                       selectedOrder.estimatedDelivery && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold bg-primary text-primary-foreground">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-primary text-primary-foreground shrink-0">
                           <Calendar className="h-4 w-4" />
                           Scheduled Delivery
                         </span>
                       )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Placed on{" "}
                     {new Date(selectedOrder.createdAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {/* Admin PDF Actions */}
                   {isAdminOrEmployee && (
                     <>
@@ -1010,16 +1020,16 @@ export function OrdersTab({ user }: OrdersTabProps) {
                           {selectedOrder.deliveryInfo?.fullName || "N/A"}
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Phone</p>
-                          <p className="font-medium">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Phone</p>
+                          <p className="font-medium truncate">
                             {selectedOrder.deliveryInfo?.phone || "N/A"}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Email</p>
-                          <p className="font-medium text-xs">
+                        <div className="min-w-0">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Email</p>
+                          <p className="font-medium text-xs truncate" title={selectedOrder.deliveryInfo?.email}>
                             {selectedOrder.deliveryInfo?.email || "N/A"}
                           </p>
                         </div>
@@ -1063,16 +1073,16 @@ export function OrdersTab({ user }: OrdersTabProps) {
                           key={idx}
                           className="p-4 bg-muted rounded-lg space-y-2"
                         >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">
+                          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-sm sm:text-base text-foreground break-words">
                                 {item.serviceName || "N/A"}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-xs text-muted-foreground mt-1 break-all bg-muted-foreground/5 p-1.5 rounded-md border border-border/50">
                                 {item.fileName || "N/A"}
                               </p>
                             </div>
-                            <p className="font-bold text-primary">
+                            <p className="font-black text-primary text-lg whitespace-nowrap self-end sm:self-start">
                               ₹{item.pricing?.subtotal?.toFixed(2) || "0.00"}
                             </p>
                           </div>
@@ -1121,70 +1131,38 @@ export function OrdersTab({ user }: OrdersTabProps) {
                           </div>
 
                           {/* Configuration Details */}
-                          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border">
-                            <div>
-                              <span className="text-muted-foreground">
-                                Pages:
-                              </span>
-                              <span className="ml-1 font-medium">
-                                {item.pageCount || 0}
-                              </span>
+                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-3 text-xs pt-3 border-t border-border/50">
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Pages</p>
+                              <p className="font-bold">{item.pageCount || 0}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Copies:
-                              </span>
-                              <span className="ml-1 font-medium">
-                                {item.configuration?.copies || 1}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Copies</p>
+                              <p className="font-bold">{item.configuration?.copies || 1}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Print:
-                              </span>
-                              <span className="ml-1 font-medium capitalize">
-                                {item.configuration?.printType || "N/A"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Print</p>
+                              <p className="font-bold capitalize">{item.configuration?.printType || "N/A"}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Size:
-                              </span>
-                              <span className="ml-1 font-medium uppercase">
-                                {item.configuration?.paperSize || "N/A"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Size</p>
+                              <p className="font-bold uppercase">{item.configuration?.paperSize || "N/A"}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Paper:
-                              </span>
-                              <span className="ml-1 font-medium capitalize">
-                                {item.configuration?.paperType || "N/A"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Paper</p>
+                              <p className="font-bold capitalize">{item.configuration?.paperType || "N/A"}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                GSM:
-                              </span>
-                              <span className="ml-1 font-medium">
-                                {item.configuration?.gsm || "N/A"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">GSM</p>
+                              <p className="font-bold">{item.configuration?.gsm || "N/A"}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Side:
-                              </span>
-                              <span className="ml-1 font-medium capitalize">
-                                {item.configuration?.printSide || "N/A"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Side</p>
+                              <p className="font-bold capitalize">{item.configuration?.printSide || "N/A"}</p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Binding:
-                              </span>
-                              <span className="ml-1 font-medium capitalize">
-                                {item.configuration?.bindingOption || "None"}
-                              </span>
+                            <div className="bg-muted-foreground/5 p-2 rounded-lg border border-border/50">
+                              <p className="text-muted-foreground mb-0.5">Binding</p>
+                              <p className="font-bold capitalize">{item.configuration?.bindingOption || "None"}</p>
                             </div>
                           </div>
 

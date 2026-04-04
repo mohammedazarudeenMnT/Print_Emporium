@@ -170,15 +170,17 @@ export default function Navbar() {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/dashboard/settings"
-                        className="flex items-center gap-2"
-                      >
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
+                    {user.role === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/dashboard/settings"
+                          className="flex items-center gap-2"
+                        >
+                          <Settings className="h-4 w-4" />
+                          Settings
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
@@ -300,14 +302,16 @@ export default function Navbar() {
                     <User className="h-5 w-5" />
                     Dashboard
                   </Link>
-                  <Link
-                    href="/dashboard/settings"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-colors"
-                  >
-                    <Settings className="h-5 w-5" />
-                    Settings
-                  </Link>
+                  {user.role === "admin" && (
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground/80 hover:text-foreground hover:bg-accent rounded-lg transition-colors"
+                    >
+                      <Settings className="h-5 w-5" />
+                      Settings
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     size="default"

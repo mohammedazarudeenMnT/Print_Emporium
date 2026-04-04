@@ -1,6 +1,6 @@
 import Order from "../models/order.model.js";
 import GeneralSettings from "../models/GeneralSettings.js";
-import { generatePDFFromHTML } from "../utils/pdf-generator.js";
+import { generateOrderSlipPDF, generateShippingLabelPDF } from "../utils/pdf-generator.js";
 import { getUrlFromPublicId } from "../utils/cloudinary-helper.js";
 
 // --- Helpers ---
@@ -322,12 +322,9 @@ export const generateOrderSlip = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    const html = getOrderSlipTemplate(order, company);
-
-    const pdfBuffer = await generatePDFFromHTML(html, {
+    const pdfBuffer = await generateOrderSlipPDF(order, company, {
       format: size,
-      displayHeaderFooter: false,
-      margin: { top: "10mm", right: "10mm", bottom: "10mm", left: "10mm" },
+      marginMM: 10,
     });
 
     res.set({
@@ -365,33 +362,28 @@ export const generateShippingLabel = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    const html = getShippingLabelTemplate(order, awb, courier, company);
+    // Dynamic Size Logic (convert to points: 1in = 72pt)
+    let widthPt = 288; // 4in
+    let heightPt = 432; // 6in
 
-    // Dynamic Size Logic
-    let width = "4in";
-    let height = "6in";
-
-    // Check if valid dimension string is passed (e.g., custom from future UI)
-    // Or check against settings
     const sizeConfig = company.shippingLabelSizes?.find((s) => s.name === size);
 
     if (sizeConfig) {
-      width = sizeConfig.width;
-      height = sizeConfig.height;
+      // Parse "4in" format to points
+      const parseInches = (val) => parseFloat(val) * 72;
+      widthPt = parseInches(sizeConfig.width);
+      heightPt = parseInches(sizeConfig.height);
     } else {
-      // Fallback for hardcoded defaults if DB settings missing or mismatch
       if (size === "4x4") {
-        height = "4in";
+        heightPt = 288; // 4in
       } else if (size === "4x2") {
-        height = "2in";
+        heightPt = 144; // 2in
       }
     }
 
-    const pdfBuffer = await generatePDFFromHTML(html, {
-      width,
-      height,
-      pageRanges: "1",
-      margin: { top: "2mm", right: "2mm", bottom: "2mm", left: "2mm" },
+    const pdfBuffer = await generateShippingLabelPDF(order, awb, courier, company, {
+      widthPt,
+      heightPt,
     });
 
     res.set({

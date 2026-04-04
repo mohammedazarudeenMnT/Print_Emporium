@@ -3,8 +3,7 @@ import Order from "../models/order.model.js";
 import { encryptPassword, decryptPassword } from "../utils/encryption.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { generateInvoiceHTML } from '../services/invoice.service.js';
-import { generatePDFFromHTML } from '../utils/pdf-generator.js';
+import { generateInvoicePDF } from '../utils/invoice-pdf-generator.js';
 import { sendOrderConfirmationEmail } from '../services/email.service.js';
 
 // Get payment settings
@@ -231,11 +230,10 @@ export const verifyPayment = async (req, res) => {
           if (!order.invoiceEmailSent) {
             try {
               console.log(`📧 Generating invoice and sending confirmation email for order ${order.orderNumber}...`);
-              
-              const invoiceHTML = await generateInvoiceHTML(order);
-              const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+
+              const invoicePDF = await generateInvoicePDF(order);
               await sendOrderConfirmationEmail(order, invoicePDF);
-              
+
               // Mark email as sent
               order.invoiceEmailSent = true;
               order.invoiceEmailSentAt = new Date();
@@ -338,9 +336,8 @@ export const handlePaymentWebhook = async (req, res) => {
                     if (claimedOrder && !claimedOrder.invoiceEmailSent) {
                       try {
                         console.log(`📧 [Webhook] Generating invoice and sending confirmation email for order ${order.orderNumber}...`);
-                        
-                        const invoiceHTML = await generateInvoiceHTML(order);
-                        const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+
+                        const invoicePDF = await generateInvoicePDF(order);
                         await sendOrderConfirmationEmail(order, invoicePDF);
                         
                         console.log(`✅ [Webhook] Invoice generated and email sent for order ${order.orderNumber}`);

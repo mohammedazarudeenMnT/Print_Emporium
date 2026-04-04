@@ -6,8 +6,7 @@ import {
   getRawUrlFromPublicId,
 } from "../utils/cloudinary-helper.js";
 import { convertFileToPdf } from "./fileConversion.controller.js";
-import { generateInvoiceHTML } from "../services/invoice.service.js";
-import { generatePDFFromHTML } from "../utils/pdf-generator.js";
+import { generateInvoicePDF } from "../utils/invoice-pdf-generator.js";
 import { sendOrderStatusUpdateEmail } from "../services/email.service.js";
 
 /**
@@ -239,7 +238,13 @@ export const createOrder = async (req, res) => {
         pageCount: item.file.pageCount,
         filePublicId: item.file.filePublicId || null, // Original file public_id
         pdfPublicId: item.file.pdfPublicId || null, // PDF file public_id
-        configuration: item.configuration,
+        configuration: {
+          ...item.configuration,
+          paperType: item.configuration.paperType || "standard",
+          gsm: item.configuration.gsm || "standard",
+          printSide: item.configuration.printSide || "single-side",
+          bindingOption: item.configuration.bindingOption || "none",
+        },
         pricing: item.pricing,
       })),
       deliveryInfo: {
@@ -997,11 +1002,8 @@ export const downloadInvoice = async (req, res) => {
       });
     }
 
-    // Generate invoice HTML
-    const invoiceHTML = await generateInvoiceHTML(order);
-
-    // Convert HTML to PDF
-    const invoicePDF = await generatePDFFromHTML(invoiceHTML);
+    // Generate invoice PDF
+    const invoicePDF = await generateInvoicePDF(order);
 
     // Set response headers for PDF download
     res.setHeader("Content-Type", "application/pdf");

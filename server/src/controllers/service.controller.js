@@ -100,14 +100,84 @@ export const upsertService = async (req, res) => {
       status,
     } = req.body;
 
-    if (!name) {
+    // Validate service name
+    if (!name || typeof name !== "string" || !name.trim()) {
       return res.status(400).json({
         success: false,
         message: "Service name is required",
       });
     }
 
-    // Validate: Only one pricing type can be set for each option
+    if (name.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Service name must be at least 2 characters",
+      });
+    }
+
+    if (name.trim().length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Service name must be less than 100 characters",
+      });
+    }
+
+    // Check for duplicate service name
+    const duplicateQuery = { name: { $regex: new RegExp(`^${name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, "i") } };
+    if (id) {
+      duplicateQuery._id = { $ne: id };
+    }
+    const duplicate = await Service.findOne(duplicateQuery);
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: "A service with this name already exists",
+      });
+    }
+
+    // Validate base price
+    if (basePricePerPage !== undefined && basePricePerPage !== null) {
+      if (typeof basePricePerPage !== "number" || basePricePerPage < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Base price per page cannot be negative",
+        });
+      }
+    }
+
+    if (!customQuotation && (!basePricePerPage || basePricePerPage <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "Base price per page is required for non-quotation services",
+      });
+    }
+
+    // Validate status
+    if (status && !["active", "inactive"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status must be 'active' or 'inactive'",
+      });
+    }
+
+    // Validate required options for non-quotation services
+    if (!customQuotation) {
+      if (!printTypes || !Array.isArray(printTypes) || printTypes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one print type is required",
+        });
+      }
+
+      if (!paperSizes || !Array.isArray(paperSizes) || paperSizes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one paper size is required",
+        });
+      }
+    }
+
+    // Validate option pricing rules
     const optionArrays = [
       { name: "printTypes", data: printTypes },
       { name: "paperSizes", data: paperSizes },
@@ -120,20 +190,56 @@ export const upsertService = async (req, res) => {
     for (const { name: arrayName, data } of optionArrays) {
       if (data && Array.isArray(data)) {
         for (const option of data) {
-          // Binding options can have fixedPrice OR priceRanges, so we skip the standard check
+          // Each option must have a value
+          if (!option.value || typeof option.value !== "string" || !option.value.trim()) {
+            return res.status(400).json({
+              success: false,
+              message: `Each option in ${arrayName} must have a value`,
+            });
+          }
+
           const isBinding = arrayName === "bindingOptions";
-          if (
-            isBinding &&
-            ((option.fixedPrice || 0) > 0 ||
-              (option.priceRanges && option.priceRanges.length > 0))
-          ) {
+
+          // Validate binding options
+          if (isBinding) {
+            if ((option.fixedPrice || 0) < 0) {
+              return res.status(400).json({
+                success: false,
+                message: `Binding option "${option.value}" cannot have a negative fixed price`,
+              });
+            }
+            if (option.priceRanges && Array.isArray(option.priceRanges)) {
+              for (const range of option.priceRanges) {
+                if (range.min < 0 || range.max < 0 || range.price < 0) {
+                  return res.status(400).json({
+                    success: false,
+                    message: `Binding option "${option.value}" has negative values in price ranges`,
+                  });
+                }
+                if (range.min >= range.max) {
+                  return res.status(400).json({
+                    success: false,
+                    message: `Binding option "${option.value}" has invalid range: min must be less than max`,
+                  });
+                }
+              }
+            }
             continue;
           }
 
-          if (option.pricePerPage > 0 && option.pricePerCopy > 0) {
+          // Validate non-binding options: cannot have both pricing types
+          if ((option.pricePerPage || 0) > 0 && (option.pricePerCopy || 0) > 0) {
             return res.status(400).json({
               success: false,
               message: `Cannot set both pricePerPage and pricePerCopy for ${arrayName}. Please choose only one pricing type per option.`,
+            });
+          }
+
+          // Validate no negative prices
+          if ((option.pricePerPage || 0) < 0 || (option.pricePerCopy || 0) < 0) {
+            return res.status(400).json({
+              success: false,
+              message: `Option "${option.value}" in ${arrayName} cannot have negative prices`,
             });
           }
         }

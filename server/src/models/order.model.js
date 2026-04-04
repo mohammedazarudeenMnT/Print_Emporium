@@ -33,9 +33,9 @@ const orderItemSchema = new mongoose.Schema({
   configuration: {
     printType: { type: String, required: true },
     paperSize: { type: String, required: true },
-    paperType: { type: String, required: true },
-    gsm: { type: String, required: true },
-    printSide: { type: String, required: true },
+    paperType: { type: String, default: "standard" },
+    gsm: { type: String, default: "standard" },
+    printSide: { type: String, default: "single-side" },
     bindingOption: { type: String, default: "none" },
     copies: { type: Number, required: true, min: 1 },
   },

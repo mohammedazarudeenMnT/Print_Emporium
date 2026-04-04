@@ -2,6 +2,8 @@ import User from "../models/User.js";
 import { sendEmail } from "../config/sendmail.js";
 import crypto from "crypto";
 import { getUrlFromPublicId } from "../utils/cloudinary-helper.js";
+import { getAuth } from "../lib/auth.js";
+import mongoose from "mongoose";
 
 /**
  * Get all employees (admin only)
@@ -220,18 +222,39 @@ export const createEmployee = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Create employee user
-    const employee = new User({
-      name,
-      email,
-      role: "employee",
-      emailVerified: false,
-      banned: false,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpiry: verificationExpiry,
+    // Create employee user via Better Auth so credentials are properly stored
+    const auth = getAuth();
+    const tempPassword = crypto.randomBytes(32).toString("hex"); // Temporary password, will be replaced during verification
+    await auth.api.signUpEmail({
+      body: {
+        name,
+        email,
+        password: tempPassword,
+      },
     });
 
-    await employee.save();
+    // Update the user with employee role and verification token
+    // Use native MongoDB driver to ensure non-schema fields are persisted
+    const db = mongoose.connection.db;
+    const employee = await db.collection("user").findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          role: "employee",
+          emailVerified: false,
+          banned: false,
+          emailVerificationToken: verificationToken,
+          emailVerificationExpiry: verificationExpiry,
+        },
+      },
+      { returnDocument: "after" }
+    );
+    if (!employee) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create employee account",
+      });
+    }
 
     // Send verification email
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -294,8 +317,9 @@ export const verifyEmployee = async (req, res) => {
       });
     }
 
-    // Find user with valid token
-    const employee = await User.findOne({
+    // Find user with valid token using native MongoDB driver
+    const db = mongoose.connection.db;
+    const employee = await db.collection("user").findOne({
       emailVerificationToken: token,
       emailVerificationExpiry: { $gt: new Date() },
       role: "employee",
@@ -308,12 +332,24 @@ export const verifyEmployee = async (req, res) => {
       });
     }
 
-    // Update employee - set password via better-auth
-    employee.emailVerified = true;
-    employee.emailVerificationToken = undefined;
-    employee.emailVerificationExpiry = undefined;
+    // Set the employee's password in Better Auth's account collection
+    const { hashPassword } = await import("better-auth/crypto");
+    const hashedPassword = await hashPassword(password);
 
-    await employee.save();
+    // Better Auth stores userId as ObjectId in the account collection
+    await db.collection("account").updateOne(
+      { userId: employee._id, providerId: "credential" },
+      { $set: { password: hashedPassword } }
+    );
+
+    // Update employee verification status
+    await db.collection("user").updateOne(
+      { _id: employee._id },
+      {
+        $set: { emailVerified: true },
+        $unset: { emailVerificationToken: "", emailVerificationExpiry: "" },
+      }
+    );
 
     res.json({
       success: true,
@@ -398,6 +434,10 @@ export const deleteEmployee = async (req, res) => {
       });
     }
 
+    // Delete employee's account records from Better Auth and user collection
+    const db = mongoose.connection.db;
+    await db.collection("account").deleteMany({ userId: employee._id });
+    await db.collection("session").deleteMany({ userId: employee._id });
     await User.deleteOne({ _id: id });
 
     res.json({
@@ -460,9 +500,16 @@ export const resendVerification = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    employee.emailVerificationToken = verificationToken;
-    employee.emailVerificationExpiry = verificationExpiry;
-    await employee.save();
+    const db = mongoose.connection.db;
+    await db.collection("user").updateOne(
+      { _id: employee._id },
+      {
+        $set: {
+          emailVerificationToken: verificationToken,
+          emailVerificationExpiry: verificationExpiry,
+        },
+      }
+    );
 
     // Send verification email
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
