@@ -33,12 +33,15 @@ app.set("trust proxy", 1); // Enable trust proxy for secure cookies behind load 
 const PORT = process.env.PORT || 5000;
 
 // Middleware - CORS must be configured before all routes
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map(o => o.trim())
+  : [];
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...corsOrigins,
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://print-emporium.vercel.app",
-].filter(Boolean); // Remove undefined values
+].filter(Boolean);
 
 app.use(
   cors({

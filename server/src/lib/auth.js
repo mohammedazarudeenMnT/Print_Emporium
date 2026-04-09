@@ -257,11 +257,10 @@ export const initAuth = () => {
       : `${process.env.BETTER_AUTH_URL}/api/auth`,
 
     trustedOrigins: [
-      process.env.FRONTEND_URL,
+      ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map(o => o.trim()) : []),
       "http://localhost:3000",
       "http://localhost:5173",
       "http://localhost:5000",
-      "https://print-emporium-g6zs.vercel.app",
     ].filter(Boolean),
 
     // Configure redirect URLs for password reset
